@@ -1,0 +1,99 @@
+# -----------------------------
+# calibre-web-server .dockerignore
+# Reduces Docker build context size & improves layer caching.
+# -----------------------------
+
+# --- Git / VCS ---
+.git
+.gitignore
+.gitmodules
+.gitconfig
+# If you later add GitHub workflows:
+.github/
+
+# --- Python artifacts ---
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info
+.eggs/
+*.dist-info/
+build/
+dist/
+pip-wheel-metadata/
+.mypy_cache/
+.pytest_cache/
+.cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Virtual Environments ---
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+
+# --- OS / Editor / IDE ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.orig
+
+# --- Logs & temp ---
+logs/
+*.log
+*.tmp
+tmp/
+temp/
+
+# --- Packaging / tooling ---
+*.bak
+*.rej
+
+# --- Node / Frontend (in case future plugins add UI assets) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+*.tsbuildinfo
+
+# --- Project runtime data (mounted as volumes instead) ---
+config/
+var/data/
+
+# --- Optional: ignore local test dirs if you don’t need them in the image
+# (Uncomment if you add tests and decide to exclude them)
+# tests/
+
+# --- Documentation / meta not needed inside runtime image ---
+instructions/
+
+# --- Compose / local orchestration files (not needed inside container) ---
+docker-compose.yml
+docker-compose.yaml
+compose.yml
+compose.yaml
+
+# --- Secrets / credentials (never commit these; listed for safety) ---
+*.pem
+*.key
+*.crt
+*.env.local
+secrets/
+secret/
+*.sqlite
+
+# --- DO NOT IGNORE these (kept as documentation):
+# calibre-web/        (required: upstream app & requirements.txt)
+# entrypoint/         (required: start script)
+# plugins/            (required: plugin code)
+# Dockerfile          (build definition)
+# README.md           (sometimes useful for debugging; usually tiny)

@@ -1,0 +1,3 @@
+[submodule "calibre-web"]
+	path = calibre-web
+	url = https://github.com/janeczku/calibre-web.git

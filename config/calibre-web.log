@@ -1,0 +1,388 @@
+[2025-09-09 09:22:35,391]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:22:35] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:23:05,569]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:23:05] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:23:35,736]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:23:35] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:24:05,907]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:24:05] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:24:36,094]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:24:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:25:06,274]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:25:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:25:36,451]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:25:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:26:06,623]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:26:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:26:36,788]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:26:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:27:06,960]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:27:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:27:37,131]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:27:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:28:07,319]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:28:07] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:28:37,491]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:28:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:29:07,688]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:29:07] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:29:37,865]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:29:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:30:08,035]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:30:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:30:38,210]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:30:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:31:08,393]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:31:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:31:38,566]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:31:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:32:08,756]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:32:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:32:38,935]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:32:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:33:09,122]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:33:09] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:33:39,301]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:33:39] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:34:09,474]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:34:09] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:34:39,661]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:34:39] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:35:09,824]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:35:09] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:35:40,000]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:35:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:36:10,180]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:36:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:36:40,363]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:36:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:37:10,537]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:37:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:37:40,712]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:37:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:38:10,883]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:38:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:38:41,058]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:38:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:39:11,229]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:39:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:39:41,407]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:39:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:40:11,585]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:40:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:40:41,767]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:40:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:41:11,939]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:41:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:41:42,121]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:41:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:42:12,307]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:42:12] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:42:42,483]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:42:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:43:12,667]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:43:12] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:43:42,851]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:43:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:44:13,043]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:44:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:44:43,206]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:44:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:45:13,386]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:45:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:45:43,556]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:45:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:46:13,744]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:46:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:46:43,895]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:46:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:47:14,055]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:47:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:47:44,218]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:47:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:48:01,426]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "GET / HTTP/1.1" 200 -
+[2025-09-09 09:48:01,477]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,486]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/css/libs/bootstrap.min.css HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,488]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/css/upload.css HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,493]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/context.min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,495]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/plugins.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,497]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/uploadprogress.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,498]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/bootstrap.min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,501]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,503]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/intention.min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,504]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/jquery.form.min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,504]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/libs/underscore-umd-min.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,507]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,507]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/css/fonts/GrandHotel-Regular.ttf HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,509]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/css/fonts/glyphicons-halflings-regular.woff2 HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:01,606]  INFO {_internal.py:97} 151.101.192.223 - - [09/Sep/2025 09:48:01] "[36mGET /static/favicon.ico HTTP/1.1[0m" 304 -
+[2025-09-09 09:48:14,396]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:48:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:48:44,574]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:48:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:49:14,751]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:49:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:49:44,927]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:49:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:50:15,099]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:50:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:50:45,265]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:50:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:51:15,443]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:51:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:51:45,611]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:51:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:52:15,773]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:52:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:52:45,927]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:52:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:53:16,087]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:53:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:53:46,260]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:53:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:54:16,428]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:54:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:54:46,588]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:54:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:55:16,733]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:55:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:55:46,911]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:55:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:56:17,081]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:56:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:56:47,244]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:56:47] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:57:17,426]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:57:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:57:47,582]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:57:47] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:58:17,754]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:58:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:58:47,943]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:58:47] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:59:18,126]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:59:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 09:59:48,306]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 09:59:48] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:00:18,474]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:00:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:00:48,671]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:00:48] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:01:18,858]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:01:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:01:49,035]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:01:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:02:19,231]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:02:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:02:49,419]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:02:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:03:19,603]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:03:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:03:49,773]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:03:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:04:19,967]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:04:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:04:50,150]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:04:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:05:20,335]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:05:20] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:05:50,520]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:05:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:06:20,713]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:06:20] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:06:50,898]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:06:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:07:21,092]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:07:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:07:51,273]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:07:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:08:21,462]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:08:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:08:51,646]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:08:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:09:21,817]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:09:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:09:51,997]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:09:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:10:22,187]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:10:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:10:52,379]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:10:52] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:11:22,571]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:11:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:11:52,776]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:11:52] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:12:22,964]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:12:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:12:53,154]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:12:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:13:23,337]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:13:23] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:13:53,529]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:13:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:14:23,715]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:14:23] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:14:53,910]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:14:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:15:24,098]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:15:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:15:54,281]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:15:54] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:16:24,472]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:16:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:16:54,646]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:16:54] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:17:24,836]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:17:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:17:55,022]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:17:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:18:25,210]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:18:25] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:18:55,398]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:18:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:19:25,582]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:19:25] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:19:55,769]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:19:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:20:25,965]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:20:25] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:20:56,146]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:20:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:21:26,329]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:21:26] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:21:56,520]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:21:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:22:26,705]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:22:26] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:22:56,886]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:22:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:23:27,074]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:23:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:23:57,258]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:23:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:24:27,440]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:24:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:24:57,614]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:24:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:25:27,791]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:25:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:25:57,991]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:25:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:26:28,180]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:26:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:26:58,360]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:26:58] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:27:28,541]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:27:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:27:58,718]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:27:58] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:28:28,892]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:28:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:28:59,070]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:28:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:29:29,247]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:29:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:29:59,414]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:29:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:30:29,568]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:30:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:30:59,760]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:30:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:31:29,921]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:31:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:32:00,089]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:32:00] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:32:30,269]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:32:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:33:00,428]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:33:00] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:33:30,613]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:33:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:34:00,775]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:34:00] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:34:30,940]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:34:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:35:01,105]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:35:01] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:35:31,277]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:35:31] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:36:01,445]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:36:01] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:36:31,620]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:36:31] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:37:01,795]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:37:01] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:37:31,957]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:37:31] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:38:02,134]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:38:02] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:38:32,317]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:38:32] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:39:02,477]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:39:02] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:39:32,654]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:39:32] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:40:02,819]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:40:02] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:40:32,985]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:40:32] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:41:03,158]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:41:03] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:41:33,340]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:41:33] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:42:03,513]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:42:03] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:42:33,685]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:42:33] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:43:03,856]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:43:03] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:43:34,014]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:43:34] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:44:04,162]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:44:04] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:44:34,331]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:44:34] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:45:04,505]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:45:04] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:45:34,678]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:45:34] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:46:04,845]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:46:04] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:46:35,018]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:46:35] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:47:05,187]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:47:05] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:47:35,340]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:47:35] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:48:05,507]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:48:05] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:48:35,683]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:48:35] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:49:05,855]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:49:05] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:49:36,024]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:49:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:50:06,185]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:50:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:50:36,355]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:50:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:51:06,523]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:51:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:51:36,704]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:51:36] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:52:06,872]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:52:06] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:52:37,040]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:52:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:53:07,206]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:53:07] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:53:37,391]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:53:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:54:07,560]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:54:07] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:54:37,736]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:54:37] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:55:07,896]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:55:07] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:55:38,094]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:55:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:56:08,260]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:56:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:56:38,432]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:56:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:57:08,607]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:57:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:57:38,782]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:57:38] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:58:08,961]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:58:08] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:58:39,137]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:58:39] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:59:09,318]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:59:09] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 10:59:39,497]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 10:59:39] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:00:09,673]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:00:09] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:00:39,844]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:00:39] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:01:10,033]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:01:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:01:40,199]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:01:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:02:10,380]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:02:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:02:40,542]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:02:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:03:10,712]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:03:10] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:03:40,898]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:03:40] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:04:11,073]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:04:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:04:41,240]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:04:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:05:11,421]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:05:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:05:41,581]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:05:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:06:11,749]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:06:11] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:06:41,914]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:06:41] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:07:12,087]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:07:12] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:07:42,266]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:07:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:08:12,438]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:08:12] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:08:42,599]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:08:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:09:12,775]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:09:12] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:09:42,941]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:09:42] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:10:13,100]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:10:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:10:43,268]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:10:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:11:11,721]  WARN {base.py:126} Run time of job "delete temp (trigger: cron[hour='4'], next run at: 2025-09-10 04:00:00 EEST)" was missed by 7:11:11.721235
+[2025-09-09 11:11:11,722]  WARN {base.py:126} Run time of job "end scheduled task (trigger: cron[hour='4', minute='10'], next run at: 2025-09-10 04:10:00 EEST)" was missed by 7:01:11.722034
+[2025-09-09 11:11:13,429]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:11:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:11:43,598]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:11:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:12:13,770]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:12:13] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:12:43,944]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:12:43] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:13:14,119]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:13:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:13:44,296]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:13:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:14:14,470]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:14:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:14:44,644]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:14:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:15:14,804]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:15:14] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:15:44,969]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:15:44] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:16:15,148]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:16:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:16:45,305]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:16:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:17:15,477]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:17:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:17:45,651]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:17:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:18:15,804]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:18:15] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:18:45,958]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:18:45] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:19:16,141]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:19:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:19:46,302]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:19:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:20:16,477]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:20:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:20:46,654]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:20:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:21:16,817]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:21:16] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:21:46,994]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:21:46] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:22:17,161]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:22:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:22:47,335]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:22:47] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:23:17,520]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:23:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:23:47,679]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:23:47] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:24:17,853]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:24:17] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:24:48,033]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:24:48] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:25:18,214]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:25:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:25:48,395]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:25:48] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:26:18,557]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:26:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:26:48,735]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:26:48] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:27:18,910]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:27:18] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:27:49,069]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:27:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:28:19,239]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:28:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:28:49,424]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:28:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:29:19,620]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:29:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:29:49,809]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:29:49] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:30:19,991]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:30:19] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:30:50,169]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:30:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:31:20,346]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:31:20] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:31:50,526]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:31:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:32:20,706]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:32:20] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:32:50,885]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:32:50] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:33:21,059]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:33:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:33:51,245]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:33:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:34:21,421]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:34:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:34:51,601]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:34:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:35:21,789]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:35:21] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:35:51,979]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:35:51] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:36:22,148]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:36:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:36:52,322]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:36:52] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:37:22,505]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:37:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:37:52,688]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:37:52] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:38:22,867]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:38:22] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:38:53,046]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:38:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:39:23,232]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:39:23] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:39:53,407]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:39:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:40:23,606]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:40:23] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:40:53,766]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:40:53] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:41:23,938]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:41:23] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:41:54,110]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:41:54] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:42:24,270]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:42:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:42:54,450]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:42:54] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:43:24,615]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:43:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:43:54,791]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:43:54] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:44:24,969]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:44:24] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:44:55,138]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:44:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:45:25,322]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:45:25] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:45:55,494]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:45:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:46:25,672]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:46:25] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:46:55,864]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:46:55] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:47:26,037]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:47:26] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:47:56,204]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:47:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:48:26,386]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:48:26] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:48:56,543]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:48:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:49:26,696]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:49:26] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:49:56,863]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:49:56] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:50:27,024]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:50:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:50:57,187]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:50:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:51:27,357]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:51:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:51:57,527]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:51:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:52:27,699]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:52:27] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:52:57,861]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:52:57] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:53:28,042]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:53:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:53:58,219]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:53:58] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:54:28,392]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:54:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:54:58,558]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:54:58] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:55:28,728]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:55:28] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:55:58,904]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:55:58] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:56:29,076]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:56:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:56:59,259]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:56:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:57:29,436]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:57:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:57:59,609]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:57:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:58:29,774]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:58:29] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:58:59,936]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:58:59] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 11:59:30,134]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 11:59:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:00:00,317]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:00:00] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:00:30,506]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:00:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:01:00,691]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:01:00] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:01:30,867]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:01:30] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:02:01,048]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:02:01] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:02:31,215]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:02:31] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:03:01,380]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:03:01] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:03:31,552]  INFO {_internal.py:97} 127.0.0.1 - - [09/Sep/2025 12:03:31] "GET /plugin/users_books/health HTTP/1.1" 200 -
+[2025-09-09 12:03:38,371]  INFO {_internal.py:97}  * Detected change in '/app/plugins/users_books/__init__.py', reloading
+[2025-09-10 10:18:22,804] ERROR {base.py:1211} Error submitting job "delete temp (trigger: cron[hour='4'], next run at: 2025-09-10 04:00:00 EEST)" to executor "default"
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/schedulers/base.py", line 1195, in _process_jobs
+    executor.submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/base.py", line 74, in submit_job
+    self._do_submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/pool.py", line 27, in _do_submit_job
+    f = self._pool.submit(
+        ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/concurrent/futures/thread.py", line 167, in submit
+    raise RuntimeError('cannot schedule new futures after shutdown')
+RuntimeError: cannot schedule new futures after shutdown
+[2025-09-10 10:18:22,808] ERROR {base.py:1211} Error submitting job "end scheduled task (trigger: cron[hour='4', minute='10'], next run at: 2025-09-10 04:10:00 EEST)" to executor "default"
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/schedulers/base.py", line 1195, in _process_jobs
+    executor.submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/base.py", line 74, in submit_job
+    self._do_submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/pool.py", line 27, in _do_submit_job
+    f = self._pool.submit(
+        ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/concurrent/futures/thread.py", line 167, in submit
+    raise RuntimeError('cannot schedule new futures after shutdown')
+RuntimeError: cannot schedule new futures after shutdown
+[2025-09-11 11:16:56,970] ERROR {base.py:1211} Error submitting job "delete temp (trigger: cron[hour='4'], next run at: 2025-09-11 04:00:00 EEST)" to executor "default"
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/schedulers/base.py", line 1195, in _process_jobs
+    executor.submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/base.py", line 74, in submit_job
+    self._do_submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/pool.py", line 27, in _do_submit_job
+    f = self._pool.submit(
+        ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/concurrent/futures/thread.py", line 167, in submit
+    raise RuntimeError('cannot schedule new futures after shutdown')
+RuntimeError: cannot schedule new futures after shutdown
+[2025-09-11 11:16:56,974] ERROR {base.py:1211} Error submitting job "end scheduled task (trigger: cron[hour='4', minute='10'], next run at: 2025-09-11 04:10:00 EEST)" to executor "default"
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/schedulers/base.py", line 1195, in _process_jobs
+    executor.submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/base.py", line 74, in submit_job
+    self._do_submit_job(job, run_times)
+  File "/usr/local/lib/python3.11/site-packages/apscheduler/executors/pool.py", line 27, in _do_submit_job
+    f = self._pool.submit(
+        ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/concurrent/futures/thread.py", line 167, in submit
+    raise RuntimeError('cannot schedule new futures after shutdown')
+RuntimeError: cannot schedule new futures after shutdown

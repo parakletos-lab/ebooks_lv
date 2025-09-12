@@ -1,0 +1,728 @@
+{% extends "layout.html" %} {% set title = 'users_books Admin' %} {% set page =
+'users_books_admin' %} {% set bodyClass = bodyClass|default('') %} {% set
+instance = instance|default(title) %} {% block body %}
+
+<style>
+    /* Lightweight enhancements (scoped) */
+    #ub-users-box,
+    #ub-books-box {
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid #ccc;
+        padding: 6px 6px 4px;
+        background: #fafafa;
+        border-radius: 4px;
+    }
+    #ub-users-box label,
+    #ub-books-box label {
+        display: block;
+        font-weight: 400;
+        margin: 2px 0 0;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    #ub-mappings-table td,
+    #ub-mappings-table th {
+        font-size: 12px;
+        vertical-align: middle;
+    }
+    .ub-pill {
+        display: inline-block;
+        padding: 0 6px;
+        background: #eee;
+        border-radius: 10px;
+        font-size: 10px;
+        margin-left: 4px;
+        color: #666;
+    }
+    .ub-flex {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .ub-section-legend {
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0 4px;
+        padding: 0 4px;
+    }
+    .ub-filter {
+        margin-bottom: 6px;
+    }
+    .ub-small {
+        font-size: 10px;
+        color: #777;
+        margin-left: 4px;
+    }
+    .ub-sticky-top {
+        position: sticky;
+        top: 0;
+        background: #f5f5f5;
+        z-index: 2;
+    }
+    #ub-log {
+        background: #1e1e1e;
+        color: #e6e6e6;
+        font-size: 11px;
+        padding: 8px 10px;
+        max-height: 230px;
+        overflow: auto;
+        border-radius: 4px;
+        line-height: 1.35;
+    }
+    .ub-nowrap {
+        white-space: nowrap;
+    }
+    .ub-pointer {
+        cursor: pointer;
+    }
+</style>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            users_books Allow‑List Management
+            <small
+                class="text-muted"
+                style="font-size: 0.65em; letter-spacing: 0.5px"
+                >(Admin)</small
+            >
+        </h3>
+    </div>
+    <div class="panel-body">
+        <p class="text-muted" style="margin-top: -2px">
+            Create and view allow‑list mappings between Calibre users and books.
+            1) Select one or more users (left) and books (middle) 2) Click "Add
+            Selected Mappings". The bottom table lists all existing mappings
+            (email → book title) with delete actions.
+        </p>
+
+        <div class="row" style="margin-bottom: 12px">
+            <!-- Users -->
+            <div class="col-sm-4">
+                <fieldset
+                    style="
+                        border: 1px solid #ddd;
+                        padding: 8px 10px;
+                        margin: 0 0 12px;
+                    "
+                >
+                    <legend class="ub-section-legend">Users (Non‑Admin)</legend>
+                    <input
+                        id="ub-filter-users"
+                        class="form-control input-sm ub-filter"
+                        type="text"
+                        placeholder="Filter by email or name"
+                    />
+                    <div id="ub-users-box"></div>
+                    <div class="ub-flex" style="margin-top: 6px">
+                        <button
+                            id="ub-users-reload"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            <span class="glyphicon glyphicon-refresh"></span>
+                            Reload
+                        </button>
+                        <button
+                            id="ub-users-select-all"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            Select All
+                        </button>
+                        <button
+                            id="ub-users-clear"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    <div
+                        class="text-muted"
+                        style="margin-top: 6px; font-size: 11px"
+                    >
+                        Source: /admin/all_users (excludes admin accounts).
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- Books -->
+            <div class="col-sm-4">
+                <fieldset
+                    style="
+                        border: 1px solid #ddd;
+                        padding: 8px 10px;
+                        margin: 0 0 12px;
+                    "
+                >
+                    <legend class="ub-section-legend">Books</legend>
+                    <input
+                        id="ub-filter-books"
+                        class="form-control input-sm ub-filter"
+                        type="text"
+                        placeholder="Filter by title or id"
+                    />
+                    <div id="ub-books-box"></div>
+                    <div class="ub-flex" style="margin-top: 6px">
+                        <button
+                            id="ub-books-reload"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            <span class="glyphicon glyphicon-refresh"></span>
+                            Reload
+                        </button>
+                        <button
+                            id="ub-books-select-all"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            Select All
+                        </button>
+                        <button
+                            id="ub-books-clear"
+                            class="btn btn-default btn-xs"
+                            type="button"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    <div
+                        class="text-muted"
+                        style="margin-top: 6px; font-size: 11px"
+                    >
+                        Source: /admin/all_books (full library; consider
+                        pagination if large).
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-sm-4">
+                <fieldset
+                    style="
+                        border: 1px solid #ddd;
+                        padding: 8px 10px;
+                        margin: 0 0 12px;
+                    "
+                >
+                    <legend class="ub-section-legend">Actions</legend>
+                    <div
+                        class="ub-flex"
+                        style="flex-direction: column; align-items: stretch"
+                    >
+                        <button
+                            id="ub-add-mappings"
+                            class="btn btn-success btn-sm"
+                            type="button"
+                        >
+                            <span class="glyphicon glyphicon-plus"></span> Add
+                            Selected Mappings
+                        </button>
+                        <button
+                            id="ub-reload-mappings"
+                            class="btn btn-primary btn-sm"
+                            type="button"
+                        >
+                            <span class="glyphicon glyphicon-eye-open"></span>
+                            Refresh Mapping List
+                        </button>
+                        <button
+                            id="ub-clear-selection"
+                            class="btn btn-default btn-sm"
+                            type="button"
+                        >
+                            Clear All Selections
+                        </button>
+                    </div>
+                    <hr style="margin: 10px 0" />
+                    <p class="help-block" style="margin: 0 0 4px">Selections</p>
+                    <ul
+                        style="
+                            padding-left: 14px;
+                            margin: 0;
+                            font-size: 11px;
+                            line-height: 1.4;
+                        "
+                    >
+                        <li><span id="ub-count-users">0</span> user(s)</li>
+                        <li><span id="ub-count-books">0</span> book(s)</li>
+                    </ul>
+                    <hr style="margin: 10px 0" />
+                    <p class="text-muted" style="font-size: 11px; margin: 0">
+                        Each (user, book) pair triggers an individual POST. For
+                        large batches consider a future bulk endpoint.
+                    </p>
+                </fieldset>
+            </div>
+        </div>
+
+        <!-- Mappings Table -->
+        <h4 style="margin-top: 4px; font-weight: 600">Existing Mappings</h4>
+        <div class="table-responsive" style="margin-top: 6px">
+            <table
+                id="ub-mappings-table"
+                class="table table-condensed table-striped"
+                style="margin-bottom: 8px"
+            >
+                <thead>
+                    <tr class="ub-sticky-top">
+                        <th style="width: 210px">User Email</th>
+                        <th style="width: 60px">User ID</th>
+                        <th>Book Title</th>
+                        <th style="width: 70px">Book ID</th>
+                        <th style="width: 50px">Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="ub-mappings-tbody">
+                    <!-- rows injected -->
+                </tbody>
+            </table>
+        </div>
+        <div class="text-muted" style="font-size: 11px; margin-top: -4px">
+            Source: /admin/mappings_full&nbsp; (<span id="ub-mappings-total"
+                >0</span
+            >
+            total)
+        </div>
+
+        <!-- Status / Log -->
+        <h5 style="margin-top: 20px; font-weight: 600">Status / Log</h5>
+        <pre id="ub-log"></pre>
+    </div>
+</div>
+
+<script>
+    (function () {
+        "use strict";
+
+        // --- Element refs ---
+        var usersBox = document.getElementById("ub-users-box");
+        var booksBox = document.getElementById("ub-books-box");
+        var filterUsers = document.getElementById("ub-filter-users");
+        var filterBooks = document.getElementById("ub-filter-books");
+
+        var btnUsersReload = document.getElementById("ub-users-reload");
+        var btnUsersSelectAll = document.getElementById("ub-users-select-all");
+        var btnUsersClear = document.getElementById("ub-users-clear");
+
+        var btnBooksReload = document.getElementById("ub-books-reload");
+        var btnBooksSelectAll = document.getElementById("ub-books-select-all");
+        var btnBooksClear = document.getElementById("ub-books-clear");
+
+        var btnAddMappings = document.getElementById("ub-add-mappings");
+        var btnReloadMappings = document.getElementById("ub-reload-mappings");
+        var btnClearSelection = document.getElementById("ub-clear-selection");
+
+        var mappingsTbody = document.getElementById("ub-mappings-tbody");
+        var mappingsTotalSpan = document.getElementById("ub-mappings-total");
+
+        var countUsersSpan = document.getElementById("ub-count-users");
+        var countBooksSpan = document.getElementById("ub-count-books");
+
+        var logBox = document.getElementById("ub-log");
+
+        // --- Utility Logging ---
+        function log(msg, clear) {
+            var ts = new Date().toISOString();
+            if (clear) logBox.textContent = "[" + ts + "] " + msg;
+            else logBox.textContent += "\n[" + ts + "] " + msg;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function setBusy(disabled) {
+            [
+                btnUsersReload,
+                btnUsersSelectAll,
+                btnUsersClear,
+                btnBooksReload,
+                btnBooksSelectAll,
+                btnBooksClear,
+                btnAddMappings,
+                btnReloadMappings,
+                btnClearSelection,
+            ].forEach(function (b) {
+                if (b) b.disabled = disabled;
+            });
+        }
+
+        // --- Fetch Helpers ---
+        async function fetchJSON(url) {
+            var r = await fetch(url);
+            if (!r.ok) throw new Error("HTTP " + r.status + " " + url);
+            return r.json();
+        }
+
+        // --- Render Users / Books ---
+        function renderUserList(users) {
+            usersBox.innerHTML = "";
+            if (!users.length) {
+                usersBox.innerHTML =
+                    '<div class="text-muted" style="font-size:11px;">No users.</div>';
+                return;
+            }
+            var frag = document.createDocumentFragment();
+            users.forEach(function (u) {
+                var email = (u.email || "").trim();
+                var name = (u.name || "").trim();
+                var display = email || name || "User " + u.user_id;
+                var label = document.createElement("label");
+                label.innerHTML =
+                    '<input type="checkbox" value="' +
+                    u.user_id +
+                    '" data-email="' +
+                    display.replace(/"/g, "&quot;") +
+                    '"> ' +
+                    '<span class="ub-nowrap">' +
+                    (email
+                        ? "<strong>" + escapeHtml(email) + "</strong>"
+                        : "<strong>(no email)</strong>") +
+                    ' <span class="ub-small">#' +
+                    u.user_id +
+                    "</span>" +
+                    (name && name !== email
+                        ? ' <span class="text-muted" style="font-size:10px;">(' +
+                          escapeHtml(name) +
+                          ")</span>"
+                        : "") +
+                    "</span>";
+                frag.appendChild(label);
+            });
+            usersBox.appendChild(frag);
+            applyUserFilter();
+            updateSelectionCounts();
+        }
+
+        function renderBookList(books) {
+            booksBox.innerHTML = "";
+            if (!books.length) {
+                booksBox.innerHTML =
+                    '<div class="text-muted" style="font-size:11px;">No books.</div>';
+                return;
+            }
+            var frag = document.createDocumentFragment();
+            books.forEach(function (b) {
+                var title = b.title || "(Untitled)";
+                var label = document.createElement("label");
+                label.innerHTML =
+                    '<input type="checkbox" value="' +
+                    b.book_id +
+                    '" data-title="' +
+                    title.replace(/"/g, "&quot;") +
+                    '"> ' +
+                    '<span class="ub-nowrap">' +
+                    "<strong>" +
+                    escapeHtml(title) +
+                    "</strong>" +
+                    ' <span class="ub-small">#' +
+                    b.book_id +
+                    "</span>" +
+                    "</span>";
+                frag.appendChild(label);
+            });
+            booksBox.appendChild(frag);
+            applyBookFilter();
+            updateSelectionCounts();
+        }
+
+        // --- Filters ---
+        function applyUserFilter() {
+            var term = filterUsers.value.trim().toLowerCase();
+            Array.from(usersBox.querySelectorAll("label")).forEach(
+                function (l) {
+                    var t = l.textContent.toLowerCase();
+                    l.style.display =
+                        term && t.indexOf(term) === -1 ? "none" : "";
+                },
+            );
+        }
+        function applyBookFilter() {
+            var term = filterBooks.value.trim().toLowerCase();
+            Array.from(booksBox.querySelectorAll("label")).forEach(
+                function (l) {
+                    var t = l.textContent.toLowerCase();
+                    l.style.display =
+                        term && t.indexOf(term) === -1 ? "none" : "";
+                },
+            );
+        }
+
+        filterUsers.addEventListener("input", applyUserFilter);
+        filterBooks.addEventListener("input", applyBookFilter);
+
+        // --- Selection Helpers ---
+        function selectedValues(container) {
+            return Array.from(
+                container.querySelectorAll('input[type="checkbox"]:checked'),
+            )
+                .map(function (cb) {
+                    return Number(cb.value);
+                })
+                .filter(function (n) {
+                    return Number.isInteger(n) && n > 0;
+                });
+        }
+
+        function updateSelectionCounts() {
+            countUsersSpan.textContent = selectedValues(usersBox).length;
+            countBooksSpan.textContent = selectedValues(booksBox).length;
+        }
+
+        usersBox.addEventListener("change", updateSelectionCounts);
+        booksBox.addEventListener("change", updateSelectionCounts);
+
+        // --- Load Data ---
+        async function loadUsers() {
+            log("Loading all non-admin users...", true);
+            try {
+                var data = await fetchJSON(
+                    "/plugin/users_books/admin/all_users",
+                );
+                renderUserList(data.users || []);
+                log("Users loaded: " + (data.count || 0));
+            } catch (e) {
+                log("Error loading users: " + e);
+            }
+        }
+
+        async function loadBooks() {
+            log("Loading all books...");
+            try {
+                var data = await fetchJSON(
+                    "/plugin/users_books/admin/all_books",
+                );
+                renderBookList(data.books || []);
+                log("Books loaded: " + (data.count || 0));
+            } catch (e) {
+                log("Error loading books: " + e);
+            }
+        }
+
+        async function loadMappings() {
+            log("Loading mappings...", true);
+            setBusy(true);
+            try {
+                var data = await fetchJSON(
+                    "/plugin/users_books/admin/mappings_full",
+                );
+                renderMappings(data.mappings || []);
+                log("Mappings loaded: " + (data.count || 0));
+            } catch (e) {
+                log("Error loading mappings: " + e);
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        // --- Render Mappings Table ---
+        function renderMappings(rows) {
+            mappingsTbody.innerHTML = "";
+            mappingsTotalSpan.textContent = rows.length;
+            if (!rows.length) {
+                var tr = document.createElement("tr");
+                var td = document.createElement("td");
+                td.colSpan = 5;
+                td.className = "text-muted";
+                td.textContent = "No mappings present.";
+                tr.appendChild(td);
+                mappingsTbody.appendChild(tr);
+                return;
+            }
+            var frag = document.createDocumentFragment();
+            rows.forEach(function (r) {
+                var tr = document.createElement("tr");
+                var email = r.email || "";
+                var title = r.title || "(Untitled)";
+                tr.innerHTML =
+                    "<td>" +
+                    escapeHtml(email) +
+                    "</td>" +
+                    "<td>" +
+                    r.user_id +
+                    "</td>" +
+                    "<td>" +
+                    escapeHtml(title) +
+                    "</td>" +
+                    "<td>" +
+                    r.book_id +
+                    "</td>" +
+                    '<td><button type="button" class="btn btn-xs btn-danger" data-del="' +
+                    r.user_id +
+                    ":" +
+                    r.book_id +
+                    '" title="Delete mapping"><span class="glyphicon glyphicon-remove"></span></button></td>';
+                frag.appendChild(tr);
+            });
+            mappingsTbody.appendChild(frag);
+        }
+
+        // --- Delete Handler (Event Delegation) ---
+        mappingsTbody.addEventListener("click", async function (e) {
+            var btn = e.target.closest("button[data-del]");
+            if (!btn) return;
+            var parts = btn.getAttribute("data-del").split(":");
+            var uid = Number(parts[0]);
+            var bid = Number(parts[1]);
+            if (!confirm("Delete mapping?\nUser: " + uid + "\nBook: " + bid))
+                return;
+            log("Deleting mapping user=" + uid + " book=" + bid + "...");
+            setBusy(true);
+            try {
+                var r = await fetch(
+                    "/plugin/users_books/admin/mappings_full/" +
+                        uid +
+                        "/" +
+                        bid,
+                    { method: "DELETE" },
+                );
+                if (!r.ok) {
+                    log("Delete failed HTTP " + r.status);
+                } else {
+                    var data = await r.json();
+                    log("Delete status: " + data.status);
+                }
+                await loadMappings();
+            } catch (e2) {
+                log("Error deleting mapping: " + e2);
+            } finally {
+                setBusy(false);
+            }
+        });
+
+        // --- Add Mappings (Nested Loops) ---
+        async function addMappings() {
+            var userIds = selectedValues(usersBox);
+            var bookIds = selectedValues(booksBox);
+            if (!userIds.length || !bookIds.length) {
+                log(
+                    "Select at least one user and one book before adding.",
+                    true,
+                );
+                return;
+            }
+            log(
+                "Adding " + userIds.length * bookIds.length + " mapping(s)...",
+                true,
+            );
+            setBusy(true);
+            try {
+                for (var i = 0; i < userIds.length; i++) {
+                    var uid = userIds[i];
+                    for (var j = 0; j < bookIds.length; j++) {
+                        var bid = bookIds[j];
+                        try {
+                            var resp = await fetch(
+                                "/plugin/users_books/admin/" + uid + "/filters",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ book_id: bid }),
+                                },
+                            );
+                            if (!resp.ok) {
+                                log(
+                                    "Add failed (u=" +
+                                        uid +
+                                        " b=" +
+                                        bid +
+                                        ") HTTP " +
+                                        resp.status,
+                                );
+                            } else {
+                                var d = await resp.json();
+                                log(
+                                    "u=" +
+                                        uid +
+                                        " b=" +
+                                        bid +
+                                        " -> " +
+                                        d.status,
+                                );
+                            }
+                        } catch (inner) {
+                            log(
+                                "Error (u=" + uid + " b=" + bid + "): " + inner,
+                            );
+                        }
+                    }
+                }
+                log("Add operations complete.");
+                await loadMappings();
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        // --- Selection Controls ---
+        function selectAll(container) {
+            Array.from(
+                container.querySelectorAll('input[type="checkbox"]'),
+            ).forEach(function (cb) {
+                if (cb.offsetParent !== null) cb.checked = true;
+            });
+            updateSelectionCounts();
+        }
+
+        function clearAll(container) {
+            Array.from(
+                container.querySelectorAll('input[type="checkbox"]'),
+            ).forEach(function (cb) {
+                cb.checked = false;
+            });
+            updateSelectionCounts();
+        }
+
+        function clearAllSelections() {
+            clearAll(usersBox);
+            clearAll(booksBox);
+        }
+
+        // --- Escape HTML (simple) ---
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        // --- Event Bindings ---
+        btnUsersReload.addEventListener("click", loadUsers);
+        btnBooksReload.addEventListener("click", loadBooks);
+        btnReloadMappings.addEventListener("click", loadMappings);
+
+        btnUsersSelectAll.addEventListener("click", function () {
+            selectAll(usersBox);
+        });
+        btnUsersClear.addEventListener("click", function () {
+            clearAll(usersBox);
+        });
+
+        btnBooksSelectAll.addEventListener("click", function () {
+            selectAll(booksBox);
+        });
+        btnBooksClear.addEventListener("click", function () {
+            clearAll(booksBox);
+        });
+
+        btnAddMappings.addEventListener("click", addMappings);
+        btnClearSelection.addEventListener("click", clearAllSelections);
+
+        // --- Initial Load ---
+        (async function init() {
+            log("Initializing...", true);
+            await loadUsers();
+            await loadBooks();
+            await loadMappings();
+            log("Ready.");
+        })();
+    })();
+</script>
+
+{% endblock %}
