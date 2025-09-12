@@ -13,6 +13,7 @@ services:
       CALIBRE_WEB_HOST: 0.0.0.0
       CALIBRE_WEB_PORT: 8083
       CALIBRE_DBPATH: /app/config
+      CALIBRE_LIBRARY_PATH: /app/library
       # Set to "1" or "true" for development only
       CALIBRE_WEB_DEBUG: "1"
 
@@ -25,7 +26,7 @@ services:
     # Bind mounts for live development. For production you may prefer only data/config.
     volumes:
       - ./config:/app/config
-      - ./var/data:/app/data
+      - ./library:/app/library
       - ./plugins:/app/plugins
       - ./entrypoint:/app/entrypoint
       # Uncomment if you want to inspect/override upstream code locally (read-only recommended)
