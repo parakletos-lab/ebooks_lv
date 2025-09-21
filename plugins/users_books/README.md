@@ -23,6 +23,8 @@
 | USERS_BOOKS_ENABLE_METRICS | (unset) | Enable `/plugin/users_books/metrics` when `1/true` |
 | USERS_BOOKS_LOG_LEVEL | INFO | Plugin logger level |
 | USERS_BOOKS_ENFORCE_EMPTY | true | If true, empty allow list -> zero results; else no filter |
+| USERS_BOOKS_DISABLE_NAV_INJECT | (unset) | When truthy, disables runtime injection of the "Users Books" admin nav link |
+| USERS_BOOKS_NAV_INJECT_MODE | after | Strategy: `after` (response post-process), `loader` (template loader patch), or `off` |
 
 ## REST Endpoints Summary
 (Per-user allow‑list only; no email entitlement staging table. The purchase webhook immediately resolves the user by email in Calibre‑Web. If the user does not yet exist the caller must retry later.)
@@ -137,6 +139,37 @@ Admin (session `is_admin=True`):
 - Deny-list mode (inverse logic) toggle.
 - UI integration: Admin panel page to manage user filter mappings visually.
 - Automated synchronization with an external entitlement system.
+- Enhanced UI integration via a dedicated Jinja macro instead of string injection (future once upstream adds plugin hook point).
+
+### Runtime Navigation Link Injection
+
+To comply with the repository's rule forbidding direct modification of `calibre-web/` core templates, the plugin adds its admin navigation link dynamically using an `after_request` handler that post-processes HTML responses:
+
+Two selectable strategies (env `USERS_BOOKS_NAV_INJECT_MODE`):
+
+1. `after` (default):
+   - Post-process final HTML in an `after_request` hook.
+   - Pros: Simple, does not touch Jinja loader, resilient to caching.
+   - Cons: Runs per response; can't help if response streaming is used.
+
+2. `loader`:
+   - Wraps the Jinja2 loader and patches the template source in-memory the first time `layout.html` (or any template with the admin anchor) is loaded for an admin session.
+   - Pros: Acts earlier (conceptually similar to a before-render); only patches once per process.
+  - Cons: Depends on template naming stability and anchor presence.
+  - Implementation detail: the inserted markup is wrapped in a Jinja conditional `{% if current_user and current_user.role_admin() %}...{% endif %}` so the modified template remains safe if initially loaded by a non-admin (avoids needing an admin at patch time).
+
+Common Mechanics:
+  - Detect admin user (same logic as filtering bypass).
+  - Search for existing `id="top_admin"` anchor.
+  - Insert `<li>` with `id="top_users_books"` immediately following the admin link.
+
+Skip / Safety Conditions (after mode): not HTML, non-200, size >1.5MB, already injected, anchor missing, not admin, disabled by env.
+
+Disable (global):
+  - Set `USERS_BOOKS_DISABLE_NAV_INJECT=1` OR set `USERS_BOOKS_NAV_INJECT_MODE=off`.
+
+Fallback Behavior:
+  - If layout changes (anchor removed), injection no-ops silently (no exceptions).
 
 ---
 (Original template documentation follows below; retained for historical context.)

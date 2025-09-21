@@ -1,4 +1,17 @@
 
+## Global Rule 0 – Do NOT Modify Calibre-Web Core
+
+Agents MUST NOT edit, delete, or add files inside the `calibre-web/` directory (the upstream Calibre-Web core) unless the user gives explicit, written approval for that specific change in this session. All routine enhancements must be implemented exclusively within plugin scopes (e.g. `plugins/users_books/`) or separate ancillary documentation/config files.
+
+If a requested feature appears to require a core change:
+1. Propose a plugin-based or hook-based alternative first.
+2. Clearly explain why a core modification might be unavoidable.
+3. Wait for explicit user confirmation before touching core files.
+
+If a prior step already modified core code and this rule was later introduced, promptly offer to revert those edits.
+
+Added: 2025-09-21
+
 ## users_books Plugin Rules (Simplified)
 
 ### 1. Purpose & Integration
