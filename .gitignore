@@ -1,1 +1,7 @@
-config/calibre-web.*
+# Calibre-Web runtime log files (base + rotated/compressed variants)
+config/calibre-web.log*
+
+# If you later need to ignore only numbered rotations but keep the base file tracked,
+# use instead:
+# config/calibre-web.log.*
+# !config/calibre-web.log
