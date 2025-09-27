@@ -95,11 +95,12 @@ ENV PYTHONPATH=/app/calibre-web:/app/plugins:/app
 EXPOSE 8083
 
 # Optional healthcheck hitting a simple plugin health endpoint
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request,sys; \
-    url='http://127.0.0.1:' + str(${CALIBRE_WEB_PORT:-8083}) + '/plugin/users_books/health'; \
-    urllib.request.urlopen(url).read(); \
-    print('healthy')" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
+    CMD python -c "import os,urllib.request,sys,json;port=os.environ.get('CALIBRE_WEB_PORT','8083');url=f'http://127.0.0.1:{port}/plugin/users_books/health';\n"\
+    "import urllib.request;"\
+    "\ntry:\n    r=urllib.request.urlopen(url,timeout=3); body=r.read(256).decode('utf-8','ignore');"\
+    "\n    ok=('\"status\"' in body and 'ok' in body); print('healthy' if ok else 'unhealthy:body'); sys.exit(0 if ok else 1)"\
+    "\nexcept Exception as e:\n    print('unhealthy',e); sys.exit(1)"
 
 USER appuser
 

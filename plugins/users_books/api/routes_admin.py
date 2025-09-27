@@ -1,66 +1,35 @@
-"""
-routes_admin.py
+"""Minimal admin JSON API for users_books (cleanup build).
 
-Administrator-facing REST API routes for the users_books plugin.
+Retained endpoints (used by HTML admin UI):
+    GET    /admin/<user_id>/filters
+    POST   /admin/<user_id>/filters
+    DELETE /admin/<user_id>/filters/<book_id>
+    POST   /admin/<user_id>/filters/bulk
+    PUT    /admin/<user_id>/filters/upsert
 
-All routes are mounted beneath the main plugin blueprint prefix:
-    /plugin/users_books
-
-Core per-user mapping endpoints:
-    GET    /admin/<int:target_user_id>/filters
-    POST   /admin/<int:target_user_id>/filters
-    DELETE /admin/<int:target_user_id>/filters/<int:book_id>
-    POST   /admin/<int:target_user_id>/filters/bulk
-    PUT    /admin/<int:target_user_id>/filters/upsert
-
-Discovery / full data endpoints (no legacy aggregate endpoints retained):
-    GET /admin/all_users        -> ALL non-admin users (id, email, name)
-    GET /admin/all_books        -> ALL (or limited) books (id, title)
-    GET /admin/mappings_full    -> Expanded mapping list (email + title)
-    DELETE /admin/mappings_full/<int:user_id>/<int:book_id>
-
-Rationale:
-  The UI constructs allow-list entries by selecting from all non-admin
-  users and all books, then adds mappings. Legacy endpoints exposing
-  only already-mapped users/books were removed to reduce confusion.
-
-Implementation notes:
-  - User data via Calibre-Web app DB (ub.session, ub.User).
-  - Book data via direct sqlite3 reads of metadata.db (titles only).
-  - Expanded mappings join plugin table with user emails & book titles.
-
-Security:
-  - All endpoints require admin (utils.ensure_admin()).
-  - Graceful fallbacks return empty lists if metadata.db unavailable.
-
-Performance:
-  - Optional ?limit= on /admin/all_books & /admin/mappings_full for
-    large libraries; add pagination if future scale demands it.
+All discovery / expansion / metrics endpoints removed.
 """
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, Iterable, Optional, Set
-
-import os
-import sqlite3
-
+from typing import List, Dict, Any, Iterable
 from flask import request, jsonify
+import sqlite3
+import os
 
-from sqlalchemy import select
+# Upstream (Calibre-Web) imports for user + settings access
+try:  # pragma: no cover - defensive runtime import
+    from cps import ub as cw_ub  # type: ignore
+    from cps import constants as cw_constants  # type: ignore
+    from cps.config_sql import _Settings  # type: ignore
+except Exception:  # pragma: no cover
+    cw_ub = None  # type: ignore
+    cw_constants = None  # type: ignore
+    _Settings = None  # type: ignore
 
-from .. import services
-from .. import utils
+from .. import services, utils
 from ..utils import PermissionError
-from ..db import plugin_session
-from ..models import UserFilter
 
-# Calibre-Web internals (best-effort imports)
-from cps import ub, config as cw_config, constants  # type: ignore
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def _json_error(message: str, status: int = 400):
     return jsonify({"error": message}), status
@@ -79,7 +48,7 @@ def _coerce_int_list(raw) -> List[int]:
         raise ValueError("book_ids must be an array of integers")
     out: List[int] = []
     for val in raw:
-        if isinstance(val, bool):
+        if isinstance(val, bool):  # skip True/False
             continue
         try:
             iv = int(val)
@@ -91,126 +60,94 @@ def _coerce_int_list(raw) -> List[int]:
     return out
 
 
-def _metadata_db_path() -> Optional[str]:
-    base = getattr(cw_config, "config_calibre_dir", None)
-    if not base:
+def register(bp):  # type: ignore
+    """Attach minimal admin routes to blueprint."""
+
+    # ------------------------------------------------------------------
+    # Helper: admin guard wrapper for endpoints added below
+    # ------------------------------------------------------------------
+
+    def _admin_guard():  # returns True or (resp,status)
+        auth = _require_admin()
+        if auth is not True:
+            return auth
+        return True
+
+    # ------------------------------------------------------------------
+    # Helper functions for new discovery endpoints (UI compatibility)
+    # ------------------------------------------------------------------
+
+    def _library_db_path() -> str | None:
+        if cw_ub is None or _Settings is None:
+            return None
+        try:
+            settings = cw_ub.session.query(_Settings).first()
+            if not settings or not settings.config_calibre_dir:
+                return None
+            path = os.path.join(settings.config_calibre_dir, "metadata.db")
+            if os.path.isfile(path):
+                return path
+        except Exception:
+            return None
         return None
-    path = os.path.join(base, "metadata.db")
-    if not os.path.isfile(path):
-        return None
-    return path
 
+    def _query_books(limit: int = 500) -> List[Dict[str, Any]]:
+        db_path = _library_db_path()
+        if not db_path:
+            return []
+        try:
+            # Read-only connection
+            uri = f"file:{db_path}?mode=ro"
+            conn = sqlite3.connect(uri, uri=True)
+            cur = conn.cursor()
+            cur.execute("SELECT id, title FROM books ORDER BY id ASC LIMIT ?", (limit,))
+            rows = cur.fetchall()
+            conn.close()
+            return [ {"id": r[0], "title": r[1]} for r in rows ]
+        except Exception:
+            return []
 
-def _fetch_book_rows(book_ids: Iterable[int]) -> Dict[int, str]:
-    """
-    Given a collection of book_ids, return {book_id: title}.
-    Missing IDs are silently ignored.
-    """
-    ids = sorted({int(b) for b in book_ids if isinstance(b, int)})
-    if not ids:
-        return {}
-    db_path = _metadata_db_path()
-    if not db_path:
-        return {}
-    qmarks = ",".join(["?"] * len(ids))
-    sql = f"SELECT id, title FROM books WHERE id IN ({qmarks})"
-    out: Dict[int, str] = {}
-    try:
-        with sqlite3.connect(db_path) as conn:
-            for row in conn.execute(sql, ids):
-                bid, title = row
-                out[int(bid)] = title
-    except Exception:
-        # On failure, return partial / empty without aborting.
-        pass
-    return out
-
-
-def _fetch_all_books(limit: Optional[int]) -> List[Dict[str, Any]]:
-    """
-    Return list of all (or first N) books: [{book_id, title}, ...]
-    """
-    db_path = _metadata_db_path()
-    if not db_path:
-        return []
-    sql = "SELECT id, title FROM books ORDER BY id ASC"
-    if limit and limit > 0:
-        sql += f" LIMIT {int(limit)}"
-    rows: List[Dict[str, Any]] = []
-    try:
-        with sqlite3.connect(db_path) as conn:
-            for bid, title in conn.execute(sql):
-                rows.append({"book_id": int(bid), "title": title})
-    except Exception:
-        return []
-    return rows
-
-
-def _fetch_non_admin_users() -> List[Dict[str, Any]]:
-    """
-    Return all non-admin users from Calibre-Web app DB with id, email, name.
-    """
-    session = getattr(ub, "session", None)
-    UserModel = getattr(ub, "User", None)
-    if session is None or UserModel is None:
-        return []
-    try:
-        # ROLE_ADMIN bit test: (role & ROLE_ADMIN) == 0
-        role_admin = constants.ROLE_ADMIN
-        rows = (
-            session.query(UserModel.id, UserModel.email, UserModel.name, UserModel.role)
-            .all()
-        )
-        out: List[Dict[str, Any]] = []
-        for uid, email, name, role in rows:
-            try:
-                if role & role_admin:
-                    continue
-            except Exception:
-                # If role not bitmask-compatible, retain conservative skip if role falsy
-                if role:
-                    continue
-            out.append({
-                "user_id": int(uid),
-                "email": (email or "").strip(),
-                "name": name or "",
-            })
-        # Sort by email then id for deterministic ordering
-        out.sort(key=lambda r: (r["email"] or "~", r["user_id"]))
+    def _fetch_user_map(exclude_admin: bool = True) -> Dict[int, Dict[str, Any]]:
+        out: Dict[int, Dict[str, Any]] = {}
+        if cw_ub is None:
+            return out
+        try:
+            q = cw_ub.session.query(cw_ub.User)
+            if exclude_admin and cw_constants is not None:
+                q = q.filter((cw_ub.User.role.op('&')(cw_constants.ROLE_ADMIN)) == 0)  # type: ignore
+            for u in q.order_by(cw_ub.User.id.asc()).all():
+                out[u.id] = {"id": u.id, "email": getattr(u, 'email', None), "name": getattr(u, 'name', None)}
+        except Exception:
+            return {}
         return out
-    except Exception:
-        return []
 
+    def _fetch_user_map_all() -> Dict[int, Dict[str, Any]]:
+        return _fetch_user_map(exclude_admin=False)
 
-def _map_user_emails(user_ids: Iterable[int]) -> Dict[int, str]:
-    """
-    Return {user_id: email} for provided IDs (best-effort).
-    """
-    uid_set = {int(u) for u in user_ids if isinstance(u, int)}
-    if not uid_set:
-        return {}
-    session = getattr(ub, "session", None)
-    UserModel = getattr(ub, "User", None)
-    if session is None or UserModel is None:
-        return {}
-    rows = (
-        session.query(UserModel.id, UserModel.email)
-        .filter(UserModel.id.in_(uid_set))
-        .all()
-    )
-    return {int(uid): (email or "").strip() for uid, email in rows}
-
-
-# ---------------------------------------------------------------------------
-# Route Registration
-# ---------------------------------------------------------------------------
-
-def register(bp):
-    """
-    Attach admin routes to the provided blueprint.
-    """
-
-    # ----- Per-user mapping endpoints (existing) -----
+    def _fetch_titles_for_ids(book_ids: Iterable[int]) -> Dict[int, str]:
+        ids = sorted({int(i) for i in book_ids if isinstance(i, int)})
+        if not ids:
+            return {}
+        db_path = _library_db_path()
+        if not db_path:
+            return {}
+        titles: Dict[int, str] = {}
+        try:
+            uri = f"file:{db_path}?mode=ro"
+            conn = sqlite3.connect(uri, uri=True)
+            cur = conn.cursor()
+            # Chunk IN clause to avoid SQLite limits
+            CHUNK = 500
+            for i in range(0, len(ids), CHUNK):
+                chunk = ids[i:i+CHUNK]
+                qmarks = ",".join(["?"] * len(chunk))
+                cur.execute(f"SELECT id, title FROM books WHERE id IN ({qmarks})", tuple(chunk))
+                for bid, title in cur.fetchall():
+                    titles[bid] = title
+            conn.close()
+        except Exception:
+            return {}
+        return titles
 
     @bp.route("/admin/<int:target_user_id>/filters", methods=["GET"])
     def admin_list_filters(target_user_id: int):
@@ -288,121 +225,54 @@ def register(bp):
         summary["user_id"] = target_user_id
         return jsonify(summary)
 
-    # (Legacy aggregate endpoints /admin/users and /admin/books removed)
+    # Discovery / expanded endpoints removed.
 
-
-
-
-
-    # ----- New discovery endpoints (all users / all books) -----
+    # ------------------------------------------------------------------
+    # Reintroduced minimal discovery endpoints for Admin UI compatibility
+    # ------------------------------------------------------------------
 
     @bp.route("/admin/all_users", methods=["GET"])
     def admin_all_users():
-        """
-        Return ALL non-admin users.
-
-        Response:
-          200 {
-            "users": [
-              { "user_id": <int>, "email": "<str>", "name": "<str>" }, ...
-            ],
-            "count": <int>
-          }
-        """
-        auth = _require_admin()
-        if auth is not True:
-            return auth  # type: ignore
-        users = _fetch_non_admin_users()
+        if _admin_guard() is not True:  # type: ignore
+            return _admin_guard()  # type: ignore
+        users = list(_fetch_user_map(exclude_admin=True).values())
         return jsonify({"users": users, "count": len(users)})
 
     @bp.route("/admin/all_books", methods=["GET"])
     def admin_all_books():
-        """
-        Return all (or first ?limit=) books with id + title.
-        Query Params:
-          limit (optional int)
-        """
-        auth = _require_admin()
-        if auth is not True:
-            return auth  # type: ignore
-        limit = request.args.get("limit", type=int)
-        rows = _fetch_all_books(limit)
-        return jsonify({"books": rows, "count": len(rows)})
-
-    # ----- Expanded mappings (email -> book title) -----
+        if _admin_guard() is not True:  # type: ignore
+            return _admin_guard()  # type: ignore
+        try:
+            limit = int(request.args.get("limit", 500))
+        except ValueError:
+            limit = 500
+        books = _query_books(limit=limit)
+        return jsonify({"books": books, "count": len(books)})
 
     @bp.route("/admin/mappings_full", methods=["GET"])
     def admin_mappings_full():
-        """
-        Return expanded mapping list with user email + book title.
-
-        Query Params:
-          user_id=<int> (optional filter)
-          limit=<int>   (optional cap; applied after filtering)
-
-        Response:
-          200 {
-            "mappings": [
-              {
-                "user_id": <int>,
-                "email": "<str>",
-                "book_id": <int>,
-                "title": "<str>"
-              }, ...
-            ],
-            "count": <int>
-          }
-        """
-        auth = _require_admin()
-        if auth is not True:
-            return auth  # type: ignore
-        user_id_filter = request.args.get("user_id", type=int)
-        limit = request.args.get("limit", type=int)
-
+        if _admin_guard() is not True:  # type: ignore
+            return _admin_guard()  # type: ignore
+        # Load mappings from plugin DB
+        from ..db import plugin_session  # local import to avoid cycles
+        from ..models import UserFilter  # type: ignore
+        rows: List[Dict[str, Any]] = []
         with plugin_session() as s:
-            stmt = select(UserFilter.user_id, UserFilter.book_id).order_by(
-                UserFilter.user_id.asc(), UserFilter.book_id.asc()
-            )
-            if user_id_filter:
-                stmt = stmt.where(UserFilter.user_id == user_id_filter)
-            rows = s.execute(stmt).all()
-
-        if limit and limit > 0:
-            rows = rows[:limit]
-
-        user_ids: Set[int] = {int(r.user_id) for r in rows}
-        book_ids: Set[int] = {int(r.book_id) for r in rows}
-
-        email_map = _map_user_emails(user_ids)
-        title_map = _fetch_book_rows(book_ids)
-
-        mappings: List[Dict[str, Any]] = []
-        for r in rows:
-            uid = int(r.user_id)
-            bid = int(r.book_id)
-            mappings.append({
-                "user_id": uid,
-                "email": email_map.get(uid, ""),
-                "book_id": bid,
-                "title": title_map.get(bid, ""),
+            db_rows = s.query(UserFilter).order_by(UserFilter.user_id.asc(), UserFilter.book_id.asc()).all()
+        user_ids = [r.user_id for r in db_rows]
+        book_ids = [r.book_id for r in db_rows]
+        user_map_all = _fetch_user_map_all()
+        title_map = _fetch_titles_for_ids(book_ids)
+        for r in db_rows:
+            u = user_map_all.get(r.user_id, {})
+            rows.append({
+                "user_id": r.user_id,
+                "user_email": u.get("email"),
+                "user_name": u.get("name"),
+                "book_id": r.book_id,
+                "book_title": title_map.get(r.book_id),
             })
-
-        return jsonify({"mappings": mappings, "count": len(mappings)})
-
-    @bp.route("/admin/mappings_full/<int:user_id>/<int:book_id>", methods=["DELETE"])
-    def admin_mappings_full_delete(user_id: int, book_id: int):
-        """
-        Convenience delete using expanded mapping list (email->book).
-        """
-        auth = _require_admin()
-        if auth is not True:
-            return auth  # type: ignore
-        removed = services.remove_user_book(user_id, book_id)
-        return jsonify({
-            "status": "deleted" if removed else "not_found",
-            "user_id": user_id,
-            "book_id": book_id,
-        })
+        return jsonify({"mappings": rows, "count": len(rows)})
 
 
 __all__ = ["register"]

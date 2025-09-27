@@ -279,6 +279,8 @@ def main():
         print(f"[MAINWRAP] Invalid CALIBRE_WEB_PORT={port_raw!r}, falling back to 8083.")
         port = 8083
     debug_flag = os.getenv("CALIBRE_WEB_DEBUG", "").lower() in ("1", "true", "yes", "on")
+    # Explicit reloader control: default OFF to avoid double-initialization side-effects
+    use_reloader = os.getenv("CALIBRE_WEB_USE_RELOADER", "").lower() in ("1", "true", "yes", "on") and debug_flag
     if debug_flag:
         try:
             app.jinja_env.auto_reload = True  # type: ignore[attr-defined]
@@ -286,8 +288,9 @@ def main():
             print("[MAINWRAP] Template auto-reload enabled (CALIBRE_WEB_DEBUG).")
         except Exception:
             print("[MAINWRAP] WARNING: Failed to enable template auto-reload.")
-    print(f"[MAINWRAP] Starting Flask development server on {host}:{port} debug={debug_flag}")
-    app.run(host=host, port=port, debug=debug_flag)
+    print(f"[MAINWRAP] Starting Flask development server on {host}:{port} debug={debug_flag} reloader={use_reloader}")
+    # Force threaded server to avoid request blocking; disable reloader unless explicitly enabled
+    app.run(host=host, port=port, debug=debug_flag, use_reloader=use_reloader, threaded=True)
 
 
 # Expose app for WSGI servers (after upstream main we have it).

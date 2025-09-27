@@ -214,3 +214,16 @@ Agents MUST:
 6. Fail open (no filter) only under documented skip conditions; never silently narrow results.
 7. Keep YAML summary in sync if adding new environment variables or service operations.
 
+---
+
+### Engineering Agent Browser Instrumentation Priority (Added 2025-09-27)
+
+For any UI/page verification tasks:
+1. Attempt to use Chrome DevTools MCP first (DOM snapshot, network capture, targeted selectors).
+2. If the DevTools MCP endpoint is unavailable after one initialization attempt, fall back to curl-based textual checks and clearly label output as `fallback-text-mode`.
+3. Avoid large raw HTML dumps; capture only the minimal DOM subtree or semantic evidence (headings, buttons, form inputs).
+4. Prefer selector presence / network idle waits over fixed sleeps.
+5. Store any saved screenshots or DOM excerpts under `.github/qa/` (avoid large binaries; prune when obsolete).
+
+This section supplements (does not override) Global Rule 0 and plugin constraints above.
+

@@ -56,11 +56,8 @@ URL_PREFIX = "/plugin/users_books"
 # Route module specifications: (import_path, attribute_name)
 # Each module must provide a function: register(bp: Blueprint) -> None
 ROUTE_MODULES: Iterable[str] = (
-    "plugins.users_books.api.routes_user",
     "plugins.users_books.api.routes_admin",
-    "plugins.users_books.api.routes_metrics",
-    "plugins.users_books.api.routes_webhook",
-    "plugins.users_books.api.routes_ui",  # NEW: HTML UI for viewing/editing mappings
+    "plugins.users_books.api.routes_ui",  # HTML admin UI
 )
 
 def _import_and_register_modules(bp: Blueprint) -> None:
@@ -106,8 +103,8 @@ def create_blueprint() -> Blueprint:
             "version": config.PLUGIN_VERSION,
             "status": "ok",
             "config": {
-                "metrics_enabled": config.metrics_enabled(),
-                "enforce_empty": config.enforce_empty_behaviour(),
+                "db_path": config.get_db_path(),
+                "log_level": config.log_level_name(),
             }
         })
 

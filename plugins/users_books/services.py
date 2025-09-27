@@ -1,64 +1,22 @@
-"""
-services.py
+"""Minimal service layer for users_books plugin.
 
-Business logic layer for the users_books plugin.
+Kept scope (per user request):
+    - List a user's allowed book IDs.
+    - Add/remove single mappings.
+    - Bulk add mappings.
+    - Upsert (reconcile) full set.
 
-This module provides a clean, testable interface for manipulating the
-per-user allow‑list stored in the users_books table. Higher layers
-(API routes, filter hooks) should prefer calling these functions rather
-than issuing raw SQLAlchemy queries directly.
-
-Key Responsibilities:
-  - CRUD-like operations on UserFilter mappings
-  - Bulk helpers (add/remove/upsert)
-  - Simple analytical counts (used by metrics endpoint)
-  - Cache invalidation (per-request) when data changes
-  - Defensive handling of duplicates based on unique constraint
-    (user_id, book_id)
-
-Design Principles:
-  - Keep database session lifecycle isolated via db.plugin_session
-  - Return simple Python types (bool / dict / list[int]) for easy JSON use
-  - Avoid Flask imports here (pure application logic)
-  - Defer logging customization to logging_setup (only import logger)
-
-SQLAlchemy:
-  - Uses select() for read operations.
-  - Inserts performed by adding ORM objects.
-  - Deletions performed by removing ORM instances.
-  - Unique constraint ensures no duplicates; we still guard existence
-    explicitly to avoid raising IntegrityError in normal flows.
-
-Caching:
-  - Per-request cache of allowed book IDs lives in cache.py.
-  - After mutations (add/remove/bulk), invalidate_user_cache ensures
-    subsequent reads see fresh data within the same request.
-
-Extensibility:
-  - If deny-lists or group-based rules are added, create parallel
-    service functions here or a new module (e.g. group_services.py).
-  - Bulk operations can be optimized (executemany) if performance
-    becomes critical.
-
-Thread Safety:
-  - Each function obtains a fresh scoped session via plugin_session();
-    no shared mutable state.
-
+All metrics, caching and auxiliary analytical helpers removed.
 """
 
 from __future__ import annotations
 
-from typing import Iterable, List, Dict, Any, Tuple, Sequence, Optional
+from typing import Iterable, List, Dict, Any
 
-from sqlalchemy import select, func
+from sqlalchemy import select
 
 from .db import plugin_session
 from .models import UserFilter
-from .cache import (
-    get_or_load_allowed_ids,
-    invalidate_user_cache,
-)
-
 from .logging_setup import get_logger
 
 LOG = get_logger()
@@ -96,34 +54,13 @@ def _exists(user_id: int, book_id: int) -> bool:
 # Query / Read Operations
 # ---------------------------------------------------------------------------
 
-def list_user_book_ids(user_id: int, use_cache: bool = True) -> List[int]:
-    """
-    Return an ordered list of allowed book IDs for user_id.
-
-    Parameters:
-      user_id: The target user.
-      use_cache: If True (default) leverage per-request cache; if False,
-                 always hit the database (also updates cache).
-    """
-    if not use_cache:
-        ids = _load_allowed_ids_from_db(user_id)
-        invalidate_user_cache(user_id)  # Remove stale copy if present
-        return ids
-    return get_or_load_allowed_ids(user_id, _load_allowed_ids_from_db)
+def list_user_book_ids(user_id: int, use_cache: bool = True) -> List[int]:  # use_cache retained for backward compat
+    """Return ordered list of allowed book IDs for the user (no caching)."""
+    return _load_allowed_ids_from_db(user_id)
 
 
 def user_has_book(user_id: int, book_id: int, use_cache: bool = True) -> bool:
-    """
-    Check quickly if the user has a mapping for the given book.
-
-    If use_cache is True and the list is already cached, this is O(n)
-    on the cached list. For extremely large lists consider a direct
-    DB existence query; for now we optimize the normal small-to-medium
-    sized list scenario.
-    """
-    if use_cache:
-        cached = list_user_book_ids(user_id, use_cache=True)
-        return book_id in cached
+    """Return True if mapping exists (no cache)."""
     return _exists(user_id, book_id)
 
 
@@ -150,7 +87,7 @@ def add_user_book(user_id: int, book_id: int) -> bool:
         if already:
             return False
         s.add(UserFilter(user_id=user_id, book_id=book_id))
-    invalidate_user_cache(user_id)
+    # No cache layer
     return True
 
 
@@ -172,7 +109,7 @@ def remove_user_book(user_id: int, book_id: int) -> bool:
         if not row:
             return False
         s.delete(row)
-    invalidate_user_cache(user_id)
+    # No cache layer
     return True
 
 
@@ -228,8 +165,7 @@ def bulk_add_user_books(user_id: int, book_ids: Iterable[int]) -> Dict[str, Any]
             s.add(UserFilter(user_id=user_id, book_id=bid))
             to_insert.append(bid)
 
-    if to_insert:
-        invalidate_user_cache(user_id)
+    # No cache layer
 
     return {
         "requested": len(unique_ids),
@@ -291,9 +227,7 @@ def upsert_user_books(user_id: int, desired_book_ids: Iterable[int]) -> Dict[str
             for row in doomed_rows:
                 s.delete(row)
 
-    changed = bool(to_add or to_remove)
-    if changed:
-        invalidate_user_cache(user_id)
+    # No cache layer
 
     final_total = len(target_ids)
     return {
@@ -310,85 +244,11 @@ def upsert_user_books(user_id: int, desired_book_ids: Iterable[int]) -> Dict[str
 # Analytical / Metrics Helpers
 # ---------------------------------------------------------------------------
 
-def count_mappings() -> int:
-    """Return total number of (user_id, book_id) rows."""
-    with plugin_session() as s:
-        return s.execute(
-            select(func.count(UserFilter.id))
-        ).scalar_one()
-
-
-def count_distinct_users() -> int:
-    """Return number of distinct users with at least one mapping."""
-    with plugin_session() as s:
-        return s.execute(
-            select(func.count(func.distinct(UserFilter.user_id)))
-        ).scalar_one()
-
-
-def count_distinct_books() -> int:
-    """Return number of distinct books that appear in any mapping."""
-    with plugin_session() as s:
-        return s.execute(
-            select(func.count(func.distinct(UserFilter.book_id)))
-        ).scalar_one()
-
-
-def metrics_snapshot() -> Dict[str, int]:
-    """
-    Convenience helper returning a full metrics snapshot as a dict.
-    Used by the metrics endpoint; also handy in tests.
-    """
-    return {
-        "total_mappings": count_mappings(),
-        "distinct_users": count_distinct_users(),
-        "distinct_books": count_distinct_books(),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Public Export Surface
-# ---------------------------------------------------------------------------
-
-def list_distinct_book_ids(limit: int | None = None) -> List[int]:
-    """
-    Return an ordered (ascending) list of distinct book IDs that appear in any users_books mapping.
-
-    Parameters:
-      limit: Optional maximum number of IDs to return. If None, return all.
-
-    Notes:
-      - Uses DISTINCT + ORDER BY for deterministic ordering.
-      - Intended for UI population (e.g., checkbox lists) or diagnostics.
-      - If the table is large and you only need a page, supply a limit and
-        add higher-level pagination later.
-    """
-    with plugin_session() as s:
-        stmt = (
-            select(UserFilter.book_id)
-            .distinct()
-            .order_by(UserFilter.book_id.asc())
-        )
-        if limit is not None and isinstance(limit, int) and limit > 0:
-            stmt = stmt.limit(limit)
-        rows = s.execute(stmt).all()
-    return [r.book_id for r in rows]
-
-
 __all__ = [
-    # Read
     "list_user_book_ids",
     "user_has_book",
-    "list_distinct_book_ids",
-    # Single mutations
     "add_user_book",
     "remove_user_book",
-    # Bulk / reconciliation
     "bulk_add_user_books",
     "upsert_user_books",
-    # Metrics
-    "count_mappings",
-    "count_distinct_users",
-    "count_distinct_books",
-    "metrics_snapshot",
 ]
