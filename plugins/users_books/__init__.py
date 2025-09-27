@@ -71,7 +71,7 @@ from .logging_setup import get_logger, refresh_level
 from .db import init_engine_once, maybe_migrate_schema
 from .filter_hook import attach_filter_hook
 from .api import register_blueprint
-from .injection import configure_nav_injection
+from .injection import register_response_injection, register_loader_injection
 from . import services  # re-export for convenience
 
 # Re-export frequently needed service functions (optional convenience)
@@ -127,11 +127,12 @@ def init_app(app: Any) -> None:
     maybe_migrate_schema()  # currently a no-op placeholder
     register_blueprint(app)
     attach_filter_hook()
-    # Register HTML / template nav injection (adds nav link without core template modification)
+    # Register navigation link injection (loader + after_request for robustness)
     try:
-        configure_nav_injection(app)
+        register_loader_injection(app)
+        register_response_injection(app)
     except Exception as exc:  # defensive: never break startup due to nav injection
-        log.warning("users_books: failed to configure nav injection: %s", exc)
+        log.warning("users_books: failed to register nav injection: %s", exc)
 
     global _LOG_INITIALIZED
     if not _LOG_INITIALIZED:

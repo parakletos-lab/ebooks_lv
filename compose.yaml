@@ -22,10 +22,8 @@ services:
       USERS_BOOKS_MAX_IDS_IN_CLAUSE: 500           # Safety cap for IN() predicate size
       USERS_BOOKS_ENFORCE_EMPTY: "true"           # Empty allow list => zero results (strict mode)
       USERS_BOOKS_ENABLE_METRICS: "false"         # Set to "true" to enable /plugin/users_books/metrics
-      USERS_BOOKS_LOG_LEVEL: INFO                  # INFO or DEBUG for troubleshooting
+      USERS_BOOKS_LOG_LEVEL: DEBUG                  # INFO or DEBUG for troubleshooting
       USERS_BOOKS_SESSION_EMAIL_KEY: email         # Session key containing current user email
-      USERS_BOOKS_NAV_INJECT_MODE: after           # after | loader | off
-      # USERS_BOOKS_DISABLE_NAV_INJECT: "1"        # Uncomment to disable nav injection entirely
       # USERS_BOOKS_WEBHOOK_API_KEY: "replace-me"  # Enable webhook purchase endpoint (keep secret!)
 
       TZ: Europe/Riga

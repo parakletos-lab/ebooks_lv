@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Calibre-Web | Books</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Bootstrap -->
+    <link rel="apple-touch-icon" sizes="140x140" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link href="/static/css/libs/bootstrap.min.css" rel="stylesheet" media="screen">
+    
+    <link href="/static/css/style.css" rel="stylesheet" media="screen">
+    <link href="/static/css/upload.css" rel="stylesheet" media="screen">
+    
+  </head>
+  <body class="newest " data-text="Home" data-textback="Back">
+    <!-- Static navbar -->
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle Navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Calibre-Web</a>
+        </div>
+        
+        
+          <!--# margin 0, padding 15, background color-->
+           <form class="navbar-form navbar-left" role="search" action="/search" method="GET">
+            <div class="form-group input-group input-group-sm">
+              <label for="query" class="sr-only">Search</label>
+              <input type="text" class="form-control" id="query" name="query" placeholder="Search Library" value="">
+              <span class="input-group-btn">
+                <button type="submit" id="query_submit" class="btn btn-default">Search</button>
+              </span>
+            </div>
+          </form>
+        
+        <div class="navbar-collapse collapse">
+          
+          <ul class="nav navbar-nav ">
+            <li><a href="/advsearch" id="advanced_search"><span class="glyphicon glyphicon-search"></span><span class="hidden-sm"> Advanced Search</span></a></li>
+            
+          </ul>
+          
+          <ul class="nav navbar-nav navbar-right" id="main-nav">
+            
+              
+              
+              
+                <li class="top_tasks"><a id="top_tasks" href="/tasks"><span class="glyphicon glyphicon-tasks"></span> <span class="hidden-sm">Tasks</span></a></li>
+              
+              
+              
+              <li><a id="top_user" data-text="Account" href="/me"><span class="glyphicon glyphicon-user"></span> <span class="hidden-sm">deniss</span></a></li>
+                
+                <li><a id="logout" href="/logout?next=/"><span class="glyphicon glyphicon-log-out"></span> <span class="hidden-sm">Logout</span></a></li>
+                
+              
+            
+            
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    
+    
+    <div class="container-fluid">
+      <div class="row-fluid">
+        
+        <div class="col-sm-2">
+          <nav class="navigation">
+            <ul class="list-unstyled" id="scnd-nav" intent in-standard-append="nav.navigation" in-mobile-after="#main-nav" in-mobile-class="nav navbar-nav">
+              <li class="nav-head hidden-xs">Browse</li>
+              
+                
+                    <li id="nav_new" ><a href="/?data=root&amp;sort_param=stored"><span class="glyphicon glyphicon-book"></span> Books</a></li>
+                
+              
+                
+                    <li id="nav_hot" ><a href="/hot/stored/"><span class="glyphicon glyphicon-fire"></span> Hot Books</a></li>
+                
+              
+                
+                    <li id="nav_download" ><a href="/download/stored/"><span class="glyphicon glyphicon-download"></span> Downloaded Books</a></li>
+                
+              
+                
+                    <li id="nav_rated" ><a href="/rated/stored/"><span class="glyphicon glyphicon-star"></span> Top Rated Books</a></li>
+                
+              
+                
+                    <li id="nav_read" ><a href="/read/stored/"><span class="glyphicon glyphicon-eye-open"></span> Read Books</a></li>
+                
+              
+                
+                    <li id="nav_unread" ><a href="/unread/stored/"><span class="glyphicon glyphicon-eye-close"></span> Unread Books</a></li>
+                
+              
+                
+                    <li id="nav_rand" ><a href="/discover/stored/"><span class="glyphicon glyphicon-random"></span> Discover</a></li>
+                
+              
+                
+                    <li id="nav_cat" ><a href="/category?data=category&amp;sort_param=stored"><span class="glyphicon glyphicon-inbox"></span> Categories</a></li>
+                
+              
+                
+                    <li id="nav_serie" ><a href="/series?data=series&amp;sort_param=stored"><span class="glyphicon glyphicon-bookmark"></span> Series</a></li>
+                
+              
+                
+                    <li id="nav_author" ><a href="/author?data=author&amp;sort_param=stored"><span class="glyphicon glyphicon-user"></span> Authors</a></li>
+                
+              
+                
+                    <li id="nav_publisher" ><a href="/publisher?data=publisher&amp;sort_param=stored"><span class="glyphicon glyphicon-text-size"></span> Publishers</a></li>
+                
+              
+                
+                    <li id="nav_lang" ><a href="/language?data=language&amp;sort_param=stored"><span class="glyphicon glyphicon-flag"></span> Languages</a></li>
+                
+              
+                
+                    <li id="nav_rate" ><a href="/ratings?data=rating&amp;sort_param=stored"><span class="glyphicon glyphicon-star-empty"></span> Ratings</a></li>
+                
+              
+                
+                    <li id="nav_format" ><a href="/formats?data=format&amp;sort_param=stored"><span class="glyphicon glyphicon-file"></span> File formats</a></li>
+                
+              
+                
+                    <li id="nav_archived" ><a href="/archived/stored/"><span class="glyphicon glyphicon-trash"></span> Archived Books</a></li>
+                
+              
+                
+                    <li id="nav_list" ><a href="/table?data=list&amp;sort_param=stored"><span class="glyphicon glyphicon-th-list"></span> Books List</a></li>
+                
+              
+              
+                <li class="nav-head hidden-xs public-shelves">Shelves</li>
+                
+              
+                <li id="nav_createshelf" class="create-shelf"><a href="/shelf/create">Create a Shelf</a></li>
+                <li id="nav_about" ><a href="/stats"><span class="glyphicon glyphicon-info-sign"></span> About</a></li>
+              
+              
+
+            </ul>
+          </nav>
+        </div>
+        
+        <div class="col-sm-10">
+          
+
+<div class="discover load-more">
+  <h2 class="Books">Books</h2>
+   
+    <div class="filterheader hidden-xs">
+    
+      <a data-toggle="tooltip" title="Sort according to book date, newest first" id="new" class="btn btn-primary active" href="/newest/new/"><span class="glyphicon glyphicon-book"></span> <span class="glyphicon glyphicon-calendar"></span><span class="glyphicon glyphicon-sort-by-order"></span></a>
+      <a data-toggle="tooltip" title="Sort according to book date, oldest first" id="old" class="btn btn-primary" href="/newest/old/"><span class="glyphicon glyphicon-book"></span> <span class="glyphicon glyphicon-calendar"></span><span class="glyphicon glyphicon-sort-by-order-alt"></span></a>
+      <a data-toggle="tooltip" title="Sort title in alphabetical order" id="asc" class="btn btn-primary" href="/newest/abc/"><span class="glyphicon glyphicon-font"></span><span class="glyphicon glyphicon-sort-by-alphabet"></span></a>
+      <a data-toggle="tooltip" title="Sort title in reverse alphabetical order" id="desc" class="btn btn-primary" href="/newest/zyx/"><span class="glyphicon glyphicon-font"></span><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span></a>
+      <a data-toggle="tooltip" title="Sort authors in alphabetical order" id="auth_az" class="btn btn-primary" href="/newest/authaz/"><span class="glyphicon glyphicon-user"></span><span class="glyphicon glyphicon-sort-by-alphabet"></span></a>
+      <a data-toggle="tooltip" title="Sort authors in reverse alphabetical order" id="auth_za" class="btn btn-primary" href="/newest/authza/"><span class="glyphicon glyphicon-user"></span><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span></a>
+      <a data-toggle="tooltip" title="Sort according to publishing date, newest first" id="pub_new" class="btn btn-primary" href="/newest/pubnew/"><span class="glyphicon glyphicon-calendar"></span><span class="glyphicon glyphicon-sort-by-order"></span></a>
+      <a data-toggle="tooltip" title="Sort according to publishing date, oldest first" id="pub_old" class="btn btn-primary" href="/newest/pubold/"><span class="glyphicon glyphicon-calendar"></span><span class="glyphicon glyphicon-sort-by-order-alt"></span></a>
+      
+    
+    </div>
+   
+  <div class="row display-flex">
+    
+    
+    <div class="col-sm-3 col-lg-2 col-xs-6 book session" id="books">
+      <div class="cover">
+          <a href="/book/3" data-toggle="modal" data-target="#bookDetailsModal" data-remote="false">
+            <span class="img" title="Labyrintti">
+              
+    <img
+        srcset="/cover/3/sm?c=1758440868 1x, /cover/3/md?c=1758440868 2x, /cover/3/lg?c=1758440868 4x"
+        src="/cover/3/og?c=1758440868"
+        alt="Labyrintti"
+        loading="lazy"
+    />
+              
+            </span>
+          </a>
+      </div>
+      <div class="meta">
+        <a href="/book/3" data-toggle="modal" data-target="#bookDetailsModal" data-remote="false">
+          <p title="Labyrintti" class="title">Labyrintti</p>
+        </a>
+        <p class="author">
+          
+            
+              
+              <a class="author-name" href="/author/stored/2">Edouard Estaunié</a>
+            
+          
+          
+        </p>
+        
+        
+      </div>
+    </div>
+    
+    <div class="col-sm-3 col-lg-2 col-xs-6 book session" id="books">
+      <div class="cover">
+          <a href="/book/2" data-toggle="modal" data-target="#bookDetailsModal" data-remote="false">
+            <span class="img" title="terminal">
+              
+    <img
+        srcset="/cover/2/sm?c=1757648639 1x, /cover/2/md?c=1757648639 2x, /cover/2/lg?c=1757648639 4x"
+        src="/cover/2/og?c=1757648639"
+        alt="terminal"
+        loading="lazy"
+    />
+              
+            </span>
+          </a>
+      </div>
+      <div class="meta">
+        <a href="/book/2" data-toggle="modal" data-target="#bookDetailsModal" data-remote="false">
+          <p title="terminal" class="title">terminal</p>
+        </a>
+        <p class="author">
+          
+            
+              
+              <a class="author-name" href="/author/stored/">Unknown</a>
+            
+          
+          
+        </p>
+        
+        
+      </div>
+    </div>
+    
+  
+  </div>
+</div>
+
+          
+      </div>
+    </div>
+  </div>
+    <div class="modal fade" id="bookDetailsModal" tabindex="-1" role="dialog" aria-labelledby="bookDetailsModalLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="bookDetailsModalLabel">Book Details</h4>
+          </div>
+          <div class="modal-body">...</div>
+          <div class="modal-footer">
+            <button type="button" id="details_close" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="/static/js/libs/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/static/js/libs/bootstrap.min.js"></script>
+    <script src="/static/js/libs/underscore-umd-min.js"></script>
+    <script src="/static/js/libs/intention.min.js"></script>
+    <script src="/static/js/libs/context.min.js"></script>
+    <script src="/static/js/libs/plugins.js"></script>
+    <script src="/static/js/libs/jquery.form.min.js"></script>
+    <script src="/static/js/uploadprogress.js"> </script>
+    <script src="/static/js/main.js"></script>
+    
+    
+  </body>
+</html>
