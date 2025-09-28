@@ -94,6 +94,6 @@ secret/
 # --- DO NOT IGNORE these (kept as documentation):
 # calibre-web/        (required: upstream app & requirements.txt)
 # entrypoint/         (required: start script)
-# plugins/            (required: plugin code)
+# (legacy plugins/ removed)
 # Dockerfile          (build definition)
 # README.md           (sometimes useful for debugging; usually tiny)

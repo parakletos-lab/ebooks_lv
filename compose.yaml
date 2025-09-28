@@ -9,7 +9,6 @@ services:
       - "8083:8083"
     environment:
       # Core runtime settings (override as needed)
-      CALIBRE_WEB_PLUGINS: users_books
       CALIBRE_WEB_HOST: 0.0.0.0
       CALIBRE_WEB_PORT: 8083
       CALIBRE_DBPATH: /app/config
@@ -17,12 +16,9 @@ services:
       # Set to "1" or "true" for development only
       CALIBRE_WEB_DEBUG: "1"
 
-      # users_books plugin configuration
+      # Integrated users_books configuration (env names retained for backward compatibility)
       USERS_BOOKS_DB_PATH: users_books.db          # Stored inside CALIBRE_DBPATH (config mount)
-      USERS_BOOKS_MAX_IDS_IN_CLAUSE: 500           # Safety cap for IN() predicate size
-      USERS_BOOKS_ENFORCE_EMPTY: "true"           # Empty allow list => zero results (strict mode)
-      USERS_BOOKS_ENABLE_METRICS: "false"         # Set to "true" to enable /plugin/users_books/metrics
-      USERS_BOOKS_LOG_LEVEL: DEBUG                  # INFO or DEBUG for troubleshooting
+      USERS_BOOKS_LOG_LEVEL: DEBUG                 # INFO or DEBUG for troubleshooting
       USERS_BOOKS_SESSION_EMAIL_KEY: email         # Session key containing current user email
       # USERS_BOOKS_WEBHOOK_API_KEY: "replace-me"  # Enable webhook purchase endpoint (keep secret!)
 
@@ -36,7 +32,6 @@ services:
     volumes:
       - ./config:/app/config
       - ./library:/app/library
-      - ./plugins:/app/plugins
       - ./entrypoint:/app/entrypoint
       - ./.github:/app/.github  # QA scripts & artifacts (dev only)
       # Uncomment if you want to inspect/override upstream code locally (read-only recommended)

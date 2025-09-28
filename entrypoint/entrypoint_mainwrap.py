@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
 """Minimal Calibre-Web wrapper.
 
-Purpose:
-    1. Run upstream `cps.main.main()` while suppressing its internal server start
-         and `sys.exit` so we get a configured Flask app object.
-    2. Load declared plugin(s) (default: users_books) so they can install DB
-         filtering logic (allow‑list) and blueprints.
-    3. Expose the Flask `app` for development (app.run) or external WSGI servers.
+Responsibilities:
+    1. Execute upstream `cps.main.main()` while preventing its internal server
+         start & `sys.exit`, yielding a configured Flask `app` object.
+    2. Apply first‑party application wiring under `app/` (routes, services, DB, overrides).
+    3. Expose the Flask `app` for development (``app.run``) or production WSGI servers.
 
-Intentionally Removed Legacy Helpers:
-    - Seeding, diagnostics, library auto-configuration, monkeypatch modules,
-        fallback user_loader, and other side-channel patch files.
-
-Environment Variables:
-    CALIBRE_WEB_PLUGINS  Comma list of plugin import names (default: users_books)
-    CALIBRE_WEB_HOST     Listen address for dev server (default: 0.0.0.0)
-    CALIBRE_WEB_PORT     Port for dev server (default: 8083)
-    CALIBRE_WEB_DEBUG    1/true/yes/on -> Flask debug
+Environment Variables (runtime):
+    CALIBRE_WEB_HOST   Bind host (default: 0.0.0.0)
+    CALIBRE_WEB_PORT   Port (default: 8083)
+    CALIBRE_WEB_DEBUG  If set (1/true/yes/on) enables Flask debug (development only)
 
 Production:
-    Use gunicorn (or similar) instead of the built-in dev server:
+    Prefer gunicorn (or similar) over the dev server, e.g.:
             gunicorn -b 0.0.0.0:8083 entrypoint.entrypoint_mainwrap:app
 """
 
@@ -27,10 +21,8 @@ from __future__ import annotations
 
 import os
 import sys
-import importlib
 import traceback
-from types import ModuleType
-from typing import List, Optional
+from typing import Optional
 
 
 # -----------------------------------------------------------------------------
@@ -38,17 +30,11 @@ from typing import List, Optional
 # -----------------------------------------------------------------------------
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CALIBRE_SUBMODULE = os.path.join(BASE_DIR, "calibre-web")
-PLUGINS_DIR = os.path.join(BASE_DIR, "plugins")
+APP_DIR = os.path.join(BASE_DIR, "app")
 
-for path_candidate in (CALIBRE_SUBMODULE, PLUGINS_DIR, BASE_DIR):
+for path_candidate in (CALIBRE_SUBMODULE, APP_DIR, BASE_DIR):
     if path_candidate not in sys.path:
         sys.path.insert(0, path_candidate)
-
-
-def _parse_plugin_env(raw: Optional[str]) -> List[str]:
-    if not raw:
-        return []
-    return [p.strip() for p in raw.split(',') if p.strip()]
 
 
 # -----------------------------------------------------------------------------
@@ -104,27 +90,19 @@ def _run_upstream_main():
 # -----------------------------------------------------------------------------
 # Auto-configure Calibre library (optional)
 # -----------------------------------------------------------------------------
-def _load_plugins(app) -> List[str]:
-    requested = _parse_plugin_env(os.getenv("CALIBRE_WEB_PLUGINS", "users_books"))
-    if not requested:
-        print("[MAINWRAP] No plugins requested.")
-        return []
-    print(f"[MAINWRAP] Loading plugins: {requested}")
-    loaded: List[str] = []
-    for name in requested:
-        try:
-            mod: ModuleType = importlib.import_module(name)
-            init_fn = getattr(mod, "init_app", None)
-            if callable(init_fn):
-                init_fn(app)
-                loaded.append(name)
-                print(f"[PLUGIN:{name}] initialized")
-            else:
-                print(f"[PLUGIN:{name}] WARNING: init_app missing; skipped")
-        except Exception:
-            print(f"[PLUGIN:{name}] ERROR during init:")
-            traceback.print_exc()
-    return loaded
+def _init_integrated_app(app) -> None:
+    """Initialize first-party application layer (idempotent)."""
+    try:
+        from app.startup import init_app as _init_app  # type: ignore
+    except Exception as exc:  # pragma: no cover
+        print(f"[MAINWRAP] Unable to import app.startup.init_app: {exc}")
+        return
+    try:
+        _init_app(app)
+        print("[MAINWRAP] Integrated app wiring complete.")
+    except Exception:
+        print("[MAINWRAP] ERROR during integrated app wiring:")
+        traceback.print_exc()
 
 
 # -----------------------------------------------------------------------------
@@ -132,7 +110,7 @@ def _load_plugins(app) -> List[str]:
 # -----------------------------------------------------------------------------
 def main():  # pragma: no cover - thin wrapper
     app = _run_upstream_main()
-    _load_plugins(app)
+    _init_integrated_app(app)
     return app
     
 
