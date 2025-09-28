@@ -104,7 +104,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
 
 USER appuser
 
-# Entrypoint: run seed (idempotent) then upstream main interception wrapper
+# Entrypoint: minimal wrapper (plugins + upstream init, no seeding)
 # For production, replace python dev server with gunicorn (example commented below)
 # CMD ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:app"]
-CMD ["sh", "-c", "python entrypoint/seed_settings.py && python entrypoint/entrypoint_mainwrap.py"]
+CMD ["python", "entrypoint/entrypoint_mainwrap.py"]

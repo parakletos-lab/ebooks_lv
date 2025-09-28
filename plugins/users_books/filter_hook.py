@@ -88,22 +88,30 @@ _TRIED_IMPORT = False
 
 
 def _import_books_model() -> Optional[Any]:
-    """
-    Attempt to import the Books model from Calibre-Web once.
-    Caches result to avoid repeated import costs.
+    """Resolve the Calibre-Web Books model.
+
+    Older assumptions tried cps.models.Books, but the actual model lives
+    in cps.db. We: (1) try cached value, (2) attempt cps.db.Books, (3) then
+    cps.models.Books (for forward compatibility). We only mark _TRIED_IMPORT
+    after attempts to avoid permanently failing due to an initial bad path.
     """
     global _BooksModel, _TRIED_IMPORT
     if _BooksModel is not None:
         return _BooksModel
     if _TRIED_IMPORT:
-        return None
+        return _BooksModel
+    # Attempt canonical location first
+    for mod_path in ("cps.db", "cps.models"):
+        try:
+            module = __import__(mod_path, fromlist=["Books"])  # type: ignore
+            books = getattr(module, "Books", None)
+            if books is not None and hasattr(books, "__table__"):
+                _BooksModel = books
+                LOG.debug("users_books: Resolved Books model from %s", mod_path)
+                break
+        except Exception as exc:  # pragma: no cover
+            LOG.debug("users_books: Books import attempt failed from %s: %s", mod_path, exc)
     _TRIED_IMPORT = True
-    try:
-        from cps.models import Books  # type: ignore
-        _BooksModel = Books
-        LOG.debug("Resolved Books model for users_books filtering hook.")
-    except Exception as exc:  # pragma: no cover - defensive
-        LOG.debug("Could not import cps.models.Books yet: %s", exc)
     return _BooksModel
 
 
@@ -207,7 +215,13 @@ def _before_compile_listener(stmt: ClauseElement) -> ClauseElement:
         LOG.error("Error retrieving allowed IDs for user_id=%s: %s", user_id, exc, exc_info=True)
         return stmt
 
+    LOG.debug(
+        "users_books: considering filter user_id=%s allowed_count=%d stmt=%s",
+        user_id, len(allowed_ids), getattr(stmt, 'select_from', None)
+    )
     new_stmt = _build_filtered_statement(stmt, user_id, allowed_ids)
+    if new_stmt is not stmt:
+        LOG.debug("users_books: filter applied user_id=%s ids=%s", user_id, allowed_ids)
     return _mark_filtered(new_stmt)
 
 

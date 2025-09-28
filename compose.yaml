@@ -38,6 +38,7 @@ services:
       - ./library:/app/library
       - ./plugins:/app/plugins
       - ./entrypoint:/app/entrypoint
+      - ./.github:/app/.github  # QA scripts & artifacts (dev only)
       # Uncomment if you want to inspect/override upstream code locally (read-only recommended)
       # - ./calibre-web:/app/calibre-web:ro
 
