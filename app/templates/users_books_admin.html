@@ -268,9 +268,6 @@ instance = instance|default(title) %} {% block body %}
       total)
     </div>
 
-    <!-- Status / Log -->
-    <h5 style="margin-top: 20px; font-weight: 600">Status / Log</h5>
-    <pre id="ub-log"></pre>
   </div>
 </div>
 
@@ -294,7 +291,6 @@ instance = instance|default(title) %} {% block body %}
     const mappingsTotalSpan = document.getElementById("ub-mappings-total");
     const countUsersSpan = document.getElementById("ub-count-users");
     const countBooksSpan = document.getElementById("ub-count-books");
-    const logBox = document.getElementById("ub-log");
     const csrfInput = document.getElementById("ub-csrf");
 
     function csrfToken() { // (B) explicit accessor with defensive empty string
@@ -302,12 +298,6 @@ instance = instance|default(title) %} {% block body %}
       return csrfInput.value || "";
     }
 
-    function log(msg, clear) {
-      const ts = new Date().toISOString();
-      if (clear) logBox.textContent = "[" + ts + "] " + msg;
-      else logBox.textContent += "\n[" + ts + "] " + msg;
-      logBox.scrollTop = logBox.scrollHeight;
-    }
     function setBusy(disabled) {
       [
         btnUsersReload,
@@ -422,34 +412,34 @@ instance = instance|default(title) %} {% block body %}
     usersBox.addEventListener("change", updateSelectionCounts);
     booksBox.addEventListener("change", updateSelectionCounts);
     async function loadUsers() {
-      log("Loading all non-admin users...", true);
+      console.log("Loading all non-admin users...");
       try {
         const data = await fetchJSON("/admin/users_books/all_users");
         renderUserList(data.users || []);
-        log("Users loaded: " + (data.count || 0));
+        console.log("Users loaded:", (data.count || 0));
       } catch (e) {
-        log("Error loading users: " + e);
+        console.error("Error loading users:", e);
       }
     }
     async function loadBooks() {
-      log("Loading all books...");
+      console.log("Loading all books...");
       try {
         const data = await fetchJSON("/admin/users_books/all_books");
         renderBookList(data.books || []);
-        log("Books loaded: " + (data.count || 0));
+        console.log("Books loaded:", (data.count || 0));
       } catch (e) {
-        log("Error loading books: " + e);
+        console.error("Error loading books:", e);
       }
     }
     async function loadMappings() {
-      log("Loading mappings...", true);
+      console.log("Loading mappings...");
       setBusy(true);
       try {
         const data = await fetchJSON("/admin/users_books/mappings_full");
         renderMappings(data.mappings || []);
-        log("Mappings loaded: " + (data.count || 0));
+        console.log("Mappings loaded:", (data.count || 0));
       } catch (e) {
-        log("Error loading mappings: " + e);
+        console.error("Error loading mappings:", e);
       } finally {
         setBusy(false);
       }
@@ -497,7 +487,7 @@ instance = instance|default(title) %} {% block body %}
       const uid = Number(parts[0]);
       const bid = Number(parts[1]);
       if (!confirm("Delete mapping?\nUser: " + uid + "\nBook: " + bid)) return;
-      log("Deleting mapping user=" + uid + " book=" + bid + "...");
+      console.log("Deleting mapping user=", uid, " book=", bid, "...");
       setBusy(true);
       try {
         const headers = {};
@@ -512,14 +502,14 @@ instance = instance|default(title) %} {% block body %}
           }
         );
         if (!r.ok) {
-          log("Delete failed HTTP " + r.status);
+          console.error("Delete failed HTTP", r.status);
         } else {
           const data = await r.json();
-          log("Delete status: " + data.status);
+          console.log("Delete status:", data.status);
         }
         await loadMappings();
       } catch (e2) {
-        log("Error deleting mapping: " + e2);
+        console.error("Error deleting mapping:", e2);
       } finally {
         setBusy(false);
       }
@@ -528,10 +518,14 @@ instance = instance|default(title) %} {% block body %}
       const userIds = selectedValues(usersBox);
       const bookIds = selectedValues(booksBox);
       if (!userIds.length || !bookIds.length) {
-        log("Select at least one user and one book before adding.", true);
+        console.warn("Select at least one user and one book before adding.");
         return;
       }
-      log("Adding " + userIds.length * bookIds.length + " mapping(s)...", true);
+      console.log(
+        "Adding",
+        userIds.length * bookIds.length,
+        "mapping(s)..."
+      );
       setBusy(true);
       try {
         for (let i = 0; i < userIds.length; i++) {
@@ -552,19 +546,19 @@ instance = instance|default(title) %} {% block body %}
                 }
               );
               if (!resp.ok) {
-                log(
-                  "Add failed (u=" + uid + " b=" + bid + ") HTTP " + resp.status
+                console.error(
+                  "Add failed (u=", uid, " b=", bid, ") HTTP ", resp.status
                 );
               } else {
                 const d = await resp.json();
-                log("u=" + uid + " b=" + bid + " -> " + d.status);
+                console.log("u=", uid, " b=", bid, " -> ", d.status);
               }
             } catch (inner) {
-              log("Error (u=" + uid + " b=" + bid + "): " + inner);
+              console.error("Error (u=", uid, " b=", bid, "):", inner);
             }
           }
         }
-        log("Add operations complete.");
+        console.log("Add operations complete.");
         await loadMappings();
       } finally {
         setBusy(false);
@@ -608,11 +602,11 @@ instance = instance|default(title) %} {% block body %}
     btnAddMappings.addEventListener("click", addMappings);
     btnClearSelection.addEventListener("click", clearAllSelections);
     (async function init() {
-      log("Initializing...", true);
+      console.log("Initializing users_books admin interface...");
       await loadUsers();
       await loadBooks();
       await loadMappings();
-      log("Ready.");
+      console.log("users_books admin interface ready.");
     })();
   })();
 </script>
