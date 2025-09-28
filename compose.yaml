@@ -16,11 +16,7 @@ services:
       # Set to "1" or "true" for development only
       CALIBRE_WEB_DEBUG: "1"
 
-      # Integrated users_books configuration (env names retained for backward compatibility)
-      USERS_BOOKS_DB_PATH: users_books.db          # Stored inside CALIBRE_DBPATH (config mount)
-      USERS_BOOKS_LOG_LEVEL: DEBUG                 # INFO or DEBUG for troubleshooting
-      USERS_BOOKS_SESSION_EMAIL_KEY: email         # Session key containing current user email
-      # USERS_BOOKS_WEBHOOK_API_KEY: "replace-me"  # Enable webhook purchase endpoint (keep secret!)
+      # All former plugin env vars removed (integrated logic auto-configures its DB under CALIBRE_DBPATH).
 
       TZ: Europe/Riga
 
