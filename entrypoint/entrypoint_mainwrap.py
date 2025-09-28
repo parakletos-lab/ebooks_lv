@@ -6,15 +6,6 @@ Responsibilities:
          start & `sys.exit`, yielding a configured Flask `app` object.
     2. Apply first‑party application wiring under `app/` (routes, services, DB, overrides).
     3. Expose the Flask `app` for development (``app.run``) or production WSGI servers.
-
-Environment Variables (runtime):
-    CALIBRE_WEB_HOST   Bind host (default: 0.0.0.0)
-    CALIBRE_WEB_PORT   Port (default: 8083)
-    CALIBRE_WEB_DEBUG  If set (1/true/yes/on) enables Flask debug (development only)
-
-Production:
-    Prefer gunicorn (or similar) over the dev server, e.g.:
-            gunicorn -b 0.0.0.0:8083 entrypoint.entrypoint_mainwrap:app
 """
 
 from __future__ import annotations
@@ -22,7 +13,6 @@ from __future__ import annotations
 import os
 import sys
 import traceback
-from typing import Optional
 
 
 # -----------------------------------------------------------------------------
@@ -88,29 +78,17 @@ def _run_upstream_main():
 
 
 # -----------------------------------------------------------------------------
-# Auto-configure Calibre library (optional)
-# -----------------------------------------------------------------------------
-def _init_integrated_app(app) -> None:
-    """Initialize first-party application layer (idempotent)."""
-    try:
-        from app.startup import init_app as _init_app  # type: ignore
-    except Exception as exc:  # pragma: no cover
-        print(f"[MAINWRAP] Unable to import app.startup.init_app: {exc}")
-        return
-    try:
-        _init_app(app)
-        print("[MAINWRAP] Integrated app wiring complete.")
-    except Exception:
-        print("[MAINWRAP] ERROR during integrated app wiring:")
-        traceback.print_exc()
-
-
-# -----------------------------------------------------------------------------
 # Plugin Loader
 # -----------------------------------------------------------------------------
 def main():  # pragma: no cover - thin wrapper
     app = _run_upstream_main()
-    _init_integrated_app(app)
+    try:
+        from app.startup import init_app
+        init_app(app)
+        print("[MAINWRAP] Integrated app wiring complete (explicit call).")
+    except Exception as exc:
+        print(f"[MAINWRAP] ERROR wiring integrated app: {exc}")
+        traceback.print_exc()
     return app
     
 

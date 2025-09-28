@@ -230,6 +230,16 @@ def test_root():
 
 Run inside a virtual environment or in a dev container with `pytest`.
 
+### End-to-End (E2E) Scripts
+
+Human-readable E2E walkthroughs live under `qa/e2e/` (moved from the legacy `.github/qa/scripts` location). Example:
+
+```
+qa/e2e/e2e_users_books_admin_page.md  # Manual steps & expectations
+```
+
+Automated assertion scripts were removed to keep the repo documentation-focused. Integrate your preferred test harness (pytest, Playwright, etc.) separately if desired.
+
 ---
 
 ## Security Considerations

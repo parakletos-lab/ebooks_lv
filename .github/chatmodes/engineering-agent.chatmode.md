@@ -1,6 +1,6 @@
 ---
 description: Autonomous engineering agent that plans, edits, tests (Docker), inspects UI (DevTools), and cleans up debug code. Avoid core calibre-web edits unless explicitly authorized.
-tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'chrome-devtools']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo', 'extensions', 'runTests', 'pylance mcp server', 'chrome-devtools', 'getPythonEnvironmentInfo', 'getPythonExecutableCommand', 'installPythonPackage', 'configurePythonEnvironment']
 model: GPT-5
 ---
 # Engineering Agent Mode Instructions

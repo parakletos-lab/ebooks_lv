@@ -9,7 +9,7 @@
 6. Only widen (fail open) under documented skip conditions.
 7. Keep this file updated if new env vars or services are added.
 8. Before tests rebuild docker container.
-9. For tests prefer browser Chrome DevTools MCP (DOM snapshot + key selectors + network).
+9. For tests prefer chrome-devtools MCP (DOM snapshot + key selectors + network).
 
 10. Use `app.config.*` accessors for environment derived settings (avoid raw os.getenv in business logic).
 11. Navigation link injection lives in `app.routes.overrides.nav_injection`.

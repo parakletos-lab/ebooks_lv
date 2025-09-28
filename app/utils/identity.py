@@ -4,6 +4,7 @@ from typing import Optional, Any
 from flask import session
 
 from app import config as app_config
+from app.utils import constants  # ensure constants module import side-effect for ROLE_ADMIN (used by other modules)
 
 
 def normalize_email(raw: Any) -> Optional[str]:
@@ -62,4 +63,5 @@ __all__ = [
     "is_admin_user",
     "ensure_admin",
     "PermissionError",
+    "constants",
 ]

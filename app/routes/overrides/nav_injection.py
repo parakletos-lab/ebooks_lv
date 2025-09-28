@@ -31,7 +31,7 @@ SEARCH_ANCHOR = f'id="{ADMIN_ANCHOR_ID}"'
 
 LINK_HTML = (
     '<li><a id="top_users_books" data-text="ebooks.lv" '
-    'href="/plugin/users_books/admin/ui">'
+    'href="/admin/users_books">'
     '<span class="glyphicon glyphicon-book"></span> '
     '<span class="hidden-sm">ebooks.lv</span></a></li>'
 )

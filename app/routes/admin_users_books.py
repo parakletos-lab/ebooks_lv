@@ -1,14 +1,17 @@
-"""Migrated admin routes from plugin (minimal JSON API).
+"""Admin routes for users ↔ book allow‑list (migrated from legacy plugin).
 
-Eventually replaces `plugins.users_books.api.routes_admin`. For now we keep
-the same route structure under /plugin/users_books/admin/* so the UI and
-existing JS keep working. Once migration complete we can move to a pure
-app namespace if desired.
+Primary JSON API namespace: /admin/users_books/*
+UI page is now also served at the collection root: /admin/users_books
+
+Backward compatibility:
+    /admin/users_books/admin  (legacy dev path) still renders the page
+    /users_books/admin        (old public path) now redirects (302) to /admin/users_books
+All routes enforce admin access via ``ensure_admin``.
 """
 from __future__ import annotations
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Iterable
 try:  # runtime dependency, editor may not resolve
-    from flask import Blueprint, request, jsonify  # type: ignore
+    from flask import Blueprint, request, jsonify, redirect  # type: ignore
 except Exception:  # pragma: no cover
     Blueprint = object  # type: ignore
     def request():  # type: ignore
@@ -26,9 +29,12 @@ from app.services import (
 from app.utils import ensure_admin, PermissionError
 from app.db import plugin_session
 from app.db.models import UserFilter
+from app.db import models as db_models  # to access User model
+import os, sqlite3
+from app.utils import constants as app_constants
 
 
-bp = Blueprint("users_books_admin", __name__, url_prefix="/plugin/users_books")
+bp = Blueprint("users_books_admin", __name__, url_prefix="/admin/users_books", template_folder="../templates")
 
 
 def _json_error(msg: str, status: int = 400):
@@ -43,7 +49,7 @@ def _require_admin():
     return True
 
 
-@bp.route("/admin/<int:user_id>/filters", methods=["GET"])
+@bp.route("/<int:user_id>/filters", methods=["GET"])
 def admin_list_filters(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -52,7 +58,7 @@ def admin_list_filters(user_id: int):
     return jsonify({"user_id": user_id, "allowed_book_ids": ids, "count": len(ids)})
 
 
-@bp.route("/admin/<int:user_id>/filters", methods=["POST"])
+@bp.route("/<int:user_id>/filters", methods=["POST"])
 def admin_add_filter(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -67,7 +73,7 @@ def admin_add_filter(user_id: int):
     return jsonify({"status": "added" if created else "exists", "user_id": user_id, "book_id": book_id})
 
 
-@bp.route("/admin/<int:user_id>/filters/<int:book_id>", methods=["DELETE"])
+@bp.route("/<int:user_id>/filters/<int:book_id>", methods=["DELETE"])
 def admin_delete_filter(user_id: int, book_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -76,7 +82,7 @@ def admin_delete_filter(user_id: int, book_id: int):
     return jsonify({"status": "deleted" if removed else "not_found", "user_id": user_id, "book_id": book_id})
 
 
-@bp.route("/admin/<int:user_id>/filters/bulk", methods=["POST"])
+@bp.route("/<int:user_id>/filters/bulk", methods=["POST"])
 def admin_bulk_add_filters(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -94,7 +100,7 @@ def admin_bulk_add_filters(user_id: int):
     return jsonify(summary)
 
 
-@bp.route("/admin/<int:user_id>/filters/upsert", methods=["PUT"])
+@bp.route("/<int:user_id>/filters/upsert", methods=["PUT"])
 def admin_upsert_filters(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -112,7 +118,7 @@ def admin_upsert_filters(user_id: int):
     return jsonify(summary)
 
 
-@bp.route("/admin/mappings_full", methods=["GET"])
+@bp.route("/mappings_full", methods=["GET"])
 def admin_mappings_full():
     auth = _require_admin()
     if auth is not True:
@@ -125,9 +131,167 @@ def admin_mappings_full():
     return jsonify({"mappings": rows, "count": len(rows)})
 
 
+# ---------------- Additional discovery endpoints (users/books) -------------
+
+def _metadata_db_path() -> Optional[str]:
+    # Reuse CALIBRE_LIBRARY_PATH environment (mounted volume) for books metadata.db
+    root = os.getenv("CALIBRE_LIBRARY_PATH") or "/app/library"
+    candidate = os.path.join(root, "metadata.db")
+    return candidate if os.path.exists(candidate) else None
+
+
+def _fetch_all_books(limit: Optional[int]) -> List[Dict[str, Any]]:
+    db_path = _metadata_db_path()
+    if not db_path:
+        return []
+    sql = "SELECT id, title FROM books ORDER BY id ASC"
+    if limit and limit > 0:
+        sql += f" LIMIT {int(limit)}"
+    rows: List[Dict[str, Any]] = []
+    try:
+        with sqlite3.connect(db_path) as conn:
+            for bid, title in conn.execute(sql):
+                rows.append({"book_id": int(bid), "title": title})
+    except Exception:  # pragma: no cover
+        return []
+    return rows
+
+
+def _fetch_non_admin_users() -> List[Dict[str, Any]]:
+    """Return non-admin, non-anonymous real users.
+
+    Strategy order:
+      1. Try Calibre-Web ORM (preferred) – locate User model in cps.ub (or fallback attr)
+      2. Fallback to direct SQLite query against app.db if ORM symbols unavailable
+    """
+    try:
+        from cps import constants as cw_consts  # type: ignore
+        from cps import ub as cw_ub  # type: ignore
+        CWUser = getattr(cw_ub, 'User', None)
+        Session = getattr(cw_ub, 'session', None)
+        if Session and CWUser:  # SQLAlchemy scoped_session
+            try:
+                rows = Session.query(CWUser.id, CWUser.email, CWUser.name, CWUser.role).all()
+                role_admin = getattr(cw_consts, 'ROLE_ADMIN', 1)
+                role_anonymous = getattr(cw_consts, 'ROLE_ANONYMOUS', 0)
+                out: List[Dict[str, Any]] = []
+                for uid, email, name, role in rows:
+                    try:
+                        if (role & role_admin) or (role & role_anonymous):
+                            continue
+                    except Exception:  # pragma: no cover
+                        pass
+                    out.append({
+                        'user_id': int(uid),
+                        'email': (email or '').strip(),
+                        'name': name or '',
+                    })
+                out.sort(key=lambda r: (r['email'] or '~', r['user_id']))
+                return out
+            except Exception:  # pragma: no cover
+                pass
+    except Exception:  # pragma: no cover
+        pass
+    # Fallback: raw SQLite (defensive) – minimal columns
+    try:
+        import sqlite3, os
+        db_path = os.path.join(os.getenv('CALIBRE_DBPATH', '/app/config'), 'app.db')
+        if not os.path.exists(db_path):  # pragma: no cover
+            return []
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        rows = cur.execute('SELECT id, email, name, role FROM user').fetchall()
+        # Bitmasks (mirror constants defaults if not importable)
+        ROLE_ADMIN = 1
+        ROLE_ANONYMOUS = 32
+        out: List[Dict[str, Any]] = []
+        for uid, email, name, role in rows:
+            try:
+                if (role & ROLE_ADMIN) or (role & ROLE_ANONYMOUS):
+                    continue
+            except Exception:  # pragma: no cover
+                pass
+            out.append({
+                'user_id': int(uid),
+                'email': (email or '').strip(),
+                'name': name or '',
+            })
+        out.sort(key=lambda r: (r['email'] or '~', r['user_id']))
+        return out
+    except Exception:  # pragma: no cover
+        return []
+
+
+@bp.route("/all_users", methods=["GET"])
+def admin_all_users():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    users = _fetch_non_admin_users()
+    return jsonify({"users": users, "count": len(users)})
+
+
+@bp.route("/all_books", methods=["GET"])
+def admin_all_books():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    limit = request.args.get("limit", type=int)
+    rows = _fetch_all_books(limit)
+    return jsonify({"books": rows, "count": len(rows)})
+
+
+@bp.route("/mappings_full/<int:user_id>/<int:book_id>", methods=["DELETE"])
+def admin_delete_mapping_full(user_id: int, book_id: int):
+    """Allow deletion through the expanded mappings table."""
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    removed = remove_mapping(user_id, book_id)
+    return jsonify({"status": "deleted" if removed else "not_found", "user_id": user_id, "book_id": book_id})
+
+
+# ----------------------------- UI Page ------------------------------------
+try:  # only define if Flask rendering is available
+    from flask import render_template, Blueprint as _FlaskBlueprint  # type: ignore
+
+    @bp.route("/", methods=["GET"])  # UI at /admin/users_books
+    def admin_ui_root_index():  # pragma: no cover - thin render wrapper
+        auth = _require_admin()
+        if auth is not True:
+            return auth
+        return render_template("users_books_admin.html")
+
+    @bp.route("/admin", methods=["GET"])  # legacy path /admin/users_books/admin
+    def admin_ui_root_legacy():  # pragma: no cover - thin wrapper
+        auth = _require_admin()
+        if auth is not True:
+            return auth
+        return render_template("users_books_admin.html")
+    # Redirect blueprint for deprecated public path /users_books/admin -> /admin/users_books
+    redirect_bp = _FlaskBlueprint(
+        "users_books_admin_redirects",
+        __name__,
+    )
+
+    @redirect_bp.route("/users_books/admin", methods=["GET"])  # external old URL
+    def users_books_admin_redirect():  # pragma: no cover - thin wrapper
+        return redirect("/admin/users_books", code=302)
+    @redirect_bp.route("/users_books/admin/", methods=["GET"])  # external old URL with trailing slash
+    def users_books_admin_redirect_slash():  # pragma: no cover - thin wrapper
+        return redirect("/admin/users_books", code=302)
+except Exception:  # pragma: no cover
+    pass
+
+
 def register_blueprint(app):
+    # Register API/admin blueprint
     if not getattr(app, "_users_books_admin_bp", None):
         app.register_blueprint(bp)
         setattr(app, "_users_books_admin_bp", bp)
+    # Register redirect blueprint if defined
+    if 'redirect_bp' in globals() and not getattr(app, "_users_books_admin_redirect_bp", None):
+        app.register_blueprint(redirect_bp)  # type: ignore[name-defined]
+        setattr(app, "_users_books_admin_redirect_bp", redirect_bp)  # type: ignore[name-defined]
 
 __all__ = ["register_blueprint", "bp"]

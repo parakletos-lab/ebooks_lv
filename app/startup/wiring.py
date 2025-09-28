@@ -10,6 +10,10 @@ from app.db import init_engine_once
 from app.routes.inject import register_all as register_routes
 from flask import Blueprint
 import os
+import logging
+
+
+log = logging.getLogger("app.startup")
 
 
 def _prepend_template_path(app):
@@ -25,13 +29,15 @@ def _prepend_template_path(app):
         bp = Blueprint('_app_templates', __name__, template_folder=override_dir)
         app.register_blueprint(bp)
         setattr(app, '_app_templates_bp', bp)
-from app.utils.logging import get_logger
+        log.debug("Registered _app_templates blueprint for override dir %s", override_dir)
 
 
 def init_app(app: Any) -> None:
-    log = get_logger("app.startup")
+    log.debug("init_app starting")
     init_engine_once()
+    log.debug("DB engine initialized")
     register_routes(app)
+    log.debug("Routes registered (users_books admin)")
     _prepend_template_path(app)
     log.info("App startup wiring complete (legacy plugin still active).")
 

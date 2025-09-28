@@ -12,6 +12,7 @@ from .identity import (
     ensure_admin,
     PermissionError,
 )
+from . import constants  # re-export module for ROLE_ADMIN access
 
 __all__ = [
     "normalize_email",
@@ -21,5 +22,6 @@ __all__ = [
     "is_admin_user",
     "ensure_admin",
     "PermissionError",
+    "constants",
 ]
 
