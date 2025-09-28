@@ -87,6 +87,8 @@ instance = instance|default(title) %} {% block body %}
         >(Admin)</small
       >
     </h3>
+  <!-- Hidden CSRF token (explicitly provided by route as ub_csrf_token) -->
+  <input type="hidden" id="ub-csrf" name="csrf_token" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body">
     <p class="text-muted" style="margin-top: -2px">
@@ -293,6 +295,12 @@ instance = instance|default(title) %} {% block body %}
     const countUsersSpan = document.getElementById("ub-count-users");
     const countBooksSpan = document.getElementById("ub-count-books");
     const logBox = document.getElementById("ub-log");
+    const csrfInput = document.getElementById("ub-csrf");
+
+    function csrfToken() { // (B) explicit accessor with defensive empty string
+      if (!csrfInput) return "";
+      return csrfInput.value || "";
+    }
 
     function log(msg, clear) {
       const ts = new Date().toISOString();
@@ -492,9 +500,16 @@ instance = instance|default(title) %} {% block body %}
       log("Deleting mapping user=" + uid + " book=" + bid + "...");
       setBusy(true);
       try {
+        const headers = {};
+        const tok = csrfToken();
+        if (tok) headers["X-CSRFToken"] = tok; // (C) only attach if present
         const r = await fetch(
           "/admin/users_books/mappings_full/" + uid + "/" + bid,
-          { method: "DELETE" }
+          {
+            method: "DELETE",
+            headers,
+            credentials: "same-origin",
+          }
         );
         if (!r.ok) {
           log("Delete failed HTTP " + r.status);
@@ -528,8 +543,12 @@ instance = instance|default(title) %} {% block body %}
                 "/admin/users_books/" + uid + "/filters",
                 {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ book_id: bid }),
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken(),
+                  },
+                  credentials: "same-origin",
+                  body: JSON.stringify({ book_id: bid, csrf_token: csrfToken() }),
                 }
               );
               if (!resp.ok) {

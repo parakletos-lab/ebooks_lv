@@ -36,6 +36,21 @@ from app.utils import constants as app_constants
 
 bp = Blueprint("users_books_admin", __name__, url_prefix="/admin/users_books", template_folder="../templates")
 
+# Optional CSRF exemption (Calibre-Web's global CSRFProtect) for pure JSON API routes.
+try:  # runtime guard
+    from cps import csrf  # type: ignore
+except Exception:  # pragma: no cover
+    csrf = None  # type: ignore
+
+# Helper decorator to safely exempt routes from CSRF (works even if csrf is None)
+def _maybe_exempt(func):  # type: ignore
+    if csrf:  # type: ignore
+        try:
+            return csrf.exempt(func)  # type: ignore
+        except Exception:  # pragma: no cover
+            return func
+    return func
+
 
 def _json_error(msg: str, status: int = 400):
     return jsonify({"error": msg}), status
@@ -59,6 +74,7 @@ def admin_list_filters(user_id: int):
 
 
 @bp.route("/<int:user_id>/filters", methods=["POST"])
+@_maybe_exempt
 def admin_add_filter(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -74,6 +90,7 @@ def admin_add_filter(user_id: int):
 
 
 @bp.route("/<int:user_id>/filters/<int:book_id>", methods=["DELETE"])
+@_maybe_exempt
 def admin_delete_filter(user_id: int, book_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -83,6 +100,7 @@ def admin_delete_filter(user_id: int, book_id: int):
 
 
 @bp.route("/<int:user_id>/filters/bulk", methods=["POST"])
+@_maybe_exempt
 def admin_bulk_add_filters(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -101,6 +119,7 @@ def admin_bulk_add_filters(user_id: int):
 
 
 @bp.route("/<int:user_id>/filters/upsert", methods=["PUT"])
+@_maybe_exempt
 def admin_upsert_filters(user_id: int):
     auth = _require_admin()
     if auth is not True:
@@ -117,8 +136,8 @@ def admin_upsert_filters(user_id: int):
     summary["user_id"] = user_id
     return jsonify(summary)
 
-
 @bp.route("/mappings_full", methods=["GET"])
+@_maybe_exempt  # read-only but keep consistent for simplified frontend (no token)
 def admin_mappings_full():
     auth = _require_admin()
     if auth is not True:
@@ -242,6 +261,7 @@ def admin_all_books():
 
 
 @bp.route("/mappings_full/<int:user_id>/<int:book_id>", methods=["DELETE"])
+@_maybe_exempt
 def admin_delete_mapping_full(user_id: int, book_id: int):
     """Allow deletion through the expanded mappings table."""
     auth = _require_admin()
@@ -254,20 +274,26 @@ def admin_delete_mapping_full(user_id: int, book_id: int):
 # ----------------------------- UI Page ------------------------------------
 try:  # only define if Flask rendering is available
     from flask import render_template, Blueprint as _FlaskBlueprint  # type: ignore
+    try:  # explicit token generation to guarantee presence in template (A)
+        from flask_wtf.csrf import generate_csrf  # type: ignore
+    except Exception:  # pragma: no cover
+        def generate_csrf():  # type: ignore
+            return ""
 
     @bp.route("/", methods=["GET"])  # UI at /admin/users_books
     def admin_ui_root_index():  # pragma: no cover - thin render wrapper
         auth = _require_admin()
         if auth is not True:
             return auth
-        return render_template("users_books_admin.html")
+        # Pass explicit CSRF token so template always renders the hidden input (A/B)
+        return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
 
     @bp.route("/admin", methods=["GET"])  # legacy path /admin/users_books/admin
     def admin_ui_root_legacy():  # pragma: no cover - thin wrapper
         auth = _require_admin()
         if auth is not True:
             return auth
-        return render_template("users_books_admin.html")
+        return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
     # Redirect blueprint for deprecated public path /users_books/admin -> /admin/users_books
     redirect_bp = _FlaskBlueprint(
         "users_books_admin_redirects",
@@ -289,6 +315,19 @@ def register_blueprint(app):
     if not getattr(app, "_users_books_admin_bp", None):
         app.register_blueprint(bp)
         setattr(app, "_users_books_admin_bp", bp)
+        # Apply csrf exemptions after registration so routes exist
+        if csrf:  # type: ignore
+            try:  # type: ignore[attr-defined]
+                # Exempt the whole blueprint (JSON-only endpoints rely on session admin check)
+                csrf.exempt(bp)  # type: ignore[arg-type]
+                csrf.exempt(admin_add_filter)
+                csrf.exempt(admin_delete_filter)
+                csrf.exempt(admin_bulk_add_filters)
+                csrf.exempt(admin_upsert_filters)
+                csrf.exempt(admin_mappings_full)
+                csrf.exempt(admin_delete_mapping_full)
+            except Exception:
+                pass
     # Register redirect blueprint if defined
     if 'redirect_bp' in globals() and not getattr(app, "_users_books_admin_redirect_bp", None):
         app.register_blueprint(redirect_bp)  # type: ignore[name-defined]
