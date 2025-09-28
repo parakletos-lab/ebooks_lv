@@ -142,11 +142,34 @@ def admin_mappings_full():
     auth = _require_admin()
     if auth is not True:
         return auth
+    # NOTE: Original implementation only returned user_id/book_id making UI unable
+    # to display email/title columns. Enrich with lightweight lookups.
+    # For now we perform two helper fetches (non-admin users + all books) and map
+    # by id. If performance becomes an issue with very large libraries, replace
+    # with targeted subset queries.
     rows: List[Dict[str, Any]] = []
     with plugin_session() as s:
-        db_rows = s.query(UserFilter).order_by(UserFilter.user_id.asc(), UserFilter.book_id.asc()).all()
+        db_rows = (
+            s.query(UserFilter)
+            .order_by(UserFilter.user_id.asc(), UserFilter.book_id.asc())
+            .all()
+        )
+    # Build lookup dictionaries
+    try:
+        user_lookup = {u["user_id"]: u.get("email", "") for u in _fetch_non_admin_users()}
+    except Exception:  # pragma: no cover
+        user_lookup = {}
+    try:
+        book_lookup = {b["book_id"]: b.get("title", "") for b in _fetch_all_books(None)}
+    except Exception:  # pragma: no cover
+        book_lookup = {}
     for r in db_rows:
-        rows.append({"user_id": r.user_id, "book_id": r.book_id})
+        rows.append({
+            "user_id": r.user_id,
+            "book_id": r.book_id,
+            "email": user_lookup.get(r.user_id, ""),
+            "title": book_lookup.get(r.book_id, ""),
+        })
     return jsonify({"mappings": rows, "count": len(rows)})
 
 
