@@ -1,0 +1,25 @@
+## Droplet Override Compose
+# Tailored for a Droplet / generic VPS deployment using host bind mounts, env file,
+# and lightweight /healthz endpoint.
+# Usage examples:
+#   docker compose -f compose.yml -f compose.droplet.yml --env-file .env up -d
+# If you prefer local build instead of registry image, uncomment the build: section below.
+
+services:
+  calibre-web:
+    # Uncomment to build locally instead of pulling a tagged image:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # image: calibre-web-server:local
+    environment:
+      MOZELLO_API_KEY: ${MOZELLO_API_KEY:?set MOZELLO_API_KEY in .env}
+    volumes:
+      - /opt/calibre/config:/app/config
+      - /opt/calibre/library:/app/library
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s

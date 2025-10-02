@@ -1,0 +1,88 @@
+"""Application configuration accessors (plugin-independent).
+
+Centralizes environment variable parsing & defaults. We preserve existing
+environment variable names from the legacy plugin for backward compatibility
+so operators do not need to change deployment configs immediately.
+"""
+from __future__ import annotations
+
+import os
+from functools import lru_cache
+
+# Metadata (mirrors old plugin, could expand later)
+APP_NAME = "users_books"
+APP_VERSION = "0.3.0-app"
+APP_DESCRIPTION = "Integrated users_books allow-list admin UI"
+
+DEFAULT_DB_PATH = "users_books.db"
+DEFAULT_LOG_LEVEL = "INFO"
+_TRUE = {"1", "true", "yes", "on"}
+
+
+def _raw_env(name: str, default: str | None = None) -> str | None:
+    val = os.getenv(name)
+    return val if val is not None else default
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    raw = _raw_env(name, str(default).lower())
+    if raw is None:
+        return default
+    return raw.lower() in _TRUE
+
+
+def get_db_path() -> str:
+    raw = _raw_env("USERS_BOOKS_DB_PATH", DEFAULT_DB_PATH)  # legacy var name
+    if raw and not os.path.isabs(raw):
+        config_root = os.getenv("CALIBRE_DBPATH")
+        if config_root:
+            return os.path.join(config_root, raw)
+    return raw  # type: ignore[return-value]
+
+
+def session_email_key() -> str:
+    # Preserve legacy env variable naming for compatibility
+    return os.getenv("USERS_BOOKS_SESSION_EMAIL_KEY", "email")
+
+
+def log_level_name() -> str:
+    return _raw_env("USERS_BOOKS_LOG_LEVEL", DEFAULT_LOG_LEVEL).upper()  # type: ignore[return-value]
+
+
+@lru_cache(maxsize=1)
+def metadata() -> dict:
+    return {
+        "name": APP_NAME,
+        "version": APP_VERSION,
+        "description": APP_DESCRIPTION,
+    }
+
+
+def summarize_runtime_config() -> dict:
+    return {
+        "db_path": get_db_path(),
+        "log_level": log_level_name(),
+    }
+
+
+__all__ = [
+    "APP_NAME",
+    "APP_VERSION",
+    "APP_DESCRIPTION",
+    "get_db_path",
+    "session_email_key",
+    "log_level_name",
+    "metadata",
+    "summarize_runtime_config",
+    "env_bool",
+]
+
+
+def mozello_api_key() -> str | None:
+    """Return MOZELLO_API_KEY from environment (no default).
+
+    Not cached so operator can rotate key and trigger a restart to pick it up.
+    """
+    return os.getenv("MOZELLO_API_KEY")
+
+__all__.append("mozello_api_key")

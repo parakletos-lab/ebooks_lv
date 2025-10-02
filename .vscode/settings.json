@@ -1,5 +1,26 @@
 {
     "cSpell.words": [
-        "glyphicon"
-    ]
+        "doctl",
+        "esac",
+        "glyphicon",
+        "healthcheck",
+        "healthz",
+        "mktemp",
+        "MOZELLO",
+        "netrc",
+        "pipefail",
+        "runcmd",
+        "usermod"
+    ],
+    "chat.mcp.serverSampling": {
+        "ebooks_lv/.vscode/mcp.json: chrome-devtools": {
+            "allowedModels": [
+                "copilot/gpt-4.1",
+                "copilot/gpt-4o",
+                "copilot/gpt-5",
+                "copilot/o3-mini",
+                "copilot/o4-mini"
+            ]
+        }
+    }
 }

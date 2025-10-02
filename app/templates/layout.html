@@ -1,0 +1,29 @@
+{#
+  layout.html override shim adding ebooks.lv nav link after Admin.
+  This file shadows upstream template via updated template search path (ensure
+  app/templates precedes calibre-web templates). It copies only the nav bar
+  fragment by extending upstream and injecting a block after admin link.
+  If upstream layout defines blocks differently, fallback to after_request injection.
+#}
+{% extends "../calibre-web/cps/templates/layout.html" %}
+{% block navigation %}
+  {{ super() }}
+  {# Fallback: if our element not already present and user is admin, inject via script #}
+  {% if current_user and current_user.role_admin() %}
+  <script>
+  (function(){
+    try {
+      if(!document.getElementById('top_users_books')){
+        var admin=document.getElementById('top_admin');
+        if(admin){
+          var li=document.createElement('li');
+          li.innerHTML='<a id="top_users_books" data-text="ebooks.lv" href="/admin/users_books">'+
+            '<span class="glyphicon glyphicon-book"></span> <span class="hidden-sm">ebooks.lv</span></a>';
+          admin.parentNode.insertAdjacentElement('afterend', li);
+        }
+      }
+    } catch(e) { console && console.debug && console.debug('users_books nav js inject fail', e); }
+  })();
+  </script>
+  {% endif %}
+{% endblock %}
