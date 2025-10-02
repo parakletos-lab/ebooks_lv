@@ -44,13 +44,14 @@ write_files:
       usage() {
         cat <<EOF
 ebooks_lv bootstrap
-Usage: $0 [--token <digitalocean_api_token>] [--gh-token <github_pat>] [--skip-registry] [--no-gh-prompt]
+Usage: $0 [--token <digitalocean_api_token>] [--gh-token <github_pat>] [--skip-registry] [--no-gh-prompt] [--no-submodules]
 
 Options:
   --token <token>        DigitalOcean personal access token (avoids interactive prompt)
   --gh-token <token>     GitHub fine-grained PAT for private repo clone (read:contents). If omitted, will prompt.
   --no-gh-prompt         Do not prompt for GitHub token (assume public repo or GH_TOKEN env set)
   --skip-registry        Skip doctl auth + registry login steps
+  --no-submodules        Skip git submodule initialization/update
   -h, --help             Show this help
 
 Environment:
@@ -59,13 +60,14 @@ Environment:
 
 Workflow:
   1. (Optional) Auth & registry login (if not skipped)
-  2. Clone or update repo
+  2. Clone or update repo (and submodules unless skipped)
   3. Run interactive setup script inside repo
 EOF
       }
 
       SKIP_REG=0
       NO_GH_PROMPT=0
+      NO_SUBMODULES=0
       while [[ $# -gt 0 ]]; do
         case "$1" in
           --token)
@@ -74,6 +76,8 @@ EOF
             GH_TOKEN="$2"; shift 2 ;;
           --no-gh-prompt)
             NO_GH_PROMPT=1; shift ;;
+          --no-submodules)
+            NO_SUBMODULES=1; shift ;;
           --skip-registry)
             SKIP_REG=1; shift ;;
           -h|--help)
@@ -151,10 +155,29 @@ EOF
           chmod 600 /home/deploy/.netrc
         fi
         echo "[bootstrap] Cloning repository..."
-        sudo -u deploy git clone "$REPO_URL" "$APP_DIR" || { echo "Clone failed" >&2; exit 2; }
+        if [ $NO_SUBMODULES -eq 0 ]; then
+          sudo -u deploy git clone --recurse-submodules "$REPO_URL" "$APP_DIR" || { echo "Clone failed" >&2; exit 2; }
+        else
+          sudo -u deploy git clone "$REPO_URL" "$APP_DIR" || { echo "Clone failed" >&2; exit 2; }
+        fi
       else
         echo "[bootstrap] Repo already present; pulling latest..."
         sudo -u deploy git -C "$APP_DIR" pull --ff-only || echo "[bootstrap] git pull failed (continuing)" >&2
+        if [ $NO_SUBMODULES -eq 0 ] && [ -f "$APP_DIR/.gitmodules" ]; then
+          echo "[bootstrap] Updating submodules..."
+          sudo -u deploy git -C "$APP_DIR" submodule sync --recursive || true
+          sudo -u deploy git -C "$APP_DIR" submodule update --init --recursive || echo "[bootstrap] submodule update had issues" >&2
+        fi
+      fi
+
+      # If freshly cloned without --recurse-submodules (because skip flag was off but .gitmodules appeared later), ensure submodules
+      if [ $NO_SUBMODULES -eq 0 ] && [ -f "$APP_DIR/.gitmodules" ]; then
+        # Detect if any submodule directories are empty / uninitialized
+        MISSING_SM=$(grep -E 'path =' "$APP_DIR/.gitmodules" | awk '{print $3}' | while read -r p; do [ ! -d "$APP_DIR/$p/.git" ] && echo "$p"; done || true)
+        if [ -n "$MISSING_SM" ]; then
+          echo "[bootstrap] Initializing submodules..."
+          sudo -u deploy git -C "$APP_DIR" submodule update --init --recursive || echo "[bootstrap] submodule init failed" >&2
+        fi
       fi
 
       if [ ! -x "${APP_DIR}/scripts/ebooks_lv_setup.sh" ]; then
