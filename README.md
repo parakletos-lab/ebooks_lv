@@ -1,3 +1,79 @@
+## Container Image: Build & Push to DigitalOcean Container Registry
+
+DigitalOcean registry name: `ebookslv-registry` (already referenced in `compose.yaml`).
+
+### One-time Setup
+1. Install/do auth: `doctl auth init`
+2. Login Docker to DOCR: `doctl registry login`
+3. (Optional) Create registry (if not yet): `doctl registry create ebookslv-registry` (skip if exists)
+
+### Build & Push (manual)
+```
+docker build -t registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest .
+docker push registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest
+```
+
+To version:
+```
+export VERSION=v0.1.0
+docker build -t registry.digitalocean.com/ebookslv-registry/calibre-web-server:$VERSION .
+docker push registry.digitalocean.com/ebookslv-registry/calibre-web-server:$VERSION
+```
+
+### Build & Push via Script
+Use the helper script (adds :latest automatically unless disabled):
+```
+chmod +x scripts/publish_docr.sh
+./scripts/publish_docr.sh v0.1.0
+```
+
+Tag with git commit:
+```
+./scripts/publish_docr.sh $(git rev-parse --short HEAD)
+```
+
+Or timestamp:
+```
+VERSION=$(date +%Y%m%d%H%M) ./scripts/publish_docr.sh
+```
+
+Disable pushing latest:
+```
+PUSH_LATEST=0 ./scripts/publish_docr.sh v0.1.0
+```
+
+### Pull & Run From Registry
+```
+docker pull registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest
+docker run -p 8083:8083 \
+  -v $PWD/config:/app/config \
+  -v $PWD/library:/app/library \
+  registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest
+```
+
+### Using docker compose With Remote Image
+Once pushed, you can deploy using the same `compose.yaml` (it already includes the image tag). To force pull updates:
+```
+docker compose pull calibre-web-server
+docker compose up -d
+```
+
+### Multi-Arch (Optional)
+Enable buildx: `docker buildx create --name multi --use` then:
+```
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest . \
+  --push
+```
+
+## Additional Documentation & Ops
+
+- Droplet / VPS migration guide: `.github/instructions/migrate-to-droplet.md`
+- Health endpoint: `GET /healthz` (lightweight; used by compose healthchecks)
+- Dev override: `compose.dev.yml` (layer with `-f` flag)
+- Droplet override example: `compose.droplet.yml`
+
+
 # calibre-web-server
 
 Custom Calibre-Web deployment wrapper that:

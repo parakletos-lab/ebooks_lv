@@ -7,7 +7,11 @@ from __future__ import annotations
 from typing import Any
 
 from app.db import init_engine_once
+from app.db.models import MozelloConfig  # ensure model imported so metadata includes table
 from app.routes.inject import register_all as register_routes
+from app.routes.admin_mozello import register_blueprints as register_mozello
+from app.config import mozello_api_key
+from app.services import mozello_service
 from flask import Blueprint
 import os
 import logging
@@ -37,7 +41,20 @@ def init_app(app: Any) -> None:
     init_engine_once()
     log.debug("DB engine initialized")
     register_routes(app)
-    log.debug("Routes registered (users_books admin)")
+    register_mozello(app)
+    log.debug("Routes registered (users_books + mozello)")
+    # Bootstrap Mozello API key from env if present and not already stored.
+    try:
+        env_key = mozello_api_key()
+        if env_key:
+            current = mozello_service._get_api_key_raw()  # type: ignore[attr-defined]
+            if not current:
+                mozello_service.update_settings(env_key, None, None)
+                log.info("Mozello API key seeded from environment.")
+            else:
+                log.debug("Mozello API key already present; env value ignored.")
+    except Exception:
+        log.exception("Failed seeding Mozello API key from environment")
     _prepend_template_path(app)
     log.info("App startup wiring complete (legacy plugin still active).")
 

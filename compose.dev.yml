@@ -1,0 +1,22 @@
+# Development override compose file
+# Usage: docker compose -f compose.yml -f compose.dev.yml up -d --build
+services:
+  calibre-web-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CALIBRE_WEB_DEBUG: "1"
+    volumes:
+      - ./config:/app/config
+      - ./library:/app/library
+      - ./entrypoint:/app/entrypoint
+      - ./.github:/app/.github
+      # Optionally mount source for rapid iteration (commented to avoid accidental prod usage)
+      # - ./app:/app/app:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

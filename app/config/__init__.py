@@ -76,3 +76,13 @@ __all__ = [
     "summarize_runtime_config",
     "env_bool",
 ]
+
+
+def mozello_api_key() -> str | None:
+    """Return MOZELLO_API_KEY from environment (no default).
+
+    Not cached so operator can rotate key and trigger a restart to pick it up.
+    """
+    return os.getenv("MOZELLO_API_KEY")
+
+__all__.append("mozello_api_key")

@@ -1,0 +1,34 @@
+# Production baseline compose (no dev mounts, registry image, gunicorn)
+# Run: docker compose up -d
+# For development layering: docker compose -f compose.yml -f compose.dev.yml up -d --build
+services:
+  calibre-web:
+    image: registry.digitalocean.com/ebookslv-registry/calibre-web-server:v0.1.0
+    container_name: calibre-web
+    restart: unless-stopped
+    environment:
+      CALIBRE_WEB_HOST: 0.0.0.0
+      CALIBRE_DBPATH: /app/config
+      CALIBRE_LIBRARY_PATH: /app/library
+      TZ: Europe/Riga
+      # CALIBRE_WEB_DEBUG intentionally omitted in prod
+      # MOZELLO_API_KEY: ${MOZELLO_API_KEY:?set this in your environment}
+    ports:
+      - "8083:8083"
+    command: ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:application", "--workers", "3", "--timeout", "90"]
+    volumes:
+      - calibre_config:/app/config
+      - calibre_library:/app/library
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    security_opt:
+      - no-new-privileges:true
+    # user: "1000:1000"  # Enable if matching host UID/GID is desired
+
+volumes:
+  calibre_config:
+  calibre_library:

@@ -1,5 +1,8 @@
-"""ORM models aggregate exports."""
-from .users_books import UserFilter, Base  # noqa: F401
+"""ORM models aggregate exports (users_books + mozello).
 
-__all__ = ["UserFilter", "Base"]
+Includes MozelloConfig for notification settings persistence.
+"""
+from .users_books import UserFilter, Base, MozelloConfig  # noqa: F401
+
+__all__ = ["UserFilter", "Base", "MozelloConfig"]
 

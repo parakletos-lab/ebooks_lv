@@ -36,8 +36,17 @@ LINK_HTML = (
     '<span class="hidden-sm">ebooks.lv</span></a></li>'
 )
 
+MOZELLO_LINK_HTML = (
+    '<li><a id="top_mozello" data-text="Mozello" '
+    'href="/admin/mozello/">'
+    '<span class="glyphicon glyphicon-flash"></span> '
+    '<span class="hidden-sm">Mozello</span></a></li>'
+)
+
+COMBINED_HTML = LINK_HTML + MOZELLO_LINK_HTML
+
 LINK_HTML_JINJA = (
-    '{% if current_user and current_user.role_admin() %}' + LINK_HTML + '{% endif %}'
+    '{% if current_user and current_user.role_admin() %}' + LINK_HTML + MOZELLO_LINK_HTML + '{% endif %}'
 )
 
 MAX_BODY_SIZE = 1_500_000  # bytes
@@ -73,7 +82,7 @@ def _inject_nav_html(body: bytes) -> bytes:
         if close_pos == -1:
             return body
         insertion_point = close_pos + len(close_tag)
-        return body[:insertion_point] + LINK_HTML.encode("utf-8") + body[insertion_point:]
+        return body[:insertion_point] + COMBINED_HTML.encode("utf-8") + body[insertion_point:]
     except Exception as exc:  # pragma: no cover
         LOG.debug("nav injection failed: %s", exc)
         return body

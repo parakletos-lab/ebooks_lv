@@ -46,7 +46,8 @@ WORKDIR /app
 COPY calibre-web/requirements.txt ./calibre-web/requirements.txt
 
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r calibre-web/requirements.txt
+    && pip install -r calibre-web/requirements.txt \
+    && pip install gunicorn
 
 ############################
 # Stage: runtime
@@ -94,7 +95,5 @@ EXPOSE 8083
 
 USER appuser
 
-# Entrypoint: minimal wrapper (integrated app wiring + upstream init)
-# For production, replace python dev server with gunicorn (example below):
-# CMD ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:app"]
+# Default CMD keeps dev friendliness; override with prod compose for gunicorn.
 CMD ["python", "entrypoint/entrypoint_mainwrap.py"]

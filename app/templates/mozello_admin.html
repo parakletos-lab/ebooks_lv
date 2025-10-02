@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% set title = 'Mozello Notifications' %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Mozello Notification Settings</h3>
+  </div>
+  <div class="panel-body">
+    <p class="text-muted" style="margin-top:-4px;">
+      Manage subscribed webhook events. API Key is supplied via server environment (<code>MOZELLO_API_KEY</code>).
+    </p>
+    <form id="mz-form" class="form">
+      <div class="alert alert-info" style="max-width:600px;">
+        <strong>API Key Managed Externally.</strong> Rotate by updating the deployment environment variable and restarting the service.
+      </div>
+      <div class="form-group">
+        <label for="mz-url">Notifications URL (auto)</label>
+        <input type="text" class="form-control" id="mz-url" readonly />
+        <p class="help-block">Computed from current host. Read‑only.</p>
+      </div>
+      <div class="form-group">
+        <label>Events</label>
+        <div id="mz-events-box" style="border:1px solid #ddd; padding:6px; max-width:420px; background:#fafafa;">
+          {% for ev in allowed %}
+          <label style="display:block; font-weight:400;">
+            <input type="checkbox" value="{{ ev }}"> {{ ev }}
+          </label>
+          {% endfor %}
+        </div>
+        <p class="help-block" style="margin-top:4px;">Select events to subscribe. Leave empty to unsubscribe all.</p>
+      </div>
+      <button type="button" id="mz-save" class="btn btn-primary">
+        <span class="glyphicon glyphicon-floppy-disk"></span> Save Settings
+      </button>
+      <button type="button" id="mz-refresh" class="btn btn-default">Refresh</button>
+      <button type="button" id="mz-test" class="btn btn-default">Post Test (unsigned)</button>
+    </form>
+    <hr />
+    <h4 style="margin-top:0;">Current Settings</h4>
+    <pre id="mz-current" style="background:#1e1e1e; color:#e6e6e6; padding:8px; max-width:600px; font-size:11px;">(loading)</pre>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  const box = document.getElementById('mz-events-box');
+  const pre = document.getElementById('mz-current');
+  const urlInput = document.getElementById('mz-url');
+  const btnSave = document.getElementById('mz-save');
+  const btnRefresh = document.getElementById('mz-refresh');
+  const btnTest = document.getElementById('mz-test');
+
+  function selectedEvents() {
+    return Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+  }
+  function setSelected(events) {
+    const set = new Set(events || []);
+    box.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = set.has(cb.value); });
+  }
+  async function fetchJSON(u, opts) {
+    const r = await fetch(u, opts || {});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }
+  async function loadSettings() {
+    try {
+      const data = await fetchJSON('/admin/mozello/settings');
+      pre.textContent = JSON.stringify(data, null, 2);
+      urlInput.value = data.notifications_url || '';
+      setSelected(data.notifications_wanted || []);
+    } catch (e) {
+      pre.textContent = 'Error loading settings: '+ e;
+    }
+  }
+  async function saveSettings() {
+    btnSave.disabled = true;
+    try {
+      const body = {
+        notifications_wanted: selectedEvents(),
+      };
+      const data = await fetchJSON('/admin/mozello/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      pre.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      alert('Save failed: '+ e);
+    } finally {
+      btnSave.disabled = false;
+    }
+  }
+  async function postTest() {
+    const fake = { event: 'PAYMENT_CHANGED', order: { payment_status: 'paid', test: true, ts: Date.now() } };
+    const raw = JSON.stringify(fake);
+    const r = await fetch('/mozello/webhook', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mozello-Test': 'unsigned' }, body: raw });
+    const t = await r.json();
+    alert('Unsigned webhook POST status: '+ r.status +'\n'+ JSON.stringify(t));
+  }
+  btnSave.addEventListener('click', saveSettings);
+  btnRefresh.addEventListener('click', loadSettings);
+  btnTest.addEventListener('click', postTest);
+  loadSettings();
+})();
+</script>
+{% endblock %}

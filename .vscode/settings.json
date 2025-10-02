@@ -1,6 +1,16 @@
 {
     "cSpell.words": [
-        "glyphicon"
+        "doctl",
+        "esac",
+        "glyphicon",
+        "healthcheck",
+        "healthz",
+        "mktemp",
+        "MOZELLO",
+        "netrc",
+        "pipefail",
+        "runcmd",
+        "usermod"
     ],
     "chat.mcp.serverSampling": {
         "ebooks_lv/.vscode/mcp.json: chrome-devtools": {

@@ -80,7 +80,14 @@ def _run_upstream_main():
 # -----------------------------------------------------------------------------
 # Plugin Loader
 # -----------------------------------------------------------------------------
+_APP_SINGLETON = None  # module-level cache
+
+
 def main():  # pragma: no cover - thin wrapper
+    """Create and return the Flask application (idempotent)."""
+    global _APP_SINGLETON
+    if _APP_SINGLETON is not None:
+        return _APP_SINGLETON
     app = _run_upstream_main()
     try:
         from app.startup import init_app
@@ -89,14 +96,23 @@ def main():  # pragma: no cover - thin wrapper
     except Exception as exc:
         print(f"[MAINWRAP] ERROR wiring integrated app: {exc}")
         traceback.print_exc()
+    _APP_SINGLETON = app
     return app
-    
 
-if __name__ == "__main__":  # Development server only
-    application = main()
+
+# Expose WSGI application object for gunicorn: "gunicorn entrypoint.entrypoint_mainwrap:application"
+application = main()
+
+
+if __name__ == "__main__":  # Development server only (Flask built-in)
     host = os.getenv("CALIBRE_WEB_HOST", "0.0.0.0")
-    port = int(os.getenv("CALIBRE_WEB_PORT", "8083"))
+    # Prefer explicit CALIBRE_WEB_PORT, else fall back to generic hosting provider PORT
+    port_raw = os.getenv("CALIBRE_WEB_PORT") or os.getenv("PORT") or "8083"
+    try:
+        port = int(port_raw)
+    except ValueError:
+        print(f"[MAINWRAP] Invalid port value '{port_raw}', falling back to 8083")
+        port = 8083
     debug_raw = os.getenv("CALIBRE_WEB_DEBUG", "")
     debug = debug_raw.lower() in {"1", "true", "yes", "on"}
-    # Rely on upstream template auto-reload when debug
     application.run(host=host, port=port, debug=debug)
