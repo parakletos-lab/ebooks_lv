@@ -48,19 +48,17 @@ sudo -iu deploy env DIGITALOCEAN_ACCESS_TOKEN="$DIGITALOCEAN_ACCESS_TOKEN" doctl
 Create a fine-grained Personal Access Token with Repository contents: Read for this repo only. Use Git credential-store (persistent, scoped to github.com).
 
 ```bash
-# Run as deploy user
+# Run as deploy user (robust flow using git credential approve)
 sudo -iu deploy bash -lc '
-	mkdir -p ~/.config/git && chmod 700 ~/.config/git
-	git config --global credential.helper "store --file ~/.config/git/credentials"
-	read -s -p "GitHub PAT (contents:read): " GH_TOKEN; echo
-	# Store credentials via helper (preferred). If helper subcommand is missing, see fallback below.
-	printf "protocol=https\nhost=github.com\nusername=x-access-token\npassword=%s\n" "$GH_TOKEN" \
-		| git credential-store --file ~/.config/git/credentials store || {
-			# Fallback: write URL form directly
-			echo "https://x-access-token:${GH_TOKEN}@github.com" >> ~/.config/git/credentials
-		}
-	unset GH_TOKEN
-	chmod 600 ~/.config/git/credentials
+	set -e
+	mkdir -p ~/.config/git; chmod 700 ~/.config/git;
+	git config --global credential.helper "store --file ~/.config/git/credentials";
+	read -s -p "GitHub PAT (contents:read): " GH_TOKEN; echo;
+	printf "protocol=https\nhost=github.com\nusername=x-access-token\npassword=%s\n" "$GH_TOKEN" | git credential approve;
+	unset GH_TOKEN;
+	chmod 600 ~/.config/git/credentials;
+	# Optional: verify stored creds (should print username/password lines)
+	printf "protocol=https\nhost=github.com\n" | git credential fill | grep -E "^(username|password)=" || true
 '
 ```
 
@@ -69,14 +67,35 @@ sudo -iu deploy bash -lc '
 4) Clone the repo (with submodules) to /opt/ebooks_lv
 
 ```bash
+sudo install -d -o deploy -g deploy -m 755 /opt/ebooks_lv
 sudo -iu deploy git clone --recurse-submodules https://github.com/parakletos-lab/ebooks_lv.git /opt/ebooks_lv
 ```
 
 5) Run the setup script to configure env and start (you can run as root)
 
 ```bash
-sudo /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
+sudo bash /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
 ```
+
+If you see "command not found" or interpreter errors:
+- Ensure it’s executable and not CRLF:
+	```bash
+	sudo chmod +x /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
+	sudo sed -i 's/\r$//' /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
+	sudo bash /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
+	```
+
+If the setup reports "Missing required binary: docker compose" or similar:
+- Install the Compose plugin (preferred on Ubuntu 22.04+):
+	```bash
+	sudo apt-get update
+	sudo apt-get install -y docker-compose-plugin
+	```
+- Or install the legacy docker-compose binary:
+	```bash
+	VER="v2.27.0"; sudo curl -L "https://github.com/docker/compose/releases/download/${VER}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	sudo chmod +x /usr/local/bin/docker-compose
+	```
 
 What this script does each run:
 - Ensures docker/docker compose/git are available

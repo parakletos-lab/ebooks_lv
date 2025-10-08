@@ -13,7 +13,8 @@ if [[ -d "$REPO_ROOT/.git" && "$REPO_ROOT" != "/" ]]; then
 fi
 ENV_FILE="${APP_DIR}/.env"
 COMPOSE_FILES="-f compose.yml -f compose.droplet.yml"
-REQUIRED_BIN=(docker docker compose git)
+REQUIRED_BIN=(docker git)
+COMPOSE_CMD=""
 
 log() { echo "[setup] $*"; }
 err() { echo "[setup][error] $*" >&2; }
@@ -25,6 +26,20 @@ need_bins() {
       err "Missing required binary: $b"; missing=1
     fi
   done
+  # Resolve docker compose command (plugin preferred)
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="docker-compose"
+  else
+    err "Missing required binary: docker compose (plugin) or docker-compose"
+    err "Install docker compose plugin: 'sudo apt-get update && sudo apt-get install -y docker-compose-plugin'"
+    err "Or install legacy: 'sudo curl -L https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose'"
+    missing=1
+  fi
+  if [ -n "$COMPOSE_CMD" ]; then
+    log "Using compose command: $COMPOSE_CMD"
+  fi
   if [ $missing -eq 1 ]; then
     err "Install missing dependencies then re-run."; exit 1
   fi
@@ -80,7 +95,7 @@ summary_env() {
 }
 
 pull_images() {
-  if docker compose $COMPOSE_FILES pull; then
+  if $COMPOSE_CMD $COMPOSE_FILES pull; then
     log "Images pulled (if already present)."
   else
     log "Pull failed (might build locally)." 
@@ -89,17 +104,17 @@ pull_images() {
 
 start_stack() {
   log "Starting stack..."
-  docker compose $COMPOSE_FILES up -d
-  log "Stack started. Use 'docker compose $COMPOSE_FILES ps' to inspect."
+  $COMPOSE_CMD $COMPOSE_FILES up -d
+  log "Stack started. Use '$COMPOSE_CMD $COMPOSE_FILES ps' to inspect."
 }
 
 health_check() {
   sleep 3
   local container
-  container=$(docker compose $COMPOSE_FILES ps --services | head -n1)
+  container=$($COMPOSE_CMD $COMPOSE_FILES ps --services | head -n1)
   if [ -n "$container" ]; then
     local name
-    name=$(docker compose $COMPOSE_FILES ps -q "$container")
+    name=$($COMPOSE_CMD $COMPOSE_FILES ps -q "$container")
     if [ -n "$name" ]; then
       log "Recent logs (tail 20):"
       docker logs --tail 20 "$name" || true
