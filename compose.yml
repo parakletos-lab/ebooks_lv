@@ -3,7 +3,7 @@
 # For development layering: docker compose -f compose.yml -f compose.dev.yml up -d --build
 services:
   calibre-web:
-    image: registry.digitalocean.com/ebookslv-registry/calibre-web-server:v0.1.0
+    image: registry.digitalocean.com/ebookslv-registry/calibre-web-server:latest
     container_name: calibre-web
     restart: unless-stopped
     environment:
