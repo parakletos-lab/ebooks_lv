@@ -5,3 +5,5 @@ config/calibre-web.log*
 # use instead:
 # config/calibre-web.log.*
 # !config/calibre-web.log
+
+.env

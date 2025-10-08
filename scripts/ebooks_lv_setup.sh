@@ -3,10 +3,17 @@
 # Safe to re-run when new env vars are introduced or configuration changes.
 set -euo pipefail
 
-APP_DIR="/opt/ebooks_lv"
+# App root: if running from a cloned repo, prefer its parent as runtime dir; else fallback
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+APP_DIR="${APP_DIR:-/opt/ebooks_lv}"
+# If this repo is already under /opt/ebooks_lv, respect that path
+if [[ -d "$REPO_ROOT/.git" && "$REPO_ROOT" != "/" ]]; then
+  APP_DIR="${APP_DIR:-$REPO_ROOT}"
+fi
 ENV_FILE="${APP_DIR}/.env"
 COMPOSE_FILES="-f compose.yml -f compose.droplet.yml"
-REQUIRED_BIN=(docker docker compose)
+REQUIRED_BIN=(docker docker compose git)
 
 log() { echo "[setup] $*"; }
 err() { echo "[setup][error] $*" >&2; }
@@ -102,6 +109,17 @@ health_check() {
 
 main() {
   need_bins
+  # Optional: update code if this script runs from a cloned repo and user wants to update
+  if [[ -d "$REPO_ROOT/.git" ]]; then
+    log "Updating code from git (fast-forward if possible)..."
+    if ! git -C "$REPO_ROOT" fetch --all --prune; then log "git fetch failed (continuing)"; fi
+    if ! git -C "$REPO_ROOT" pull --ff-only; then log "git pull failed or non-ff (continuing)"; fi
+    if [[ -f "$REPO_ROOT/.gitmodules" ]]; then
+      log "Syncing submodules..."
+      git -C "$REPO_ROOT" submodule sync --recursive || true
+      git -C "$REPO_ROOT" submodule update --init --recursive || log "submodule update issues (continuing)"
+    fi
+  fi
   ensure_env_file
   log "Collecting / updating required environment variables..."
   prompt_env_var MOZELLO_API_KEY "Mozello API key used by backend" ""

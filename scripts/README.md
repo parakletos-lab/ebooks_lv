@@ -8,3 +8,106 @@ Scripts:
 Future scripts (ideas):
 - upgrade.sh to pull latest git changes & re-run setup.
 - rotate_key.sh to rotate MOZELLO_API_KEY if needed.
+
+## Manual bootstrap on a fresh droplet (private repo, logged in as root)
+
+Follow these steps after creating a Droplet with the Docker image from DigitalOcean Marketplace.
+
+1) Create a non-root user for operations and allow Docker access
+
+```bash
+id deploy || adduser deploy
+usermod -aG docker deploy
+chown -R deploy:deploy /home/deploy
+su - deploy -c 'mkdir -p ~/.docker && chmod 700 ~/.docker'
+```
+
+2) Log in to DigitalOcean (required — registry is private)
+
+Prefer environment-based auth to avoid doctl writing to root’s home. This step is mandatory because the image registry is private.
+
+```bash
+# As root or as deploy
+export DIGITALOCEAN_ACCESS_TOKEN='paste_do_token_here'
+
+# Install doctl via Snap (as root), then allow Docker access
+sudo snap install doctl
+sudo snap connect doctl:dot-docker
+
+# Alternatively install doctl binary (avoids snap confinement):
+# DOCTL_VERSION=1.111.0
+# curl -fsSL https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz \
+#   | tar -xz -C /usr/local/bin doctl
+
+sudo -iu deploy env DIGITALOCEAN_ACCESS_TOKEN="$DIGITALOCEAN_ACCESS_TOKEN" doctl account get
+sudo -iu deploy env DIGITALOCEAN_ACCESS_TOKEN="$DIGITALOCEAN_ACCESS_TOKEN" doctl registry login
+```
+
+3) Prepare GitHub access (private repo) using a fine-grained PAT
+
+Create a fine-grained Personal Access Token with Repository contents: Read for this repo only. Use Git credential-store (persistent, scoped to github.com).
+
+```bash
+# Run as deploy user
+sudo -iu deploy bash -lc '
+	mkdir -p ~/.config/git && chmod 700 ~/.config/git
+	git config --global credential.helper "store --file ~/.config/git/credentials"
+	read -s -p "GitHub PAT (contents:read): " GH_TOKEN; echo
+	# Store credentials via helper (preferred). If helper subcommand is missing, see fallback below.
+	printf "protocol=https\nhost=github.com\nusername=x-access-token\npassword=%s\n" "$GH_TOKEN" \
+		| git credential-store --file ~/.config/git/credentials store || {
+			# Fallback: write URL form directly
+			echo "https://x-access-token:${GH_TOKEN}@github.com" >> ~/.config/git/credentials
+		}
+	unset GH_TOKEN
+	chmod 600 ~/.config/git/credentials
+'
+```
+
+
+
+4) Clone the repo (with submodules) to /opt/ebooks_lv
+
+```bash
+sudo -iu deploy git clone --recurse-submodules https://github.com/parakletos-lab/ebooks_lv.git /opt/ebooks_lv
+```
+
+5) Run the setup script to configure env and start (you can run as root)
+
+```bash
+sudo /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
+```
+
+What this script does each run:
+- Ensures docker/docker compose/git are available
+- Updates code: git fetch/pull; syncs and updates submodules
+- Creates/updates /opt/ebooks_lv/.env and prompts for required variables
+- Pulls images and starts the stack via compose.yml + compose.droplet.yml
+
+Re-run the same script anytime to update code and restart the stack.
+
+6) Security notes
+
+- Do not commit .env to git. If it’s tracked, remove and ignore:
+	```bash
+	cd /opt/ebooks_lv
+	git rm --cached .env || true
+	echo ".env" >> .gitignore
+	git commit -m "Stop tracking .env"
+	```
+- Consider deleting /home/deploy/.netrc after cloning if you prefer immutable deployments (you’ll need to recreate or use a PAT again to pull updates):
+	```bash
+	sudo -iu deploy shred -u ~/.netrc
+	```
+
+7) Troubleshooting
+
+- doctl “permission denied” writing ~/.docker: ensure the directory exists and is owned by deploy:
+	```bash
+	sudo -iu deploy mkdir -p ~/.docker && chmod 700 ~/.docker
+	```
+- Snap doctl can’t access Docker: connect plug
+	```bash
+	sudo snap connect doctl:dot-docker
+	```
+- Use `doctl` binary instead of Snap to avoid confinement (see step 2).
