@@ -126,6 +126,41 @@ health_check() {
   fi
 }
 
+preflight_storage() {
+  log "Preflight: validating calibre storage directories..."
+  local dirs=($CALIBRE_HOST_CONFIG $CALIBRE_HOST_LIBRARY)
+  for d in "${dirs[@]}"; do
+    if [ -e "$d" ] && [ ! -d "$d" ]; then
+      err "Path $d exists but is not a directory"; exit 12
+    fi
+    if [ ! -d "$d" ]; then
+      log "Creating directory $d"
+      mkdir -p "$d"
+    fi
+  done
+  if [ "$(id -u)" = "0" ]; then
+    for d in "${dirs[@]}"; do
+      local cur_uid cur_gid
+      cur_uid=$(stat -c '%u' "$d")
+      cur_gid=$(stat -c '%g' "$d")
+      if [ "$cur_uid" != "$APPUSER_UID" ] || [ "$cur_gid" != "$APPUSER_GID" ]; then
+        log "Adjusting ownership of $d to $APPUSER_UID:$APPUSER_GID"
+        chown -R $APPUSER_UID:$APPUSER_GID "$d"
+      fi
+      chmod 755 "$d" || true
+    done
+  else
+    log "Not root; skipping ownership adjustments (ensure permissions are correct)."
+  fi
+  for d in "${dirs[@]}"; do
+    if ! sh -c "touch '$d'/.writetest_$$ 2>/dev/null"; then
+      err "Directory $d is not writable (post-chown). Fix permissions and re-run."; exit 13
+    fi
+    rm -f "$d/.writetest_$$" || true
+  done
+  log "Preflight storage checks passed."
+}
+
 main() {
   need_bins
   preflight_storage
@@ -154,41 +189,3 @@ main() {
 }
 
 main "$@"
-
-preflight_storage() {
-  log "Preflight: validating calibre storage directories..."
-  local dirs=($CALIBRE_HOST_CONFIG $CALIBRE_HOST_LIBRARY)
-  for d in "${dirs[@]}"; do
-    if [ -e "$d" ] && [ ! -d "$d" ]; then
-      err "Path $d exists but is not a directory"; exit 12
-    fi
-    if [ ! -d "$d" ]; then
-      log "Creating directory $d"
-      mkdir -p "$d"
-    fi
-  done
-  # If running as root we can adjust ownership to intended appuser uid/gid
-  if [ "$(id -u)" = "0" ]; then
-    for d in "${dirs[@]}"; do
-      # Only chown if not already owned by target uid/gid
-      local cur_uid cur_gid
-      cur_uid=$(stat -c '%u' "$d")
-      cur_gid=$(stat -c '%g' "$d")
-      if [ "$cur_uid" != "$APPUSER_UID" ] || [ "$cur_gid" != "$APPUSER_GID" ]; then
-        log "Adjusting ownership of $d to $APPUSER_UID:$APPUSER_GID"
-        chown -R $APPUSER_UID:$APPUSER_GID "$d"
-      fi
-      chmod 755 "$d" || true
-    done
-  else
-    log "Not root; skipping ownership adjustments (ensure permissions are correct)."
-  fi
-  # Writability test as current user; container user may differ but we set ownership above when root.
-  for d in "${dirs[@]}"; do
-    if ! sh -c "touch '$d'/.writetest_$$ 2>/dev/null"; then
-      err "Directory $d is not writable (post-chown). Fix permissions and re-run."; exit 13
-    fi
-    rm -f "$d/.writetest_$$" || true
-  done
-  log "Preflight storage checks passed."
-}
