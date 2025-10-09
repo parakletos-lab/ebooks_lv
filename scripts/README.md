@@ -3,7 +3,8 @@
 This folder contains operational helper scripts for deploying and maintaining the ebooks_lv droplet installation.
 
 Scripts:
-- ebooks_lv_setup.sh: Interactive, idempotent setup script executed after the droplet bootstrap. Prompts for required environment variables, ensures compose dependencies, pulls images, and starts the stack. Safe to re-run when new env vars are introduced.
+- ebooks_lv_init.sh: One-time (idempotent) initializer. Creates /opt/calibre/{config,library}, migrates existing repo library (metadata.db) to /opt/calibre/library (Option A), fixes ownership (UID 1000), ensures .env exists. Safe to re-run if it failed partway.
+- ebooks_lv_setup.sh: Re-runnable update/start script. Pulls latest code, prompts/updates env vars, pulls images, (re)starts stack. Use this for regular updates after init.
 
 Future scripts (ideas):
 - upgrade.sh to pull latest git changes & re-run setup.
@@ -71,13 +72,21 @@ sudo install -d -o deploy -g deploy -m 755 /opt/ebooks_lv
 sudo -iu deploy git clone --recurse-submodules https://github.com/parakletos-lab/ebooks_lv.git /opt/ebooks_lv
 ```
 
-5) Run the setup script to configure env and start (you can run as root)
+5) Run the init script (does not start containers yet)
+
+```bash
+sudo bash /opt/ebooks_lv/scripts/ebooks_lv_init.sh
+```
+
+If you had an existing library under /opt/ebooks_lv/library with metadata.db, it is migrated to /opt/calibre/library during init (only if target is empty).
+
+6) Run the setup script to pull images and start
 
 ```bash
 sudo bash /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
 ```
 
-If you see "command not found" or interpreter errors:
+If you see "command not found" or interpreter errors for either script:
 - Ensure it’s executable and not CRLF:
 	```bash
 	sudo chmod +x /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
@@ -97,15 +106,22 @@ If the setup reports "Missing required binary: docker compose" or similar:
 	sudo chmod +x /usr/local/bin/docker-compose
 	```
 
-What this script does each run:
-- Ensures docker/docker compose/git are available
-- Updates code: git fetch/pull; syncs and updates submodules
-- Creates/updates /opt/ebooks_lv/.env and prompts for required variables
-- Pulls images and starts the stack via compose.yml + compose.droplet.yml
+Init (ebooks_lv_init.sh) does:
+- Ensures docker + compose + git available
+- Creates /opt/calibre/config and /opt/calibre/library
+- Migrates legacy /opt/ebooks_lv/library (if metadata.db present and destination empty)
+- Fixes ownership to UID:GID 1000:1000
+- Creates .env if missing
 
-Re-run the same script anytime to update code and restart the stack.
+Setup (ebooks_lv_setup.sh) does each run:
+- Ensures docker + compose + git available
+- Updates code (git fetch/pull, submodules)
+- Prompts / updates MOZELLO_API_KEY, TZ (and future vars)
+- Pulls images and starts stack (compose.yml + compose.droplet.yml)
 
-6) Security notes
+Re-run setup anytime after changing env vars or after publishing a new image tag.
+
+7) Security notes
 
 - Do not commit .env to git. If it’s tracked, remove and ignore:
 	```bash
@@ -119,7 +135,7 @@ Re-run the same script anytime to update code and restart the stack.
 	sudo -iu deploy shred -u ~/.netrc
 	```
 
-7) Troubleshooting
+8) Troubleshooting
 
 - doctl “permission denied” writing ~/.docker: ensure the directory exists and is owned by deploy:
 	```bash
