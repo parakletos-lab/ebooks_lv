@@ -6,6 +6,10 @@ for the integrated application. The plugin module now delegates here.
 from __future__ import annotations
 
 import os, threading
+try:  # POSIX file locking for gunicorn multi-worker safety
+    import fcntl  # type: ignore
+except ImportError:  # pragma: no cover - non-POSIX fallback (not expected in droplet)
+    fcntl = None  # type: ignore
 from contextlib import contextmanager
 from typing import Optional, Iterator, Callable
 
@@ -41,8 +45,41 @@ def init_engine_once() -> None:
         _engine = create_engine(f"sqlite:///{db_path}", future=True)
         _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False, class_=SASession)
         _scoped = scoped_session(_SessionFactory)
-        Base.metadata.create_all(_engine)
+        # Cross-process lock to avoid race where multiple gunicorn workers attempt
+        # to create the schema simultaneously (window between existence check and
+        # DDL emit can trigger 'table ... already exists').
+        lock_path = os.path.join(parent_dir, ".users_books_schema.lock")
+        if fcntl is not None:
+            with open(lock_path, "w") as lf:  # lock file persists (harmless)
+                try:
+                    fcntl.flock(lf, fcntl.LOCK_EX)
+                    _safe_create_schema()
+                finally:  # always release
+                    try:
+                        fcntl.flock(lf, fcntl.LOCK_UN)
+                    except Exception:  # pragma: no cover
+                        pass
+        else:  # Fallback without file lock (best effort)
+            _safe_create_schema()
         LOG.debug("users_books schema ready")
+
+
+def _safe_create_schema():
+    """Run metadata.create_all with defensive handling of race errors.
+
+    In high parallel start (multiple gunicorn workers) SQLite may raise
+    OperationalError: table X already exists between checkfirst and DDL.
+    We swallow those specific messages while surfacing unexpected issues.
+    """
+    from sqlalchemy.exc import OperationalError  # local import, lightweight
+    try:
+        Base.metadata.create_all(_engine)  # type: ignore[arg-type]
+    except OperationalError as e:  # pragma: no cover - concurrency edge
+        msg = str(e).lower()
+        if "already exists" in msg:
+            LOG.warning("Schema create encountered existing tables (benign race)")
+        else:
+            raise
 
 
 def get_engine() -> Engine:
