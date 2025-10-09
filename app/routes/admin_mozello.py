@@ -98,7 +98,7 @@ def mozello_webhook():
     raw = request.get_data()  # raw body for signature
     headers = {k: v for k, v in request.headers.items()}
     remote = getattr(request, 'remote_addr', None)
-    dump_dir = os.path.join('config')  # segregate debug artifacts
+    dump_dir = os.path.join('config', 'mozello_webhook')  # segregate debug artifacts
     os.makedirs(dump_dir, exist_ok=True)
 
     debug_record: Dict[str, Any] = {
