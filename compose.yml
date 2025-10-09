@@ -15,7 +15,7 @@ services:
       # MOZELLO_API_KEY: ${MOZELLO_API_KEY:?set this in your environment}
     ports:
       - "80:8083"
-    command: ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:application", "--workers", "3", "--timeout", "90"]
+    command: ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:application", "--workers", "1", "--timeout", "90"]
     volumes:
       - calibre_config:/app/config
       - calibre_library:/app/library

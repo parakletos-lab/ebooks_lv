@@ -2,10 +2,13 @@
     "cSpell.words": [
         "adduser",
         "doctl",
+        "ebookslv",
         "esac",
         "glyphicon",
+        "gunicorn",
         "healthcheck",
         "healthz",
+        "mainwrap",
         "mktemp",
         "MOZELLO",
         "netrc",
