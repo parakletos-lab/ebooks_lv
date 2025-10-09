@@ -30,10 +30,11 @@
         <p class="help-block" style="margin-top:4px;">Select events to subscribe. Leave empty to unsubscribe all.</p>
       </div>
       <button type="button" id="mz-save" class="btn btn-primary">
-        <span class="glyphicon glyphicon-floppy-disk"></span> Save Settings
+        <span class="glyphicon glyphicon-floppy-disk"></span> Update Remote
       </button>
-      <button type="button" id="mz-refresh" class="btn btn-default">Refresh</button>
+      <button type="button" id="mz-load" class="btn btn-default">Load Remote</button>
   <button type="button" id="mz-test" class="btn btn-default">Post Test (unsigned)</button>
+  <button type="button" id="mz-reset" class="btn btn-default">Reset URL</button>
     </form>
     <hr />
     <h4 style="margin-top:0;">Current Settings</h4>
@@ -44,12 +45,15 @@
 <script>
 (function() {
   'use strict';
+  // Original candidate URL provided on initial render (no remote fetch yet)
+  const candidateURL = "{{ mozello.notifications_url }}";
   const box = document.getElementById('mz-events-box');
   const pre = document.getElementById('mz-current');
   const urlInput = document.getElementById('mz-url');
   const btnSave = document.getElementById('mz-save');
-  const btnRefresh = document.getElementById('mz-refresh');
+  const btnLoad = document.getElementById('mz-load');
   const btnTest = document.getElementById('mz-test');
+  const btnReset = document.getElementById('mz-reset');
   const portInput = null; // removed forced port feature
 
   function selectedEvents() {
@@ -64,11 +68,12 @@
     if (!r.ok) throw new Error('HTTP '+r.status);
     return r.json();
   }
-  async function loadSettings() {
+  async function loadRemote() {
     try {
       const data = await fetchJSON('/admin/mozello/settings');
       pre.textContent = JSON.stringify(data, null, 2);
-  urlInput.value = data.notifications_url || '';
+      // Prefer the actual remote URL if returned; fall back to candidate
+      urlInput.value = data.remote_notifications_url || data.notifications_url || '';
   setSelected(data.notifications_wanted || []);
     } catch (e) {
       pre.textContent = 'Error loading settings: '+ e;
@@ -98,9 +103,12 @@
     alert('Unsigned webhook POST status: '+ r.status +'\n'+ JSON.stringify(t));
   }
   btnSave.addEventListener('click', saveSettings);
-  btnRefresh.addEventListener('click', loadSettings);
+  btnLoad.addEventListener('click', loadRemote);
+  btnReset.addEventListener('click', function() {
+    urlInput.value = candidateURL || '';
+  });
   btnTest.addEventListener('click', postTest);
-  loadSettings();
+  // No automatic remote API call on load (conservative mode)
 })();
 </script>
 {% endblock %}

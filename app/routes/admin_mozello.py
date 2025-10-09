@@ -68,14 +68,13 @@ def mozello_admin_page():  # pragma: no cover (thin render)
     auth = _require_admin()
     if auth is not True:
         return auth
-    # Only show remote (live) settings; no local persistence of webhook config
-    ok, remote = mozello_service.fetch_remote_notifications()
+    # Conservative: do NOT call remote Mozello API here. Only compute candidate.
     candidate = _computed_webhook_url()
     ctx = {
         "notifications_url": candidate,
-        "remote_notifications_url": (remote.get("notifications_url") if ok and isinstance(remote, dict) else None),
-        "notifications_wanted": (remote.get("notifications_wanted") if ok and isinstance(remote, dict) else []),
-        "remote_raw": remote,
+        "remote_notifications_url": None,
+        "notifications_wanted": [],
+        "remote_raw": None,
     }
     return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
 
