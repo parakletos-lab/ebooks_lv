@@ -7,6 +7,8 @@ Webhook: /mozello/webhook (POST) – currently only logs PAYMENT_CHANGED
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
+import os
+from datetime import datetime
 
 try:
     from flask import Blueprint, request, jsonify, render_template
@@ -94,6 +96,17 @@ def mozello_webhook():
     raw = request.get_data()  # raw body for signature
     # Accept JSON only
     headers = {k: v for k, v in request.headers.items()}
+    # TEMP debug aid: persist raw webhook body for inspection (remove later when proper handler added)
+    try:
+        ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')
+        dump_dir = os.path.join('config')  # easily visible directory already in repo
+        os.makedirs(dump_dir, exist_ok=True)
+        dump_path = os.path.join(dump_dir, f"webhook_request_{ts}.json")
+        with open(dump_path, 'wb') as f:
+            f.write(raw)
+        LOG.info("Mozello webhook raw request dumped to %s", dump_path)
+    except Exception:  # pragma: no cover - best effort only
+        LOG.exception("Failed to dump Mozello webhook request body")
     # Event value from payload handled in service (we pass placeholder)
     ok, msg = mozello_service.handle_webhook("", raw, headers)
     if not ok:
