@@ -8,8 +8,10 @@ Responsibilities:
 from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
-import hmac, hashlib, base64, json
+import hmac, hashlib, base64, json, time
 from sqlalchemy import text
+import requests
+from app import config
 
 from app.db.engine import app_session
 from app.db.models import MozelloConfig
@@ -49,8 +51,7 @@ def update_settings(api_key: Optional[str], notifications_url: Optional[str], ev
             cfg.notifications_url = notifications_url.strip() or None
         if events is not None:
             cfg.set_events(events)
-        if forced_port is not None:
-            cfg.forced_port = (forced_port.strip() or None)
+    # forced_port persistence deprecated (no longer used for webhook URL)
         LOG.info("Mozello settings updated url=%s events=%s api_key_set=%s", cfg.notifications_url, cfg.events_list(), bool(cfg.api_key))
     return get_settings()
 
@@ -132,3 +133,103 @@ def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
         _SCHEMA_CHECKED = True
 
 __all__.append("_ensure_schema_migrations")
+
+
+# --------------------- Outbound Mozello Sync ---------------------------
+
+def _api_headers() -> Dict[str, str]:
+    key = config.mozello_api_key() or ""
+    if not key:
+        return {}
+    # Mozello spec: Authorization: ApiKey <KEY>
+    return {
+        "Authorization": f"ApiKey {key}",
+        "Accept": "application/json",
+        "User-Agent": "ebooks-lv-integrator/1.0"
+    }
+
+def fetch_remote_notifications(timeout: int = 10) -> Tuple[bool, Dict[str, Any]]:
+    base = config.mozello_api_base().rstrip('/')
+    try:
+        headers = _api_headers()
+        if not headers:
+            return False, {"error": "api_key_missing"}
+        r = requests.get(f"{base}/store/notifications/", headers=headers, timeout=timeout)
+        status = r.status_code
+        text_body = r.text
+        # Attempt JSON parsing regardless of status
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": text_body}
+        if status == 401:
+            return False, {"error": "unauthorized", "details": data}
+        if status != 200:
+            return False, {"error": "http_error", "status": status, "details": data}
+        # Mozello success contract may include error=false
+        if isinstance(data, dict) and data.get("error") is True:
+            return False, {"error": "remote_error", "details": data}
+        return True, data  # expected shape: notifications_url + notifications_wanted
+    except Exception as exc:
+        LOG.warning("Mozello fetch_remote_notifications failed: %s", exc)
+        return False, {"error": str(exc)}
+
+def push_remote_notifications(url: Optional[str], events: List[str], timeout: int = 10) -> Tuple[bool, Dict[str, Any]]:
+    base = config.mozello_api_base().rstrip('/')
+    body = {"notifications_url": url, "notifications_wanted": events}
+    try:
+        headers = _api_headers()
+        if not headers:
+            return False, {"error": "api_key_missing"}
+        r = requests.put(f"{base}/store/notifications/", json=body, headers=headers, timeout=timeout)
+        status = r.status_code
+        text_body = r.text
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": text_body}
+        if status == 401:
+            return False, {"error": "unauthorized", "details": data}
+        if status != 200:
+            return False, {"error": "http_error", "status": status, "details": data}
+        if isinstance(data, dict) and data.get("error") is True:
+            return False, {"error": "remote_error", "details": data}
+        return True, data
+    except Exception as exc:
+        LOG.warning("Mozello push_remote_notifications failed: %s", exc)
+        return False, {"error": str(exc)}
+
+def sync_now(local_url: Optional[str], local_events: List[str]) -> Dict[str, Any]:
+    """Full sync: fetch remote, compare, push if drift.
+
+    Returns dict with keys: remote_before, pushed, remote_after (optional), diff
+    """
+    started = time.time()
+    ok_fetch, remote_before = fetch_remote_notifications()
+    diff = {}
+    pushed = False
+    remote_after: Dict[str, Any] | None = None
+    if ok_fetch and isinstance(remote_before, dict):
+        rb_url = remote_before.get("notifications_url")
+        rb_events = remote_before.get("notifications_wanted") or []
+        if rb_url != local_url:
+            diff["url"] = {"remote": rb_url, "local": local_url}
+        if sorted(rb_events) != sorted(local_events):
+            diff["events"] = {"remote": rb_events, "local": local_events}
+        if diff:
+            ok_push, remote_after = push_remote_notifications(local_url, local_events)
+            pushed = ok_push
+    duration = round(time.time() - started, 3)
+    return {
+        "duration_sec": duration,
+        "remote_before": remote_before,
+        "pushed": pushed,
+        "diff": diff,
+        "remote_after": remote_after,
+    }
+
+__all__.extend([
+    "fetch_remote_notifications",
+    "push_remote_notifications",
+    "sync_now",
+])

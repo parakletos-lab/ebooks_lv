@@ -103,3 +103,14 @@ def mozello_webhook_force_port() -> str | None:
     return val.strip()
 
 __all__.append("mozello_webhook_force_port")
+
+
+def mozello_api_base() -> str:
+    """Base URL for Mozello API (override with MOZELLO_API_BASE).
+
+    Spec indicates versioned base: https://api.mozello.com/v1/
+    We store without trailing slash normalization handled by callers.
+    """
+    return os.getenv("MOZELLO_API_BASE", "https://api.mozello.com/v1")
+
+__all__.append("mozello_api_base")

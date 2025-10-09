@@ -48,16 +48,17 @@ def _require_admin():
         return jsonify({"error": str(exc)}), 403
     return True
 
-def _computed_webhook_url(forced_port: Optional[str] = None) -> Optional[str]:
+def _computed_webhook_url() -> Optional[str]:
+    """Compute candidate webhook URL using current request host.
+
+    If no explicit port in host, append :80 (per user preference) even if
+    default for http/https. No local persistence.
+    """
     try:
         proto = request.headers.get("X-Forwarded-Proto", request.scheme)
         host = request.headers.get("X-Forwarded-Host") or request.host
-        if forced_port:
-            if ':' in host:
-                host_only = host.split(':', 1)[0]
-            else:
-                host_only = host
-            host = f"{host_only}:{forced_port}"
+        if ":" not in host:
+            host = f"{host}:80"
         return f"{proto}://{host}/mozello/webhook"
     except Exception:  # pragma: no cover
         return None
@@ -67,17 +68,31 @@ def mozello_admin_page():  # pragma: no cover (thin render)
     auth = _require_admin()
     if auth is not True:
         return auth
-    settings = mozello_service.get_settings()
-    settings["notifications_url"] = _computed_webhook_url(settings.get("forced_port"))
-    return render_template("mozello_admin.html", mozello=settings, allowed=mozello_service.allowed_events())
+    # Only show remote (live) settings; no local persistence of webhook config
+    ok, remote = mozello_service.fetch_remote_notifications()
+    candidate = _computed_webhook_url()
+    ctx = {
+        "notifications_url": candidate,
+        "remote_notifications_url": (remote.get("notifications_url") if ok and isinstance(remote, dict) else None),
+        "notifications_wanted": (remote.get("notifications_wanted") if ok and isinstance(remote, dict) else []),
+        "remote_raw": remote,
+    }
+    return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
 
 @bp.route("/settings", methods=["GET"])
 def mozello_get_settings():
     auth = _require_admin()
     if auth is not True:
         return auth
-    data = mozello_service.get_settings()
-    data["notifications_url"] = _computed_webhook_url(data.get("forced_port"))
+    ok, remote = mozello_service.fetch_remote_notifications()
+    candidate = _computed_webhook_url()
+    data = {
+        "notifications_url": candidate,
+        "remote_notifications_url": (remote.get("notifications_url") if ok and isinstance(remote, dict) else None),
+        "notifications_wanted": (remote.get("notifications_wanted") if ok and isinstance(remote, dict) else []),
+        "remote_raw": remote,
+        "remote_ok": ok,
+    }
     return jsonify(data)
 
 @bp.route("/settings", methods=["PUT"])
@@ -87,15 +102,20 @@ def mozello_update_settings():
     if auth is not True:
         return auth
     data: Dict[str, Any] = request.get_json(silent=True) or {}
-    api_key = data.get("api_key")
-    # notifications_url is auto-computed; ignore any client-provided value
-    events = data.get("notifications_wanted")
-    forced_port = data.get("forced_port")
-    if events is not None and not isinstance(events, list):
+    events = data.get("notifications_wanted") or []
+    if not isinstance(events, list):
         return jsonify({"error": "notifications_wanted must be list"}), 400
-    updated = mozello_service.update_settings(api_key, None, events, forced_port)
-    updated["notifications_url"] = _computed_webhook_url(updated.get("forced_port"))
-    return jsonify(updated)
+    # Compute candidate URL (authoritative source now)
+    candidate = _computed_webhook_url()
+    ok_push, remote_after = mozello_service.push_remote_notifications(candidate, events)
+    resp = {
+        "notifications_url": candidate,
+        "push_ok": ok_push,
+        "remote_after": remote_after,
+    }
+    return jsonify(resp), (200 if ok_push else 400)
+
+# Removed /sync route – syncing now implicit via live GET/PUT remote operations
 
 @webhook_bp.route("/mozello/webhook", methods=["POST"])
 @_maybe_exempt
