@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
 import hmac, hashlib, base64, json
+from sqlalchemy import text
 
 from app.db.engine import app_session
 from app.db.models import MozelloConfig
@@ -18,6 +19,7 @@ LOG = get_logger("mozello.mozello_service")
 
 
 def _get_singleton(create: bool = True) -> MozelloConfig:
+    _ensure_schema_migrations()
     with app_session() as s:
         obj = s.get(MozelloConfig, 1)
         if obj is None and create:
@@ -108,3 +110,25 @@ def _get_api_key_raw() -> Optional[str]:
         return None
 
 __all__.append("_get_api_key_raw")
+
+
+# --------------------- Lightweight Lazy Migrations ---------------------
+
+_SCHEMA_CHECKED = False
+
+def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
+    global _SCHEMA_CHECKED
+    if _SCHEMA_CHECKED:
+        return
+    try:
+        with app_session() as s:
+            cols = [row[1] for row in s.execute(text("PRAGMA table_info(mozello_config)"))]
+            if "forced_port" not in cols:
+                LOG.warning("Applying schema migration: adding mozello_config.forced_port column")
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN forced_port VARCHAR(10)"))
+    except Exception as exc:
+        LOG.error("Mozello schema migration check failed: %s", exc)
+    finally:
+        _SCHEMA_CHECKED = True
+
+__all__.append("_ensure_schema_migrations")
