@@ -7,7 +7,7 @@ Webhook: /mozello/webhook (POST) – currently only logs PAYMENT_CHANGED
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-import os
+import os, json, base64, traceback
 from datetime import datetime
 
 try:
@@ -93,25 +93,57 @@ def mozello_update_settings():
 @webhook_bp.route("/mozello/webhook", methods=["POST"])
 @_maybe_exempt
 def mozello_webhook():
+    ts = datetime.utcnow()
+    ts_tag = ts.strftime('%Y%m%dT%H%M%S%fZ')
     raw = request.get_data()  # raw body for signature
-    # Accept JSON only
     headers = {k: v for k, v in request.headers.items()}
-    # TEMP debug aid: persist raw webhook body for inspection (remove later when proper handler added)
+    remote = getattr(request, 'remote_addr', None)
+    dump_dir = os.path.join('config', 'mozello_webhook')  # segregate debug artifacts
+    os.makedirs(dump_dir, exist_ok=True)
+
+    debug_record: Dict[str, Any] = {
+        "timestamp": ts.isoformat() + 'Z',
+        "remote_addr": remote,
+        "method": request.method,
+        "path": request.path,
+        "headers": headers,
+        "raw_length": len(raw),
+    }
+
+    # Try decode raw body (text & parsed JSON) – do not trust encoding
     try:
-        ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')
-        dump_dir = os.path.join('config')  # easily visible directory already in repo
-        os.makedirs(dump_dir, exist_ok=True)
-        dump_path = os.path.join(dump_dir, f"webhook_request_{ts}.json")
-        with open(dump_path, 'wb') as f:
-            f.write(raw)
-        LOG.info("Mozello webhook raw request dumped to %s", dump_path)
-    except Exception:  # pragma: no cover - best effort only
-        LOG.exception("Failed to dump Mozello webhook request body")
-    # Event value from payload handled in service (we pass placeholder)
-    ok, msg = mozello_service.handle_webhook("", raw, headers)
-    if not ok:
-        LOG.warning("Mozello webhook rejected: %s", msg)
-        return jsonify({"status": "rejected", "reason": msg}), 400
+        decoded = raw.decode('utf-8')
+        debug_record["raw_text"] = decoded
+        try:
+            debug_record["json_payload"] = json.loads(decoded)
+        except Exception as e:  # not valid JSON
+            debug_record["json_error"] = str(e)
+    except Exception as e:  # pragma: no cover
+        debug_record["decode_error"] = str(e)
+        debug_record["raw_b64"] = base64.b64encode(raw).decode('ascii')
+
+    service_ok = False
+    service_msg = "unprocessed"
+    try:
+        service_ok, service_msg = mozello_service.handle_webhook("", raw, headers)
+        debug_record["service_ok"] = service_ok
+        debug_record["service_msg"] = service_msg
+    except Exception as e:  # pragma: no cover
+        debug_record["service_exception"] = str(e)
+        debug_record["service_traceback"] = traceback.format_exc()
+        LOG.exception("Mozello webhook internal error")
+
+    # Persist structured record (even if service failed)
+    try:
+        dump_path = os.path.join(dump_dir, f"mozello_webhook_{ts_tag}.json")
+        with open(dump_path, 'w', encoding='utf-8') as f:
+            json.dump(debug_record, f, ensure_ascii=False, indent=2, sort_keys=True)
+        LOG.info("Mozello webhook debug record saved %s service_ok=%s", dump_path, service_ok)
+    except Exception:  # pragma: no cover
+        LOG.exception("Failed to write mozello webhook debug record")
+
+    if not service_ok:
+        return jsonify({"status": "rejected", "reason": service_msg}), 400
     return jsonify({"status": "ok"})
 
 def register_blueprints(app):
