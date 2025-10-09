@@ -86,3 +86,20 @@ def mozello_api_key() -> str | None:
     return os.getenv("MOZELLO_API_KEY")
 
 __all__.append("mozello_api_key")
+
+
+def mozello_webhook_force_port() -> str | None:
+    """Optional explicit port to force into computed Mozello webhook URL.
+
+    Environment Variable: MOZELLO_WEBHOOK_FORCE_PORT
+    If set (even to default ports 80/443), the port will always be included
+    in the advertised notifications_url. This is useful if the upstream
+    service stores a literal URL string and you want consistency or are
+    behind a proxy that strips Host port details.
+    """
+    val = os.getenv("MOZELLO_WEBHOOK_FORCE_PORT")
+    if not val:
+        return None
+    return val.strip()
+
+__all__.append("mozello_webhook_force_port")

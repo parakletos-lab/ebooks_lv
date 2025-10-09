@@ -34,7 +34,7 @@ def get_settings() -> Dict[str, Any]:
     return cfg.as_dict()
 
 
-def update_settings(api_key: Optional[str], notifications_url: Optional[str], events: Optional[List[str]]) -> Dict[str, Any]:
+def update_settings(api_key: Optional[str], notifications_url: Optional[str], events: Optional[List[str]], forced_port: Optional[str] = None) -> Dict[str, Any]:
     with app_session() as s:
         cfg = s.get(MozelloConfig, 1)
         if cfg is None:
@@ -47,6 +47,8 @@ def update_settings(api_key: Optional[str], notifications_url: Optional[str], ev
             cfg.notifications_url = notifications_url.strip() or None
         if events is not None:
             cfg.set_events(events)
+        if forced_port is not None:
+            cfg.forced_port = (forced_port.strip() or None)
         LOG.info("Mozello settings updated url=%s events=%s api_key_set=%s", cfg.notifications_url, cfg.events_list(), bool(cfg.api_key))
     return get_settings()
 

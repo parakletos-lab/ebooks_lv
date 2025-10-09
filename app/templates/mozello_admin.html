@@ -18,6 +18,11 @@
         <input type="text" class="form-control" id="mz-url" readonly />
         <p class="help-block">Computed from current host. Read‑only.</p>
       </div>
+      <div class="form-group" style="max-width:220px;">
+        <label for="mz-port">Forced Port (optional)</label>
+        <input type="text" class="form-control" id="mz-port" placeholder="e.g. 80 or 443" />
+        <p class="help-block">If set, will always be appended to host in webhook URL.</p>
+      </div>
       <div class="form-group">
         <label>Events</label>
         <div id="mz-events-box" style="border:1px solid #ddd; padding:6px; max-width:420px; background:#fafafa;">
@@ -50,6 +55,7 @@
   const btnSave = document.getElementById('mz-save');
   const btnRefresh = document.getElementById('mz-refresh');
   const btnTest = document.getElementById('mz-test');
+  const portInput = document.getElementById('mz-port');
 
   function selectedEvents() {
     return Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
@@ -68,6 +74,7 @@
       const data = await fetchJSON('/admin/mozello/settings');
       pre.textContent = JSON.stringify(data, null, 2);
       urlInput.value = data.notifications_url || '';
+      portInput.value = data.forced_port || '';
       setSelected(data.notifications_wanted || []);
     } catch (e) {
       pre.textContent = 'Error loading settings: '+ e;
@@ -78,6 +85,7 @@
     try {
       const body = {
         notifications_wanted: selectedEvents(),
+        forced_port: portInput.value.trim() || null,
       };
       const data = await fetchJSON('/admin/mozello/settings', {
         method: 'PUT',

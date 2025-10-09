@@ -48,10 +48,16 @@ def _require_admin():
         return jsonify({"error": str(exc)}), 403
     return True
 
-def _computed_webhook_url() -> Optional[str]:
+def _computed_webhook_url(forced_port: Optional[str] = None) -> Optional[str]:
     try:
         proto = request.headers.get("X-Forwarded-Proto", request.scheme)
-        host = request.headers.get("X-Forwarded-Host", request.host)
+        host = request.headers.get("X-Forwarded-Host") or request.host
+        if forced_port:
+            if ':' in host:
+                host_only = host.split(':', 1)[0]
+            else:
+                host_only = host
+            host = f"{host_only}:{forced_port}"
         return f"{proto}://{host}/mozello/webhook"
     except Exception:  # pragma: no cover
         return None
@@ -62,7 +68,7 @@ def mozello_admin_page():  # pragma: no cover (thin render)
     if auth is not True:
         return auth
     settings = mozello_service.get_settings()
-    settings["notifications_url"] = _computed_webhook_url()
+    settings["notifications_url"] = _computed_webhook_url(settings.get("forced_port"))
     return render_template("mozello_admin.html", mozello=settings, allowed=mozello_service.allowed_events())
 
 @bp.route("/settings", methods=["GET"])
@@ -71,7 +77,7 @@ def mozello_get_settings():
     if auth is not True:
         return auth
     data = mozello_service.get_settings()
-    data["notifications_url"] = _computed_webhook_url()
+    data["notifications_url"] = _computed_webhook_url(data.get("forced_port"))
     return jsonify(data)
 
 @bp.route("/settings", methods=["PUT"])
@@ -84,10 +90,11 @@ def mozello_update_settings():
     api_key = data.get("api_key")
     # notifications_url is auto-computed; ignore any client-provided value
     events = data.get("notifications_wanted")
+    forced_port = data.get("forced_port")
     if events is not None and not isinstance(events, list):
         return jsonify({"error": "notifications_wanted must be list"}), 400
-    updated = mozello_service.update_settings(api_key, None, events)
-    updated["notifications_url"] = _computed_webhook_url()
+    updated = mozello_service.update_settings(api_key, None, events, forced_port)
+    updated["notifications_url"] = _computed_webhook_url(updated.get("forced_port"))
     return jsonify(updated)
 
 @webhook_bp.route("/mozello/webhook", methods=["POST"])

@@ -48,6 +48,7 @@ class MozelloConfig(Base):
     api_key = Column(String(128), nullable=True)
     notifications_url = Column(String(500), nullable=True)
     notifications_wanted = Column(Text, nullable=True)  # JSON array
+    forced_port = Column(String(10), nullable=True)  # optional explicit port for webhook URL
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     ALLOWED_EVENTS = [
@@ -77,6 +78,7 @@ class MozelloConfig(Base):
             "api_key_set": bool(self.api_key),  # do not expose raw key here
             "notifications_url": self.notifications_url,
             "notifications_wanted": self.events_list(),
+            "forced_port": self.forced_port,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
