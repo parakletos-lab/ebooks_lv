@@ -1,0 +1,227 @@
+"""ebooks.lv consolidated admin UI blueprint.
+
+Provides a new landing hub under /admin/ebookslv/ which links to
+sub‑sections (currently Users ↔ Books allow‑list management and a
+placeholder Books page). The existing JSON API for users_books remains
+under /admin/users_books/* for backward compatibility; only the UI page
+path is changing.
+
+Routes:
+    /admin/ebookslv/               -> landing page with navigation buttons
+    /admin/ebookslv/users_books/   -> existing allow‑list UI (template reuse)
+    /admin/ebookslv/books/         -> placeholder (future feature)
+
+All routes enforce admin access via ensure_admin.
+"""
+from __future__ import annotations
+
+try:  # runtime dependency, editor may not resolve
+    from flask import Blueprint, render_template
+    try:
+        from flask_wtf.csrf import generate_csrf  # type: ignore
+    except Exception:  # pragma: no cover
+        def generate_csrf():  # type: ignore
+            return ""
+except Exception:  # pragma: no cover
+    Blueprint = object  # type: ignore
+    def render_template(*a, **k):  # type: ignore
+        raise RuntimeError("Flask not available")
+    def generate_csrf():  # type: ignore
+        return ""
+
+from app.utils import ensure_admin, PermissionError
+from app.services import mozello_service
+from app.services import books_sync
+from flask import jsonify, request  # type: ignore
+from typing import List, Dict
+
+bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
+
+# Optional CSRF exemption (reuse pattern from users_books) for pure JSON API routes.
+try:  # runtime guard
+    from cps import csrf  # type: ignore
+except Exception:  # pragma: no cover
+    csrf = None  # type: ignore
+
+def _maybe_exempt(func):  # type: ignore
+    if csrf:  # type: ignore
+        try:
+            return csrf.exempt(func)  # type: ignore
+        except Exception:  # pragma: no cover
+            return func
+    return func
+
+
+def _require_admin():
+    try:
+        ensure_admin()
+    except PermissionError as exc:  # type: ignore
+        # Minimal JSON-ish fallback (landing is HTML; framework error handler may wrap)
+        return {"error": str(exc)}, 403
+    return True
+
+
+@bp.route("/", methods=["GET"])  # /admin/ebookslv/
+def landing():  # pragma: no cover - thin render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return render_template("ebookslv_admin.html")
+
+
+@bp.route("/users_books/", methods=["GET"])  # new UI path for existing page
+def users_books_page():  # pragma: no cover - thin render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
+
+
+@bp.route("/books/", methods=["GET"])  # placeholder page
+def books_page():  # pragma: no cover - thin render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return render_template("ebookslv_books_admin.html")
+
+
+# ------------------- Books API (JSON) --------------------
+def _json_error(msg: str, status: int = 400):
+    return jsonify({"error": msg}), status
+
+
+def _require_admin_json():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return True
+
+
+@bp.route("/books/api/data", methods=["GET"])  # list calibre only
+def api_books_data():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    rows = books_sync.list_calibre_books()
+    return jsonify({"rows": rows, "source": "calibre"})
+
+
+_PRODUCT_CACHE = {"loaded": False, "products": []}
+
+
+def _merge_products(calibre_rows, products):
+    by_handle = {r.get("mz_handle"): r for r in calibre_rows if r.get("mz_handle")}
+    # Attach mozello info
+    for p in products:
+        h = p.get("handle")
+        row = by_handle.get(h)
+        if row:
+            row["mozello_title"] = p.get("title")
+            row["mozello_price"] = p.get("price")
+    # Orphans
+    orphan_rows = []
+    for p in products:
+        h = p.get("handle")
+        if h and h not in by_handle:
+            orphan_rows.append({
+                "book_id": None,
+                "title": None,
+                "mz_price": None,
+                "mz_handle": h,
+                "mozello_title": p.get("title"),
+                "mozello_price": p.get("price"),
+                "orphan": True,
+            })
+    # Order: orphans first then calibre rows
+    ordered = orphan_rows + calibre_rows
+    return ordered
+
+
+@bp.route("/books/api/load_products", methods=["POST"])  # merge mozello
+@_maybe_exempt
+def api_books_load_products():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    calibre_rows = books_sync.list_calibre_books()
+    ok, data = mozello_service.list_products_full()
+    if not ok:
+        return _json_error(data.get("error", "mozello_error"), 502)
+    products = data.get("products", [])
+    merged = _merge_products(calibre_rows, products)
+    _PRODUCT_CACHE["loaded"] = True
+    _PRODUCT_CACHE["products"] = products
+    return jsonify({"rows": merged, "products": len(products), "orphans": len([r for r in merged if r.get("orphan")])})
+
+
+@bp.route("/books/api/export_one/<int:book_id>", methods=["POST"])
+@_maybe_exempt
+def api_books_export_one(book_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    # find book
+    rows = books_sync.list_calibre_books()
+    target = next((r for r in rows if r["book_id"] == book_id), None)
+    if not target:
+        return _json_error("book_not_found", 404)
+    handle = target.get("mz_handle") or f"book-{book_id}"
+    ok, resp = mozello_service.upsert_product_minimal(handle, target.get("title") or f"Book {book_id}", target.get("mz_price"))
+    if not ok:
+        return _json_error(resp.get("error", "export_failed"), 502)
+    # Persist handle if new
+    if not target.get("mz_handle"):
+        books_sync.set_mz_handle(book_id, handle)
+        target["mz_handle"] = handle
+    # Refresh Mozello info for this row only (lightweight)
+    target["mozello_title"] = (resp.get("product") or {}).get("title") if isinstance(resp.get("product"), dict) else target.get("title")
+    target["mozello_price"] = target.get("mz_price")
+    return jsonify({"row": target, "status": "exported"})
+
+
+@bp.route("/books/api/export_all", methods=["POST"])  # create/update all missing handles
+@_maybe_exempt
+def api_books_export_all():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    rows = books_sync.list_calibre_books()
+    to_export = [r for r in rows if not r.get("mz_handle")]
+    total = len(to_export)
+    success = 0
+    failures: List[Dict[str, str]] = []
+    for r in to_export:
+        handle = f"book-{r['book_id']}"
+        ok, resp = mozello_service.upsert_product_minimal(handle, r.get("title") or f"Book {r['book_id']}", r.get("mz_price"))
+        if ok:
+            books_sync.set_mz_handle(r["book_id"], handle)
+            r["mz_handle"] = handle
+            r["mozello_title"] = r.get("title")
+            r["mozello_price"] = r.get("mz_price")
+            success += 1
+        else:
+            failures.append({"book_id": r["book_id"], "error": resp.get("error")})
+    summary = {"total": total, "success": success, "failed": len(failures), "failures": failures}
+    return jsonify({"summary": summary, "rows": rows})
+
+
+@bp.route("/books/api/delete/<handle>", methods=["DELETE"])  # delete product (or orphan)
+@_maybe_exempt
+def api_books_delete(handle: str):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    ok, resp = mozello_service.delete_product(handle)
+    if not ok:
+        return _json_error(resp.get("error", "delete_failed"), 502)
+    removed = books_sync.clear_mz_handle(handle)
+    return jsonify({"status": resp.get("status", "deleted"), "removed_local": removed})
+
+
+def register_ebookslv_blueprint(app):
+    if not getattr(app, "_ebookslv_admin_bp", None):
+        app.register_blueprint(bp)
+        setattr(app, "_ebookslv_admin_bp", bp)
+
+
+__all__ = ["register_ebookslv_blueprint", "bp"]

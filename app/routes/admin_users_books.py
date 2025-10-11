@@ -303,20 +303,19 @@ try:  # only define if Flask rendering is available
         def generate_csrf():  # type: ignore
             return ""
 
-    @bp.route("/", methods=["GET"])  # UI at /admin/users_books
+    @bp.route("/", methods=["GET"])  # UI moved: redirect to new consolidated path
     def admin_ui_root_index():  # pragma: no cover - thin render wrapper
         auth = _require_admin()
         if auth is not True:
             return auth
-        # Pass explicit CSRF token so template always renders the hidden input (A/B)
-        return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
+        return redirect("/admin/ebookslv/users_books/", code=302)
 
-    @bp.route("/admin", methods=["GET"])  # legacy path /admin/users_books/admin
+    @bp.route("/admin", methods=["GET"])  # legacy path now redirect
     def admin_ui_root_legacy():  # pragma: no cover - thin wrapper
         auth = _require_admin()
         if auth is not True:
             return auth
-        return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
+        return redirect("/admin/ebookslv/users_books/", code=302)
     # Redirect blueprint for deprecated public path /users_books/admin -> /admin/users_books
     redirect_bp = _FlaskBlueprint(
         "users_books_admin_redirects",

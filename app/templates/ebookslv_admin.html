@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% set title = 'ebooks.lv Admin' %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">ebooks.lv Administration</h3>
+  </div>
+  <div class="panel-body">
+  <p class="text-muted ub-card-lead">Central hub for ebooks.lv custom admin tools.</p>
+    <div class="ebooks-admin-cards">
+      <div class="ebooks-admin-card">
+        <h4><span class="glyphicon glyphicon-link"></span> Users ↔ Books</h4>
+        <p>Manage allow‑list mappings assigning specific books to non‑admin users.</p>
+        <a href="/admin/ebookslv/users_books/" class="btn btn-primary btn-sm">Open</a>
+      </div>
+      <div class="ebooks-admin-card">
+        <h4><span class="glyphicon glyphicon-book"></span> Books</h4>
+        <p>Placeholder for upcoming ebooks.lv book management enhancements.</p>
+        <a href="/admin/ebookslv/books/" class="btn btn-info btn-sm">Open</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -23,5 +23,9 @@
 	- `mz_price` custom float column is auto-created at startup if missing by `entrypoint/seed_library.py` (idempotent).
 	- `mz_handle` stored as Calibre identifier `type='mz'` (no schema env var required).
 
+17. For Mozello Store API (products/orders/webhooks) implementation details, consult `.github/instructions/mozello_store_api.md` (single source; do not duplicate large doc excerpts in code or comments).
+
+18. Throttle Mozello Store API calls: maximum 1 request per second (enforced in mozello_service). Serialize all product operations.
+
 ---
 Add more rules if needed

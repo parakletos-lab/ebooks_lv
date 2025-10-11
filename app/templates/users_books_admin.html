@@ -1,110 +1,34 @@
 {% extends "layout.html" %} {% set title = 'users_books Admin' %} {% set page =
 'users_books_admin' %} {% set bodyClass = bodyClass|default('') %} {% set
-instance = instance|default(title) %} {% block body %}
-
-<style>
-  /* Scoped styles (migrated from legacy template, paths adjusted) */
-  #ub-users-box,
-  #ub-books-box {
-    max-height: 260px;
-    overflow: auto;
-    border: 1px solid #ccc;
-    padding: 6px 6px 4px;
-    background: #fafafa;
-    border-radius: 4px;
-  }
-  #ub-users-box label,
-  #ub-books-box label {
-    display: block;
-    font-weight: 400;
-    margin: 2px 0 0;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  #ub-mappings-table td,
-  #ub-mappings-table th {
-    font-size: 12px;
-    vertical-align: middle;
-  }
-  .ub-pill {
-    display: inline-block;
-    padding: 0 6px;
-    background: #eee;
-    border-radius: 10px;
-    font-size: 10px;
-    margin-left: 4px;
-    color: #666;
-  }
-  .ub-flex {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .ub-section-legend {
-    font-size: 12px;
-    font-weight: 600;
-    margin: 0 4px;
-    padding: 0 4px;
-  }
-  .ub-filter {
-    margin-bottom: 6px;
-  }
-  .ub-small {
-    font-size: 10px;
-    color: #777;
-    margin-left: 4px;
-  }
-  .ub-sticky-top {
-    position: sticky;
-    top: 0;
-    background: #f5f5f5;
-    z-index: 2;
-  }
-  #ub-log {
-    background: #1e1e1e;
-    color: #e6e6e6;
-    font-size: 11px;
-    padding: 8px 10px;
-    max-height: 230px;
-    overflow: auto;
-    border-radius: 4px;
-    line-height: 1.35;
-  }
-  .ub-nowrap {
-    white-space: nowrap;
-  }
-  .ub-pointer {
-    cursor: pointer;
-  }
-</style>
+instance = instance|default(title) %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
+{% block body %}
 
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">
       users_books Allow‑List Management
-      <small class="text-muted" style="font-size: 0.65em; letter-spacing: 0.5px"
-        >(Admin)</small
-      >
+      <small class="text-muted ub-small-heading">(Admin)</small>
     </h3>
   <!-- Hidden CSRF token (explicitly provided by route as ub_csrf_token) -->
   <input type="hidden" id="ub-csrf" name="csrf_token" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body">
-    <p class="text-muted" style="margin-top: -2px">
+  <p class="text-muted ub-panel-note">
       Create and view allow‑list mappings between Calibre users and books. 1)
       Select one or more users (left) and books (middle) 2) Click "Add Selected
       Mappings". The bottom table lists all existing mappings (email → book
       title) with delete actions.
     </p>
 
-    <div class="row" style="margin-bottom: 12px">
+  <div class="row ub-row-gap">
       <!-- Users -->
       <div class="col-sm-4">
-        <fieldset
-          style="border: 1px solid #ddd; padding: 8px 10px; margin: 0 0 12px"
-        >
-          <legend class="ub-section-legend">Users (Non‑Admin)</legend>
+        <fieldset class="ub-fieldset">
+          <legend class="ub-section-legend ub-legend">Users (Non‑Admin)</legend>
           <input
             id="ub-filter-users"
             class="form-control input-sm ub-filter"
@@ -112,7 +36,7 @@ instance = instance|default(title) %} {% block body %}
             placeholder="Filter by email or name"
           />
           <div id="ub-users-box"></div>
-          <div class="ub-flex" style="margin-top: 6px">
+          <div class="ub-flex ub-box-gap">
             <button
               id="ub-users-reload"
               class="btn btn-default btn-xs"
@@ -135,7 +59,7 @@ instance = instance|default(title) %} {% block body %}
               Clear
             </button>
           </div>
-          <div class="text-muted" style="margin-top: 6px; font-size: 11px">
+          <div class="text-muted ub-box-gap ub-micro">
             Source: /admin/users_books/all_users (excludes admin accounts).
           </div>
         </fieldset>
@@ -143,10 +67,8 @@ instance = instance|default(title) %} {% block body %}
 
       <!-- Books -->
       <div class="col-sm-4">
-        <fieldset
-          style="border: 1px solid #ddd; padding: 8px 10px; margin: 0 0 12px"
-        >
-          <legend class="ub-section-legend">Books</legend>
+        <fieldset class="ub-fieldset">
+          <legend class="ub-section-legend ub-legend">Books</legend>
           <input
             id="ub-filter-books"
             class="form-control input-sm ub-filter"
@@ -154,7 +76,7 @@ instance = instance|default(title) %} {% block body %}
             placeholder="Filter by title or id"
           />
           <div id="ub-books-box"></div>
-          <div class="ub-flex" style="margin-top: 6px">
+          <div class="ub-flex ub-box-gap">
             <button
               id="ub-books-reload"
               class="btn btn-default btn-xs"
@@ -177,7 +99,7 @@ instance = instance|default(title) %} {% block body %}
               Clear
             </button>
           </div>
-          <div class="text-muted" style="margin-top: 6px; font-size: 11px">
+          <div class="text-muted ub-box-gap ub-micro">
             Source: /admin/users_books/all_books (full library; consider
             pagination if large).
           </div>
@@ -186,14 +108,9 @@ instance = instance|default(title) %} {% block body %}
 
       <!-- Actions -->
       <div class="col-sm-4">
-        <fieldset
-          style="border: 1px solid #ddd; padding: 8px 10px; margin: 0 0 12px"
-        >
-          <legend class="ub-section-legend">Actions</legend>
-          <div
-            class="ub-flex"
-            style="flex-direction: column; align-items: stretch"
-          >
+        <fieldset class="ub-fieldset">
+          <legend class="ub-section-legend ub-legend">Actions</legend>
+          <div class="ub-flex ub-flex-col">
             <button
               id="ub-add-mappings"
               class="btn btn-success btn-sm"
@@ -218,21 +135,14 @@ instance = instance|default(title) %} {% block body %}
               Clear All Selections
             </button>
           </div>
-          <hr style="margin: 10px 0" />
-          <p class="help-block" style="margin: 0 0 4px">Selections</p>
-          <ul
-            style="
-              padding-left: 14px;
-              margin: 0;
-              font-size: 11px;
-              line-height: 1.4;
-            "
-          >
+          <hr class="ub-hr-tight" />
+          <p class="help-block ub-help-margin">Selections</p>
+          <ul class="ub-selections-ul">
             <li><span id="ub-count-users">0</span> user(s)</li>
             <li><span id="ub-count-books">0</span> book(s)</li>
           </ul>
-          <hr style="margin: 10px 0" />
-          <p class="text-muted" style="font-size: 11px; margin: 0">
+          <hr class="ub-hr-tight" />
+          <p class="text-muted ub-micro-tight">
             Each (user, book) pair triggers an individual POST. For large
             batches consider a future bulk endpoint.
           </p>
@@ -241,26 +151,22 @@ instance = instance|default(title) %} {% block body %}
     </div>
 
     <!-- Mappings Table -->
-    <h4 style="margin-top: 4px; font-weight: 600">Existing Mappings</h4>
-    <div class="table-responsive" style="margin-top: 6px">
-      <table
-        id="ub-mappings-table"
-        class="table table-condensed table-striped"
-        style="margin-bottom: 8px"
-      >
+    <h4 class="ub-h4">Existing Mappings</h4>
+    <div class="table-responsive ub-table-gap">
+  <table id="ub-mappings-table" class="table table-condensed table-striped ub-margin-b-8">
         <thead>
           <tr class="ub-sticky-top">
-            <th style="width: 210px">User Email</th>
-            <th style="width: 60px">User ID</th>
+            <th class="ub-w-email">User Email</th>
+            <th class="ub-w-userid">User ID</th>
             <th>Book Title</th>
-            <th style="width: 70px">Book ID</th>
-            <th style="width: 50px">Delete</th>
+            <th class="ub-w-bookid">Book ID</th>
+            <th class="ub-w-del">Delete</th>
           </tr>
         </thead>
         <tbody id="ub-mappings-tbody"></tbody>
       </table>
     </div>
-    <div class="text-muted" style="font-size: 11px; margin-top: -4px">
+  <div class="text-muted ub-mappings-note">
       Source: /admin/users_books/mappings_full&nbsp; (<span
         id="ub-mappings-total"
         >0</span

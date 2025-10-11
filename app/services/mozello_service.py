@@ -8,7 +8,7 @@ Responsibilities:
 from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
-import hmac, hashlib, base64, json, time
+import hmac, hashlib, base64, json, time, threading
 from sqlalchemy import text
 import requests
 from app import config
@@ -233,3 +233,120 @@ __all__.extend([
     "push_remote_notifications",
     "sync_now",
 ])
+
+# --------------------- Product Catalog Helpers (throttled) --------------
+
+_THROTTLE_LOCK = threading.Lock()
+_LAST_API_CALL = 0.0
+_MIN_INTERVAL = 1.0  # seconds between ANY Mozello API call (rule #18)
+
+
+def _throttle_wait():  # pragma: no cover (timing)
+    global _LAST_API_CALL
+    with _THROTTLE_LOCK:
+        now = time.time()
+        delta = now - _LAST_API_CALL
+        if delta < _MIN_INTERVAL:
+            time.sleep(_MIN_INTERVAL - delta)
+        _LAST_API_CALL = time.time()
+
+
+def _api_url(path: str) -> str:
+    base = config.mozello_api_base().rstrip('/')
+    if not path.startswith('/'):
+        path = '/' + path
+    return base + path
+
+
+def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool, Dict[str, Any]]:
+    """Fetch all products (paginated). Returns (ok, data).
+
+    data keys on success: { products: [...], count: int }
+    On error: { error: str, details? }
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    products: List[Dict[str, Any]] = []
+    next_url = _api_url(f"/store/products/?page_size={int(page_size)}")
+    pages = 0
+    try:
+        while next_url and pages < max_pages:
+            _throttle_wait()
+            r = requests.get(next_url, headers=headers, timeout=15)
+            pages += 1
+            status = r.status_code
+            try:
+                payload = r.json()
+            except Exception:
+                return False, {"error": "invalid_json", "status": status}
+            if status != 200 or payload.get("error") is True:
+                return False, {"error": "http_error", "status": status, "details": payload}
+            page_items = payload.get("products") or []
+            for p in page_items:
+                products.append({
+                    "handle": p.get("handle"),
+                    "title": (p.get("title") if isinstance(p.get("title"), str) else (p.get("title", {}).get("en") if isinstance(p.get("title"), dict) else None)),
+                    "price": p.get("price"),
+                })
+            next_rel = payload.get("next_page_uri")
+            if next_rel:
+                base = config.mozello_api_base().rstrip('/')
+                next_url = base + next_rel
+            else:
+                next_url = None
+        return True, {"products": products, "count": len(products), "pages": pages}
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("list_products_full failed: %s", exc)
+        return False, {"error": str(exc)}
+
+
+def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tuple[bool, Dict[str, Any]]:
+    """Create or update a single product with minimal fields.
+
+    Strategy: attempt PUT (update). If 404, attempt POST (create).
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    body = {"product": {"title": {"en": title}, "price": price or 0.0, "visible": True}}
+    # Update first
+    try:
+        _throttle_wait()
+        r = requests.put(_api_url(f"/store/product/{handle}/"), json=body, headers=headers, timeout=15)
+        if r.status_code == 404:
+            # Create
+            create_body = {"product": {"handle": handle, "title": {"en": title}, "price": price or 0.0, "visible": True}}
+            _throttle_wait()
+            r = requests.post(_api_url("/store/product/"), json=create_body, headers=headers, timeout=15)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+
+def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    try:
+        _throttle_wait()
+        r = requests.delete(_api_url(f"/store/product/{handle}/"), headers=headers, timeout=15)
+        if r.status_code == 404:
+            return True, {"status": "not_found"}
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, {"status": "deleted"}
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+__all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
