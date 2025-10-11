@@ -176,7 +176,13 @@ def api_books_export_one(book_id: int):
     # Refresh Mozello info for this row only (lightweight)
     target["mozello_title"] = (resp.get("product") or {}).get("title") if isinstance(resp.get("product"), dict) else target.get("title")
     target["mozello_price"] = target.get("mz_price")
-    return jsonify({"row": target, "status": "exported"})
+    # Attempt cover upload (best-effort; ignore failures but surface flag)
+    cover_uploaded = False
+    ok_cov, b64 = books_sync.get_cover_base64(book_id)
+    if ok_cov and b64:
+        ok_pic, pic_resp = mozello_service.add_product_picture(handle, b64, filename="cover.jpg")
+        cover_uploaded = ok_pic
+    return jsonify({"row": target, "status": "exported", "cover_uploaded": cover_uploaded})
 
 
 @bp.route("/books/api/export_all", methods=["POST"])  # create/update all missing handles
@@ -190,6 +196,8 @@ def api_books_export_all():
     total = len(to_export)
     success = 0
     failures: List[Dict[str, str]] = []
+    cover_attempts = 0
+    cover_success = 0
     for r in to_export:
         handle = f"book-{r['book_id']}"
         ok, resp = mozello_service.upsert_product_minimal(handle, r.get("title") or f"Book {r['book_id']}", r.get("mz_price"))
@@ -198,10 +206,17 @@ def api_books_export_all():
             r["mz_handle"] = handle
             r["mozello_title"] = r.get("title")
             r["mozello_price"] = r.get("mz_price")
+            # Cover upload (best-effort per book)
+            ok_cov, b64 = books_sync.get_cover_base64(r["book_id"])  # type: ignore
+            if ok_cov and b64:
+                cover_attempts += 1
+                ok_pic, _ = mozello_service.add_product_picture(handle, b64, filename="cover.jpg")
+                if ok_pic:
+                    cover_success += 1
             success += 1
         else:
             failures.append({"book_id": r["book_id"], "error": resp.get("error")})
-    summary = {"total": total, "success": success, "failed": len(failures), "failures": failures}
+    summary = {"total": total, "success": success, "failed": len(failures), "failures": failures, "cover_attempts": cover_attempts, "cover_success": cover_success}
     return jsonify({"summary": summary, "rows": rows})
 
 

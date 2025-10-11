@@ -5,7 +5,7 @@ identifier. Provides minimal read helpers plus identifier insert/delete.
 """
 from __future__ import annotations
 from typing import List, Dict, Optional, Tuple
-import os, sqlite3
+import os, sqlite3, base64
 from app.utils.logging import get_logger
 
 LOG = get_logger("books_sync")
@@ -73,6 +73,45 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
     return out
 
 
+def _book_path(conn: sqlite3.Connection, book_id: int) -> Optional[str]:
+    try:
+        cur = conn.execute("SELECT path FROM books WHERE id=? LIMIT 1", (book_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        return row[0]
+    except Exception:  # pragma: no cover
+        return None
+
+
+def get_cover_base64(book_id: int, max_bytes: int = 2_000_000) -> Tuple[bool, Optional[str]]:
+    """Return (ok, b64_data) for the book's cover.jpg.
+
+    - Reads library_root/<book.path>/cover.jpg if present.
+    - Enforces a soft size cap (default 2MB) to avoid huge uploads.
+    - Returns (False, None) if not found or exceeds cap.
+    """
+    try:
+        conn = _connect_rw()
+        rel = _book_path(conn, book_id)
+        if not rel:
+            return False, None
+        cover_path = os.path.join(_library_root(), rel, "cover.jpg")
+        if not os.path.isfile(cover_path):
+            return False, None
+        size = os.path.getsize(cover_path)
+        if size > max_bytes:
+            LOG.warning("cover too large book_id=%s size=%s cap=%s", book_id, size, max_bytes)
+            return False, None
+        with open(cover_path, "rb") as f:
+            raw = f.read()
+        b64 = base64.b64encode(raw).decode("ascii")
+        return True, b64
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("get_cover_base64 failed book_id=%s: %s", book_id, exc)
+        return False, None
+
+
 def set_mz_handle(book_id: int, handle: str) -> bool:
     """Insert or update mz handle identifier for a book."""
     try:
@@ -103,4 +142,4 @@ def clear_mz_handle(handle: str) -> int:
         LOG.warning("clear_mz_handle failed handle=%s: %s", handle, exc)
         return 0
 
-__all__ = ["list_calibre_books", "set_mz_handle", "clear_mz_handle"]
+__all__ = ["list_calibre_books", "set_mz_handle", "clear_mz_handle", "get_cover_base64"]

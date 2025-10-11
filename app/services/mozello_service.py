@@ -350,3 +350,35 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
         return False, {"error": str(exc)}
 
 __all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
+
+
+# --------------------- Product Pictures --------------------------------------
+
+def add_product_picture(handle: str, b64_image: str, filename: str | None = None) -> Tuple[bool, Dict[str, Any]]:
+    """Upload a picture for a product.
+
+    Assumptions (per internal doc mozello_store_api.md §6 table Product Pictures):
+      POST /store/product/<handle>/picture/ accepts JSON body with base64 data field.
+    Using body shape { "picture": { "data": <base64> } } (adjust if spec differs).
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    picture_obj: Dict[str, Any] = {"data": b64_image}
+    if filename:
+        picture_obj["filename"] = filename
+    body = {"picture": picture_obj}
+    try:
+        _throttle_wait()
+        r = requests.post(_api_url(f"/store/product/{handle}/picture/"), json=body, headers=headers, timeout=30)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+__all__.append("add_product_picture")

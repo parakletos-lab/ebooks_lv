@@ -96,6 +96,43 @@ Edge considerations:
 - Variant overwrite risk: Always include `variant_handle` when updating variants; otherwise unreferenced variants may be lost.
 - Image workflow: add product first, then pictures, then update variant `picture_handle` associations.
 
+### 6.1 Product Pictures (Detailed)
+New (expanded) summary from official docs:
+
+List product pictures:
+GET `/store/product/<product-handle>/pictures/`
+Response example:
+```
+{
+   "pictures": [
+      { "uid": "uid-1234567890", "url": "https://site-123.../image1234567890.jpg" }
+   ]
+}
+```
+
+Add product picture:
+POST `/store/product/<product-handle>/picture/`
+Request body:
+```
+{
+   "picture": {
+      "filename": "greenshirt.jpg",
+      "data": "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUG..."
+   }
+}
+```
+Notes:
+- `data` is base64-encoded binary image content (JPEG/PNG as supported by Mozello).
+- Multiple POSTs can be issued to attach multiple pictures; Mozello assigns each a `uid`.
+
+Delete product picture:
+DELETE `/store/product/<product-handle>/picture/<picture-handle>/`
+
+Implementation status (ebooks_lv):
+- Helper `add_product_picture(handle, b64_image, filename)` added in `mozello_service` (best-effort upload after export).
+- Currently only uploads the primary Calibre `cover.jpg` once during initial export (bulk or single).
+- Listing & deletion endpoints not yet integrated; future enhancement could reconcile remote vs local covers.
+
 ---
 ## 7. Categories
 - Add: POST `/store/category/` with `{ "category": { title, previous_handle?, parent_handle?, seo_url?, picture? } }`.
