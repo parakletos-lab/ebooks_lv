@@ -19,5 +19,9 @@
 
 15. After adding or editing any admin UI page (templates/routes): rebuild container (`docker compose up -d --build calibre-web-server`) and verify page source has its hidden CSRF `<input>` before testing API actions (prevents stale template/CSRF misses).
 
+16. Field design additions:
+	- `mz_price` custom float column is auto-created at startup if missing by `entrypoint/seed_library.py` (idempotent).
+	- `mz_handle` stored as Calibre identifier `type='mz'` (no schema env var required).
+
 ---
 Add more rules if needed
