@@ -280,6 +280,7 @@ Add new models/services/routes directly under the `app/` package following exist
 | Tail logs | `docker compose logs -f` |
 | Rebuild after changes | `docker compose up -d --build` |
 | Debug mode | Set `CALIBRE_WEB_DEBUG=1` |
+| Fast dev rebuild | `scripts/dev_rebuild.sh --logs` |
 
 With volumes mounted, code changes are reflected immediately—Flask auto-reload only when debug is enabled.
 
@@ -349,6 +350,7 @@ Automated assertion scripts were removed to keep the repo documentation-focused.
 | Multi-stage production image hardening | Slim runtime size | Medium |
 | Documentation site | Publish architecture guide | Low |
 | Optional WSGI server (gunicorn) | Production-grade serving | Low |
+| Mozello export helpers | Implement price/handle helper service + export endpoint | High |
 
 ---
 
@@ -393,3 +395,37 @@ Copyright (c) YEAR <YOUR>
 ---
 
 Happy hacking—extend responsibly and keep upstream clean.
+
+---
+
+## Mozello Core Fields (Price & Handle)
+
+Two logical core fields:
+
+| Logical Field | Storage | Purpose |
+|---------------|---------|---------|
+| `mz_price` | Calibre Custom Column (float) | Local marketplace price (0.00 default) |
+| `mz_handle` | Calibre Identifier (type `mz`) | Mozello product handle after export |
+
+`mz_handle` needs no schema; code inserts identifier rows post-export.
+
+`mz_price` is auto-created (if absent) during startup (seeding orchestrator). Manual run for library seeding only:
+```
+python entrypoint/seed.py
+```
+Sample single-line output:
+```
+[SEED] library ok mz_price_id=27 created=no values=0
+```
+
+Manual creation (alternative) if you prefer Calibre Desktop UI:
+  * Lookup name (label): `mz_price` | Heading: `Price` | Type: Floating point number
+
+Planned helper functions (future module):
+```
+get_mz_price(book) -> float
+get_mz_handle(book) -> Optional[str]
+mark_exported(book_id, handle) -> bool
+```
+
+These will hide underlying joins and enforce idempotency.

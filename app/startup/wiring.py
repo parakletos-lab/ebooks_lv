@@ -25,12 +25,14 @@ def _prepend_template_path(app):
 
     Adds a blueprint purely to insert a loader search path early.
     """
-    override_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    override_dir = os.path.join(base_dir, "templates")
+    static_dir = os.path.join(base_dir, "static")
     if not os.path.isdir(override_dir):
         return
-    # Use a dummy blueprint with template_folder pointing to override_dir
+    # Use a dummy blueprint with template_folder pointing to override_dir (and static for custom assets)
     if not getattr(app, '_app_templates_bp', None):
-        bp = Blueprint('_app_templates', __name__, template_folder=override_dir)
+        bp = Blueprint('_app_templates', __name__, template_folder=override_dir, static_folder=static_dir)
         app.register_blueprint(bp)
         setattr(app, '_app_templates_bp', bp)
         log.debug("Registered _app_templates blueprint for override dir %s", override_dir)

@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+{% set title = 'ebooks.lv Books' %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading"><h3 class="panel-title">ebooks.lv Books Sync</h3></div>
+  <div class="panel-body">
+    <div class="mz-toolbar" id="mz-toolbar">
+      <button id="btn-reload-calibre" class="btn btn-default btn-sm" type="button">Reload Calibre Books</button>
+      <button id="btn-load-products" class="btn btn-info btn-sm" type="button">Load Mozello Products</button>
+      <button id="btn-export-all" class="btn btn-success btn-sm" type="button">Export All to Store</button>
+  <div class="mz-progress mz-hidden" id="mz-progress">
+        <div class="mz-spinner"></div>
+        <span id="mz-progress-text">0/0</span>
+      </div>
+    </div>
+  <div class="table-responsive mz-table-wrap">
+      <table class="table table-condensed table-striped" id="mz-books-table">
+        <thead>
+          <tr>
+            <th>Book ID</th>
+            <th>Title</th>
+            <th>mz_price</th>
+            <th class="mz-col">Sync / State</th>
+            <th class="mz-col">Mozello Title</th>
+            <th class="mz-col">Delete</th>
+          </tr>
+        </thead>
+        <tbody id="mz-books-tbody"></tbody>
+      </table>
+    </div>
+    <div class="mz-log" id="mz-log"></div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  const tbody = document.getElementById('mz-books-tbody');
+  const logBox = document.getElementById('mz-log');
+  const btnReload = document.getElementById('btn-reload-calibre');
+  const btnLoad = document.getElementById('btn-load-products');
+  const btnExportAll = document.getElementById('btn-export-all');
+  const toolbar = document.getElementById('mz-toolbar');
+  const progWrap = document.getElementById('mz-progress');
+  const progText = document.getElementById('mz-progress-text');
+  let rows = [];
+
+  function log(msg, level){
+    const ts = new Date().toLocaleTimeString();
+    const line = document.createElement('div');
+    if(level==='error') line.style.color = '#ff8585';
+    line.textContent = `[${ts}] ${msg}`;
+    logBox.appendChild(line);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function clearTable(){ tbody.innerHTML=''; }
+  function render(){
+    clearTable();
+    const frag = document.createDocumentFragment();
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      if(r.orphan) tr.className = 'orphan-row';
+      tr.innerHTML = `
+        <td>${r.book_id ?? '—'}</td>
+        <td>${escapeHtml(r.title ?? (r.orphan ? '(orphan)' : ''))}</td>
+        <td>${r.mz_price != null ? r.mz_price : ''}</td>
+        <td class="mz-col">${renderSyncCell(r)}</td>
+        <td class="mz-col">${escapeHtml(r.mozello_title || '')}</td>
+        <td class="mz-col">${renderDeleteCell(r)}</td>`;
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+  }
+
+  function renderSyncCell(r){
+    if(r.orphan) return '<span class="label label-danger">ORPHAN</span>';
+    if(r.mz_handle){
+      return `<span class="mz-handle-badge" title="Mozello handle">${escapeHtml(r.mz_handle)}</span>`;
+    }
+    return `<button class="btn btn-primary btn-xs" data-export="${r.book_id}">Export</button>`;
+  }
+  function renderDeleteCell(r){
+    if(r.mz_handle || r.orphan){
+      return `<button class="btn btn-danger btn-xs" data-del="${r.mz_handle || r.mz_handle || ''}">X</button>`;
+    }
+    return '';
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  async function fetchJSON(url, opts){
+    const r = await fetch(url, Object.assign({credentials:'same-origin'}, opts||{}));
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }
+
+  async function loadCalibre(){
+    log('Loading calibre books...');
+    const data = await fetchJSON('/admin/ebookslv/books/api/data');
+    rows = data.rows || [];
+    render();
+    log('Calibre books loaded: '+rows.length);
+  }
+
+  async function loadProducts(){
+    log('Loading Mozello products...');
+    const data = await fetchJSON('/admin/ebookslv/books/api/load_products', {method:'POST'});
+    rows = data.rows || [];
+    render();
+    log(`Products loaded: ${data.products} (orphans: ${data.orphans})`);
+  }
+
+  async function exportOne(bookId, btn){
+    btn.disabled = true;
+    try {
+      log('Export book '+bookId+' ...');
+      const data = await fetchJSON('/admin/ebookslv/books/api/export_one/'+bookId, {method:'POST'});
+      const row = data.row;
+      const idx = rows.findIndex(r=>r.book_id===bookId);
+      if(idx>-1) rows[idx]=row;
+      render();
+      log('Exported book '+bookId);
+    } catch(e){
+      log('ERROR export book '+bookId+': '+e.message, 'error');
+    }
+  }
+
+  function disableAll(dis){
+    [btnReload, btnLoad, btnExportAll].forEach(b=> b.disabled=dis);
+    if(dis){ toolbar.classList.add('mz-disabled'); } else { toolbar.classList.remove('mz-disabled'); }
+  }
+
+  async function exportAll(){
+    disableAll(true);
+    progWrap.style.display='flex';
+    try {
+      // optimistic client-side progress simulation (simple)
+      const calibreMissing = rows.filter(r=>!r.orphan && !r.mz_handle);
+      let done = 0;
+      const total = calibreMissing.length;
+      progText.textContent = `${done}/${total}`;
+      log('Export ALL start total='+total);
+      const data = await fetchJSON('/admin/ebookslv/books/api/export_all', {method:'POST'});
+      rows = data.rows || rows;
+      render();
+      log(`Export ALL summary success=${data.summary.success} failed=${data.summary.failed}`);
+    } catch(e){
+      log('ERROR export all: '+e.message, 'error');
+    } finally {
+      progWrap.style.display='none';
+      disableAll(false);
+    }
+  }
+
+  async function deleteHandle(handle){
+    if(!handle) return;
+    if(!confirm('Delete Mozello product '+handle+'?')) return;
+    log('Delete product '+handle+' ...');
+    try {
+      const data = await fetchJSON('/admin/ebookslv/books/api/delete/'+handle, {method:'DELETE'});
+      // Clear handle in any matching row
+      rows.forEach(r=>{ if(r.mz_handle===handle){ r.mz_handle=null; r.mozello_title=null; r.mozello_price=null; }});
+      // Remove orphan row if any
+      rows = rows.filter(r=> !(r.orphan && r.mz_handle===handle));
+      render();
+      log('Deleted product '+handle+' status='+data.status);
+    } catch(e){
+      log('ERROR delete '+handle+': '+e.message, 'error');
+    }
+  }
+
+  tbody.addEventListener('click', e => {
+    const exp = e.target.getAttribute && e.target.getAttribute('data-export');
+    if(exp){ exportOne(Number(exp), e.target); return; }
+    const del = e.target.getAttribute && e.target.getAttribute('data-del');
+    if(del){ deleteHandle(del); return; }
+  });
+
+  btnReload.addEventListener('click', loadCalibre);
+  btnLoad.addEventListener('click', loadProducts);
+  btnExportAll.addEventListener('click', exportAll);
+  // initial load
+  loadCalibre();
+})();
+</script>
+{% endblock %}

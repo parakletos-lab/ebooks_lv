@@ -1,12 +1,22 @@
 # Development override compose file
 # Usage: docker compose -f compose.yml -f compose.dev.yml up -d --build
 services:
-  calibre-web-server:
+  calibre-web:  # matches base compose service name for proper override merge
     build:
       context: .
       dockerfile: Dockerfile
+    # Override prod port mapping: expose 8083 -> 8083 locally instead of 80 -> 8083
+    ports:
+      - "8083:8083"
     environment:
       CALIBRE_WEB_DEBUG: "1"
+      CALIBRE_DBPATH: /app/config
+      CALIBRE_LIBRARY_PATH: /app/library
+      # Provide Mozello API key in local dev via .env (gitignored) or shell export.
+      # 1. Create a .env file alongside compose.yml with:  MOZELLO_API_KEY=replace_me
+      # 2. Or: export MOZELLO_API_KEY=replace_me && docker compose ... up -d
+      # This line causes compose to inject it (required):
+      MOZELLO_API_KEY: ${MOZELLO_API_KEY:-}
     volumes:
       - ./config:/app/config
       - ./library:/app/library

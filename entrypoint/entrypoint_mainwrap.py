@@ -55,6 +55,12 @@ def _run_upstream_main():
 
     web_server.start = _noop_start  # type: ignore
     sys.exit = _capture_exit  # type: ignore
+    # Calibre-Web's cps.main.main() uses argparse against sys.argv. When running
+    # under gunicorn the process argv contains gunicorn's own flags (-b, --workers, etc.)
+    # which causes a spurious usage error. Provide a sanitized argv for the
+    # duration of the upstream call to keep logs clean.
+    original_argv = sys.argv
+    sys.argv = [original_argv[0]]  # minimal placeholder (no extra flags)
     try:
         cps.main.main()
     except SystemExit:
@@ -64,6 +70,11 @@ def _run_upstream_main():
         traceback.print_exc()
         raise
     finally:
+        # restore argv
+        try:
+            sys.argv = original_argv
+        except Exception:
+            pass
         # Restore
         try:
             web_server.start = original_start  # type: ignore
@@ -88,6 +99,15 @@ def main():  # pragma: no cover - thin wrapper
     global _APP_SINGLETON
     if _APP_SINGLETON is not None:
         return _APP_SINGLETON
+    # Bootstrap seeds (settings + library) before upstream main so dynamic
+    # calibre-web class generation sees any newly created custom columns.
+    # Idempotent & best-effort; failures are logged but not fatal to allow
+    # upstream to continue (it can still self-initialize most pieces).
+    try:
+        from entrypoint import seed as _seed  # type: ignore
+        _seed.main()  # orchestrates all seeding; concise logs
+    except Exception as exc:  # pragma: no cover
+        print(f"[MAINWRAP] WARNING: seeding orchestrator failed: {exc}")
     app = _run_upstream_main()
     try:
         from app.startup import init_app
