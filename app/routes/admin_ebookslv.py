@@ -166,7 +166,8 @@ def api_books_export_one(book_id: int):
     if not target:
         return _json_error("book_not_found", 404)
     handle = target.get("mz_handle") or f"book-{book_id}"
-    ok, resp = mozello_service.upsert_product_minimal(handle, target.get("title") or f"Book {book_id}", target.get("mz_price"))
+    description = books_sync.get_book_description(book_id)
+    ok, resp = mozello_service.upsert_product_basic(handle, target.get("title") or f"Book {book_id}", target.get("mz_price"), description)
     if not ok:
         return _json_error(resp.get("error", "export_failed"), 502)
     # Persist handle if new
@@ -200,7 +201,8 @@ def api_books_export_all():
     cover_success = 0
     for r in to_export:
         handle = f"book-{r['book_id']}"
-        ok, resp = mozello_service.upsert_product_minimal(handle, r.get("title") or f"Book {r['book_id']}", r.get("mz_price"))
+        description = books_sync.get_book_description(r["book_id"])  # type: ignore
+        ok, resp = mozello_service.upsert_product_basic(handle, r.get("title") or f"Book {r['book_id']}", r.get("mz_price"), description)
         if ok:
             books_sync.set_mz_handle(r["book_id"], handle)
             r["mz_handle"] = handle

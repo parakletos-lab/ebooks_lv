@@ -330,6 +330,39 @@ def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tupl
         return False, {"error": str(exc)}
 
 
+def upsert_product_basic(handle: str, title: str, price: float | None, description_html: Optional[str]) -> Tuple[bool, Dict[str, Any]]:
+    """Create or update product including optional description.
+
+    If description_html provided it maps to Mozello `description` (multilanguage single-language shortcut).
+    Fallback to minimal logic otherwise.
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    product_obj: Dict[str, Any] = {"title": {"en": title}, "price": price or 0.0, "visible": True}
+    if description_html:
+        product_obj["description"] = {"en": description_html}
+    # Attempt update
+    try:
+        _throttle_wait()
+        r = requests.put(_api_url(f"/store/product/{handle}/"), json={"product": product_obj}, headers=headers, timeout=20)
+        if r.status_code == 404:
+            create_body = {"product": {"handle": handle, **product_obj}}
+            _throttle_wait()
+            r = requests.post(_api_url("/store/product/"), json=create_body, headers=headers, timeout=20)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+__all__.append("upsert_product_basic")
+
+
 def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
     headers = _api_headers()
     if not headers:

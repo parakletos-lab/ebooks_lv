@@ -112,6 +112,29 @@ def get_cover_base64(book_id: int, max_bytes: int = 2_000_000) -> Tuple[bool, Op
         return False, None
 
 
+def get_book_description(book_id: int, max_len: int = 8000) -> Optional[str]:
+    """Return Calibre book description (HTML) from comments table.
+
+    Calibre stores long description / synopsis in `comments.text` (HTML fragment).
+    We return truncated version (max_len chars) to keep Mozello payload modest.
+    """
+    try:
+        conn = _connect_rw()
+        cur = conn.execute("SELECT text FROM comments WHERE book=? LIMIT 1", (book_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        text = row[0] or None
+        if not text:
+            return None
+        if len(text) > max_len:
+            return text[:max_len]
+        return text
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("get_book_description failed book_id=%s: %s", book_id, exc)
+        return None
+
+
 def set_mz_handle(book_id: int, handle: str) -> bool:
     """Insert or update mz handle identifier for a book."""
     try:
@@ -142,4 +165,10 @@ def clear_mz_handle(handle: str) -> int:
         LOG.warning("clear_mz_handle failed handle=%s: %s", handle, exc)
         return 0
 
-__all__ = ["list_calibre_books", "set_mz_handle", "clear_mz_handle", "get_cover_base64"]
+__all__ = [
+    "list_calibre_books",
+    "set_mz_handle",
+    "clear_mz_handle",
+    "get_cover_base64",
+    "get_book_description",
+]
