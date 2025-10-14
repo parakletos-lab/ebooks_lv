@@ -84,6 +84,31 @@ def _book_path(conn: sqlite3.Connection, book_id: int) -> Optional[str]:
         return None
 
 
+def get_book_relative_path(book_id: int) -> Optional[str]:
+    """Public helper returning Calibre relative path for a book."""
+    try:
+        conn = _connect_rw()
+        return _book_path(conn, book_id)
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("get_book_relative_path failed book_id=%s err=%s", book_id, exc)
+        return None
+
+
+def get_mz_handle(book_id: int) -> Optional[str]:
+    """Return Mozello handle identifier for book if present."""
+    try:
+        conn = _connect_rw()
+        cur = conn.execute("SELECT val FROM identifiers WHERE book=? AND type='mz' LIMIT 1", (book_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        val = row[0]
+        return val if isinstance(val, str) else None
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("get_mz_handle failed book_id=%s err=%s", book_id, exc)
+        return None
+
+
 def get_cover_base64(book_id: int, max_bytes: int = 2_000_000) -> Tuple[bool, Optional[str]]:
     """Return (ok, b64_data) for the book's cover.jpg.
 
@@ -171,4 +196,6 @@ __all__ = [
     "clear_mz_handle",
     "get_cover_base64",
     "get_book_description",
+    "get_book_relative_path",
+    "get_mz_handle",
 ]

@@ -247,7 +247,9 @@ def _throttle_wait():  # pragma: no cover (timing)
         now = time.time()
         delta = now - _LAST_API_CALL
         if delta < _MIN_INTERVAL:
-            time.sleep(_MIN_INTERVAL - delta)
+            sleep_for = _MIN_INTERVAL - delta
+            LOG.debug("mozello throttle sleep %.3fs", sleep_for)
+            time.sleep(sleep_for)
         _LAST_API_CALL = time.time()
 
 
@@ -410,8 +412,37 @@ def add_product_picture(handle: str, b64_image: str, filename: str | None = None
             data = {"raw": r.text}
         if r.status_code != 200 or data.get("error") is True:
             return False, {"error": "http_error", "status": r.status_code, "details": data}
-        return True, data
+        picture = data.get("picture") if isinstance(data, dict) else None
+        remote_uid = None
+        if isinstance(picture, dict):
+            remote_uid = picture.get("id") or picture.get("uid")
+        out: Dict[str, Any] = {"data": data}
+        if remote_uid:
+            out["remote_uid"] = remote_uid
+        return True, out
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
 
 __all__.append("add_product_picture")
+
+
+def delete_product_picture(handle: str, remote_uid: str) -> Tuple[bool, Dict[str, Any]]:
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    try:
+        _throttle_wait()
+        r = requests.delete(_api_url(f"/store/product/{handle}/picture/{remote_uid}/"), headers=headers, timeout=20)
+        if r.status_code == 404:
+            return True, {"status": "not_found"}
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, {"status": "deleted"}
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+__all__.append("delete_product_picture")

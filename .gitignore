@@ -7,3 +7,28 @@ config/calibre-web.log*
 # !config/calibre-web.log
 
 .env
+
+# Bytecode / caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+env/
+venv/
+ENV/
+
+# Test / build
+.pytest_cache/
+
+# Editor / OS
+*.swp
+*~
+.DS_Store
+
+# Local DB / runtime (optional; remove if you intentionally track these)
+config/*.db
+library/metadata.db

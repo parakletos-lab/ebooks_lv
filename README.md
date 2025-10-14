@@ -89,6 +89,7 @@ Custom Calibre-Web deployment wrapper that:
 
 - Upstream isolation: submodule pins an exact Calibre-Web version/commit.
 - First‑party extension layer: all custom routes, services, models under `app/` (no dynamic plugin loading).
+- Extra book images: admin gallery management with Mozello sync and public gallery rendering.
 - Docker image with layered caching and optional healthcheck.
 - Live development via bind-mounted volumes (config, data, app code).
 - Clear boundaries for safe upstream upgrades.

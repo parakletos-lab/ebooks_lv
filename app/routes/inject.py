@@ -13,6 +13,7 @@ from typing import Any
 from .admin_users_books import register_blueprint as register_admin_bp
 from .admin_ebookslv import register_ebookslv_blueprint
 from .admin_mozello import register_blueprints as register_mozello_bps
+from .book_images_public import register_public_blueprint
 from .health import register_health
 from app.routes.overrides.nav_injection import (
     register_loader_injection,
@@ -37,6 +38,7 @@ def register_all(app: Any) -> None:
     register_ebookslv_blueprint(app)  # new consolidated UI
     register_mozello_bps(app)
     register_health(app)
+    register_public_blueprint(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

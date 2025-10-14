@@ -27,5 +27,10 @@
 
 18. Throttle Mozello Store API calls: maximum 1 request per second (enforced in mozello_service). Serialize all product operations.
 
+19. Extra book images:
+	- Upload limit defaults: MAX_IMAGE_BYTES=3MB, MAX_IMAGES_PER_BOOK=10 (manifest enforced), MAX_TOTAL_BYTES_PER_BOOK=15MB.
+	- Manifest stored at extra_images_manifest.json alongside files; mozello sync flags live there.
+	- Mozello picture uploads respect 1 req/s throttle; pending_remote flag remains until successful API response.
+
 ---
 Add more rules if needed

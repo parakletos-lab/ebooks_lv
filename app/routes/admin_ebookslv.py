@@ -32,6 +32,7 @@ except Exception:  # pragma: no cover
 from app.utils import ensure_admin, PermissionError
 from app.services import mozello_service
 from app.services import books_sync
+from app.services import book_images
 from flask import jsonify, request  # type: ignore
 from typing import List, Dict
 
@@ -242,3 +243,135 @@ def register_ebookslv_blueprint(app):
 
 
 __all__ = ["register_ebookslv_blueprint", "bp"]
+
+
+# ------------------- Book Images API --------------------
+
+
+def _mozello_payload_default() -> Dict[str, object]:
+    return {"attempted": False, "uploaded": False}
+
+
+def _error_status(code: str) -> int:
+    if code == "book_not_found":
+        return 404
+    if code == "io_error":
+        return 500
+    return 400
+
+
+def _mozello_push_image(book_id: int, image_name: str) -> Dict[str, object]:
+    handle = books_sync.get_mz_handle(book_id)
+    if not handle:
+        book_images.mark_remote_pending(book_id, image_name)
+        return {"attempted": False, "uploaded": False, "pending": True}
+    ok_encode, payload = book_images.encode_image_base64(book_id, image_name)
+    if not ok_encode:
+        book_images.mark_remote_pending(book_id, image_name)
+        return {"attempted": True, "uploaded": False, "error": payload.get("error", "upload_failed")}
+    mozello = _mozello_payload_default()
+    mozello["attempted"] = True
+    mozello["pending"] = False
+    ok_upload, resp = mozello_service.add_product_picture(handle, payload.get("data", ""), filename=image_name)
+    if ok_upload:
+        raw_data = resp.get("data") if isinstance(resp.get("data"), dict) else {}
+        picture_block = raw_data.get("picture") if isinstance(raw_data, dict) else {}
+        remote_uid = resp.get("remote_uid")
+        if not remote_uid and isinstance(picture_block, dict):
+            remote_uid = picture_block.get("id") or picture_block.get("uid")
+        if remote_uid:
+            book_images.mark_remote_uploaded(book_id, image_name, remote_uid)
+            mozello["uploaded"] = True
+            mozello["remote_uid"] = remote_uid
+            mozello["pending"] = False
+        else:
+            # remote response lacked UID; keep pending for retry
+            book_images.mark_remote_pending(book_id, image_name)
+            mozello["uploaded"] = False
+            mozello["error"] = "missing_remote_uid"
+            mozello["pending"] = True
+    else:
+        book_images.mark_remote_pending(book_id, image_name)
+        mozello["uploaded"] = False
+        mozello["error"] = resp.get("error", "upload_failed")
+        mozello["pending"] = True
+    return mozello
+
+
+@bp.route("/books/<int:book_id>/images/list", methods=["GET"])
+def api_images_list(book_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    data = book_images.list_images(book_id)
+    files = data.get("files") if isinstance(data, dict) else []
+    return jsonify({
+        "images": files,
+        "count": data.get("count", len(files)) if isinstance(data, dict) else len(files),
+        "limit": data.get("limit", book_images.MAX_IMAGES_PER_BOOK) if isinstance(data, dict) else book_images.MAX_IMAGES_PER_BOOK,
+    })
+
+
+@bp.route("/books/<int:book_id>/images/upload", methods=["POST"])
+@_maybe_exempt
+def api_images_upload(book_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    if "file" not in request.files:
+        return _json_error("file_missing", 400)
+    file_storage = request.files["file"]
+    ok, result = book_images.save_image(book_id, file_storage)
+    if not ok:
+        code = result.get("error", "upload_failed")
+        return _json_error(code, _error_status(code))
+    image = result.get("image")
+    if not isinstance(image, dict):
+        return _json_error("upload_failed", 500)
+
+    mozello_info = _mozello_payload_default()
+    if not result.get("deduped"):
+        mozello_info = _mozello_push_image(book_id, image.get("name"))
+        if mozello_info.get("uploaded"):
+            image["uploaded_remote"] = True
+            image["remote_uid"] = mozello_info.get("remote_uid")
+            image["pending_remote"] = False
+        elif mozello_info.get("pending"):
+            image["pending_remote"] = True
+        elif mozello_info.get("error"):
+            image["pending_remote"] = True
+    else:
+        if image.get("uploaded_remote"):
+            mozello_info = {"attempted": True, "uploaded": True, "remote_uid": image.get("remote_uid"), "deduped": True}
+        elif image.get("pending_remote"):
+            mozello_info = _mozello_push_image(book_id, image.get("name"))
+            mozello_info["deduped"] = True
+            if mozello_info.get("uploaded"):
+                image["uploaded_remote"] = True
+                image["remote_uid"] = mozello_info.get("remote_uid")
+                image["pending_remote"] = False
+            elif mozello_info.get("pending"):
+                image["pending_remote"] = True
+        else:
+            # deduped and already local-only without pending flag
+            mozello_info = {"attempted": False, "uploaded": False, "pending": False, "deduped": True}
+
+    return jsonify({"ok": True, "image": image, "mozello": mozello_info})
+
+
+@bp.route("/books/<int:book_id>/images/<path:filename>", methods=["DELETE"])
+@_maybe_exempt
+def api_images_delete(book_id: int, filename: str):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    delete_remote = request.args.get("remote") == "1"
+    ok, result = book_images.delete_image(book_id, filename, delete_remote=delete_remote)
+    if not ok:
+        code = result.get("error", "upload_failed")
+        return _json_error(code, _error_status(code))
+    response: Dict[str, object] = {"ok": True}
+    mozello_info = result.get("mozello")
+    if isinstance(mozello_info, dict):
+        response["mozello"] = mozello_info
+    return jsonify(response)
