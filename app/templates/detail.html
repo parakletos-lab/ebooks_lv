@@ -1,0 +1,6 @@
+{% extends "../calibre-web/cps/templates/detail.html" %}
+
+{% block js %}
+  {{ super() }}
+  <script src="{{ url_for('_app_templates.static', filename='ebookslv_public_gallery.js') }}" defer></script>
+{% endblock %}

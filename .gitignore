@@ -30,5 +30,6 @@ ENV/
 .DS_Store
 
 # Local DB / runtime (optional; remove if you intentionally track these)
-config/*.db
-library/metadata.db
+# Note: tracking local DB files can be useful for dev; the specific patterns
+# were removed to avoid accidentally ignoring database files that are
+# intentionally committed. Add them back if you want to ignore local DBs.
