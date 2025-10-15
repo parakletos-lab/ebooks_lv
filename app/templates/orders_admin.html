@@ -15,6 +15,9 @@
       Manage Mozello order records captured in the users_books database. Each entry stores the Mozello handle and customer email.
       When a matching Calibre book or user exists, it is linked automatically; otherwise you can create the Calibre user manually.
     </p>
+    <div class="ub-margin-b-8">
+      <button type="button" class="btn btn-success btn-sm" id="orders-import">Import paid Mozello orders</button>
+    </div>
     <form id="orders-create-form" class="form-inline ub-margin-b-16" autocomplete="off">
       <div class="form-group">
         <label class="sr-only" for="orders-email">Email</label>
@@ -37,6 +40,9 @@
             <th>Calibre book</th>
             <th class="ub-w-email">Email</th>
             <th>Calibre user</th>
+            <th class="ub-w-date">Mozello created</th>
+            <th class="ub-w-date">Imported</th>
+            <th class="ub-w-actions">Actions</th>
           </tr>
         </thead>
         <tbody id="orders-table-body"></tbody>
@@ -51,12 +57,15 @@
     list: "/admin/ebookslv/orders/api/list",
     create: "/admin/ebookslv/orders/api/create",
     createUser: (id) => `/admin/ebookslv/orders/api/${id}/create_user`,
-    refresh: (id) => `/admin/ebookslv/orders/api/${id}/refresh`
+    refresh: (id) => `/admin/ebookslv/orders/api/${id}/refresh`,
+    remove: (id) => `/admin/ebookslv/orders/api/${id}`,
+    importPaid: "/admin/ebookslv/orders/api/import_paid"
   };
   const form = document.getElementById("orders-create-form");
   const emailInput = document.getElementById("orders-email");
   const handleInput = document.getElementById("orders-handle");
   const refreshBtn = document.getElementById("orders-refresh");
+  const importBtn = document.getElementById("orders-import");
   const alertBox = document.getElementById("orders-alert");
   const summaryBox = document.getElementById("orders-summary");
   const tableBody = document.getElementById("orders-table-body");
@@ -90,7 +99,7 @@
     if(!rows || !rows.length){
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 4;
+      td.colSpan = 7;
       td.className = "text-muted";
       td.textContent = "No orders recorded.";
       tr.appendChild(td);
@@ -105,7 +114,10 @@
         <td><code>${escapeHtml(row.mz_handle || "")}</code></td>
         <td>${renderBookCell(row)}</td>
         <td>${escapeHtml(row.email || "")}</td>
-        <td>${renderUserCell(row)}</td>`;
+        <td>${renderUserCell(row)}</td>
+        <td>${renderDateCell(row.created_at)}</td>
+        <td>${renderDateCell(row.imported_at)}</td>
+        <td>${renderActionsCell(row)}</td>`;
       frag.appendChild(tr);
     });
     tableBody.appendChild(frag);
@@ -128,6 +140,25 @@
     }
     const btn = `<button type="button" class="btn btn-xs btn-primary orders-btn-create-user" data-order="${row.id}">Create User</button>`;
     return `<span class="text-muted">Not linked</span> ${btn}`;
+  }
+
+  function renderDateCell(value){
+    if(!value){
+      return '<span class="text-muted">—</span>';
+    }
+    try{
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())){
+        return `<span>${escapeHtml(value)}</span>`;
+      }
+      return `<time datetime="${escapeHtml(value)}">${escapeHtml(d.toLocaleString())}</time>`;
+    }catch(err){
+      return `<span>${escapeHtml(String(value))}</span>`;
+    }
+  }
+
+  function renderActionsCell(row){
+    return `<button type="button" class="btn btn-xs btn-danger orders-btn-delete" data-order="${row.id}">Delete</button>`;
   }
 
   function escapeHtml(str){
@@ -192,9 +223,30 @@
     await loadOrders();
   });
 
+  if(importBtn){
+    importBtn.addEventListener("click", async () => {
+      hideAlert();
+      importBtn.disabled = true;
+      try{
+        const data = await apiFetch(api.importPaid, { method: "POST" });
+        const summary = data.summary || {};
+        const created = summary.created || 0;
+        const updated = summary.updated || 0;
+        const skipped = summary.skipped || 0;
+        showAlert(`Import finished: ${created} new, ${updated} updated, ${skipped} skipped.`, "success");
+        await loadOrders();
+      }catch(err){
+        showAlert(`Mozello import failed: ${err.message || err}`, "danger");
+      }finally{
+        importBtn.disabled = false;
+      }
+    });
+  }
+
   tableBody.addEventListener("click", async (evt) => {
     const createBtn = evt.target.closest(".orders-btn-create-user");
     const refreshRowBtn = evt.target.closest(".orders-btn-refresh");
+    const deleteBtn = evt.target.closest(".orders-btn-delete");
     if(createBtn){
       const orderId = Number(createBtn.getAttribute("data-order"));
       if(!orderId) return;
@@ -221,6 +273,23 @@
         showAlert(`Refresh failed: ${err.message || err}`, "danger");
       }finally{
         refreshRowBtn.disabled = false;
+      }
+    }
+    if(deleteBtn){
+      const orderId = Number(deleteBtn.getAttribute("data-order"));
+      if(!orderId) return;
+      if(!window.confirm("Delete this order record? This does not affect Mozello.")){
+        return;
+      }
+      deleteBtn.disabled = true;
+      try{
+        await apiFetch(api.remove(orderId), { method: "DELETE" });
+        showAlert("Order deleted", "success");
+        await loadOrders();
+      }catch(err){
+        showAlert(`Delete failed: ${err.message || err}`, "danger");
+      }finally{
+        deleteBtn.disabled = false;
       }
     }
   });

@@ -46,6 +46,7 @@ class MozelloOrder(Base):
     )
 
     def as_dict(self) -> dict:
+        imported = self.updated_at.isoformat() if self.updated_at else None
         return {
             "id": self.id,
             "email": self.email,
@@ -53,7 +54,8 @@ class MozelloOrder(Base):
             "calibre_user_id": self.calibre_user_id,
             "calibre_book_id": self.calibre_book_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "imported_at": imported,
+            "updated_at": imported,  # backward compatibility alias
         }
 
     def __repr__(self) -> str:  # pragma: no cover

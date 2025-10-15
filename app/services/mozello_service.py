@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
 import hmac, hashlib, base64, json, time, threading
+from urllib.parse import quote_plus
 from sqlalchemy import text
 import requests
 from app import config
@@ -383,6 +384,53 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
         return False, {"error": str(exc)}
 
 __all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
+
+
+def fetch_paid_orders(page_size: int = 100, max_pages: int = 50) -> Tuple[bool, Dict[str, Any]]:
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    filter_str = quote_plus("payment_status=paid")
+    next_url = _api_url(
+        f"/store/orders/?archived=false&desc=1&page_size={int(page_size)}&filter={filter_str}"
+    )
+    orders: List[Dict[str, Any]] = []
+    pages = 0
+    try:
+        while next_url and pages < max_pages:
+            _throttle_wait()
+            r = requests.get(next_url, headers=headers, timeout=20)
+            pages += 1
+            status = r.status_code
+            try:
+                payload = r.json()
+            except Exception:
+                return False, {"error": "invalid_json", "status": status}
+            if status != 200 or payload.get("error") is True:
+                return False, {"error": "http_error", "status": status, "details": payload}
+            batch = payload.get("orders") or []
+            if isinstance(batch, list):
+                for entry in batch:
+                    if not isinstance(entry, dict):
+                        continue
+                    if entry.get("payment_status") != "paid":
+                        continue
+                    if entry.get("archived") is True:
+                        continue
+                    orders.append(entry)
+            next_rel = payload.get("next_page_uri")
+            if next_rel:
+                base = config.mozello_api_base().rstrip('/')
+                next_url = base + next_rel
+            else:
+                next_url = None
+        return True, {"orders": orders, "count": len(orders), "pages": pages}
+    except Exception as exc:  # pragma: no cover - network defensive
+        LOG.warning("fetch_paid_orders failed: %s", exc)
+        return False, {"error": str(exc)}
+
+
+__all__.append("fetch_paid_orders")
 
 
 # --------------------- Product Pictures --------------------------------------

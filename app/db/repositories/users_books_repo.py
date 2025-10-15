@@ -1,6 +1,7 @@
 """Repository helpers for Mozello order records (users_books DB)."""
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Iterable, List, Optional
 
 from sqlalchemy.exc import IntegrityError
@@ -32,13 +33,21 @@ def create_order(
     mz_handle: str,
     calibre_user_id: Optional[int] = None,
     calibre_book_id: Optional[int] = None,
+    *,
+    created_at: Optional[datetime] = None,
+    imported_at: Optional[datetime] = None,
 ) -> MozelloOrder:
-    order = MozelloOrder(
-        email=email,
-        mz_handle=mz_handle,
-        calibre_user_id=calibre_user_id,
-        calibre_book_id=calibre_book_id,
-    )
+    payload = {
+        "email": email,
+        "mz_handle": mz_handle,
+        "calibre_user_id": calibre_user_id,
+        "calibre_book_id": calibre_book_id,
+    }
+    if created_at is not None:
+        payload["created_at"] = created_at
+    if imported_at is not None:
+        payload["updated_at"] = imported_at
+    order = MozelloOrder(**payload)
     try:
         with plugin_session() as session:
             session.add(order)
@@ -78,6 +87,39 @@ def bulk_update_links(updates: Iterable[tuple[int, Optional[int], Optional[int]]
                 order.calibre_book_id = book_id
 
 
+def mark_imported(
+    email: str,
+    mz_handle: str,
+    imported_at: datetime,
+    *,
+    calibre_user_id: Optional[int] = None,
+    calibre_book_id: Optional[int] = None,
+) -> Optional[MozelloOrder]:
+    with plugin_session() as session:
+        order = (
+            session.query(MozelloOrder)
+            .filter(MozelloOrder.email == email, MozelloOrder.mz_handle == mz_handle)
+            .one_or_none()
+        )
+        if not order:
+            return None
+        order.updated_at = imported_at
+        if calibre_user_id is not None and not order.calibre_user_id:
+            order.calibre_user_id = calibre_user_id
+        if calibre_book_id is not None and not order.calibre_book_id:
+            order.calibre_book_id = calibre_book_id
+        return order
+
+
+def delete_order(order_id: int) -> bool:
+    with plugin_session() as session:
+        order = session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
+        if not order:
+            return False
+        session.delete(order)
+        return True
+
+
 __all__ = [
     "OrderExistsError",
     "list_orders",
@@ -85,4 +127,6 @@ __all__ = [
     "create_order",
     "update_links",
     "bulk_update_links",
+    "mark_imported",
+    "delete_order",
 ]

@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Set
+import json
 
 from app.db.models import MozelloOrder
 from app.db.repositories import users_books_repo
 from app.db.repositories.users_books_repo import OrderExistsError as RepoOrderExistsError
-from app.services import books_sync
+from app.services import books_sync, mozello_service
 from app.services.calibre_users_service import (
     CalibreUnavailableError,
     UserAlreadyExistsError,
@@ -33,6 +35,10 @@ class OrderNotFoundError(RuntimeError):
     """Raised when an order id cannot be located."""
 
 
+class OrderImportError(RuntimeError):
+    """Raised when Mozello import fails."""
+
+
 @dataclass
 class OrderView:
     id: int
@@ -43,7 +49,7 @@ class OrderView:
     book_error: Optional[str]
     user_missing: bool
     created_at: Optional[str]
-    updated_at: Optional[str]
+    imported_at: Optional[str]
 
 
 def _order_to_view(
@@ -61,7 +67,7 @@ def _order_to_view(
         book_error=book_error,
         user_missing=user is None,
         created_at=order.created_at.isoformat() if order.created_at else None,
-        updated_at=order.updated_at.isoformat() if order.updated_at else None,
+        imported_at=order.updated_at.isoformat() if order.updated_at else None,
     )
 
 
@@ -121,6 +127,7 @@ def create_order(email: str, mz_handle: str) -> Dict[str, Any]:
     book_info = book_lookup.get(handle_clean.lower())
 
     user_info = lookup_user_by_email(normalized_email)
+    imported_at = datetime.utcnow()
 
     try:
         order = users_books_repo.create_order(
@@ -128,6 +135,7 @@ def create_order(email: str, mz_handle: str) -> Dict[str, Any]:
             handle_clean,
             calibre_user_id=user_info.get("id") if user_info else None,
             calibre_book_id=book_info.get("book_id") if book_info else None,
+            imported_at=imported_at,
         )
     except RepoOrderExistsError as exc:
         raise OrderAlreadyExistsError("order_exists") from exc
@@ -209,14 +217,152 @@ def refresh_order(order_id: int) -> Dict[str, Any]:
     return {"order": view.__dict__, "status": "refreshed"}
 
 
+def delete_order(order_id: int) -> Dict[str, Any]:
+    removed = users_books_repo.delete_order(order_id)
+    if not removed:
+        raise OrderNotFoundError("order_missing")
+    return {"status": "deleted"}
+
+
+def _parse_mozello_timestamp(raw: Optional[str]) -> Optional[datetime]:
+    if not raw or not isinstance(raw, str):
+        return None
+    candidate = raw.strip()
+    if not candidate:
+        return None
+    formats = (
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+    )
+    for fmt in formats:
+        try:
+            return datetime.strptime(candidate, fmt)
+        except ValueError:
+            continue
+    try:
+        parsed = datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+        if parsed.tzinfo:
+            return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+        return parsed
+    except Exception:
+        return None
+
+
+def import_paid_orders() -> Dict[str, Any]:
+    ok, payload = mozello_service.fetch_paid_orders()
+    if not ok:
+        # Surface full payload for diagnostics (will be returned as error message)
+        try:
+            details = json.dumps(payload)
+        except Exception:
+            details = str(payload)
+        LOG.warning("Mozello fetch_paid_orders failed: %s", details)
+        raise OrderImportError(details)
+
+    raw_orders = payload.get("orders") if isinstance(payload, dict) else None
+    if not isinstance(raw_orders, list):
+        raise OrderImportError("invalid_payload")
+
+    handles: Set[str] = set()
+    emails: Set[str] = set()
+    for item in raw_orders:
+        if not isinstance(item, dict):
+            continue
+        email_norm = normalize_email(item.get("email"))
+        if email_norm:
+            emails.add(email_norm)
+        for cart_item in item.get("cart") or []:
+            handle = (cart_item.get("product_handle") or "").strip()
+            if handle:
+                handles.add(handle.lower())
+
+    book_map = books_sync.lookup_books_by_handles(handles) if handles else {}
+    user_map = lookup_users_by_emails(emails) if emails else {}
+
+    imported_at_ts = datetime.utcnow()
+
+    summary = {
+        "fetched": len(raw_orders),
+        "created": 0,
+        "updated": 0,
+        "skipped": 0,
+        "errors": [],
+    }
+    created_ids: List[int] = []
+
+    for item in raw_orders:
+        if not isinstance(item, dict):
+            summary["skipped"] += 1
+            continue
+        email_norm = normalize_email(item.get("email"))
+        if not email_norm:
+            summary["skipped"] += 1
+            continue
+        moz_created_at = _parse_mozello_timestamp(item.get("created_at"))
+        user_info = user_map.get(email_norm)
+        cart = item.get("cart") or []
+        if not cart:
+            summary["skipped"] += 1
+            continue
+        seen_handles: Set[str] = set()
+        for cart_item in cart:
+            handle_raw = (cart_item.get("product_handle") or "").strip()
+            if not handle_raw:
+                summary["skipped"] += 1
+                continue
+            handle_key = handle_raw.lower()
+            if handle_key in seen_handles:
+                continue
+            seen_handles.add(handle_key)
+            book_info = book_map.get(handle_key)
+            calibre_user_id = user_info.get("id") if user_info else None
+            calibre_book_id = book_info.get("book_id") if book_info else None
+            try:
+                order = users_books_repo.create_order(
+                    email_norm,
+                    handle_raw,
+                    calibre_user_id=calibre_user_id,
+                    calibre_book_id=calibre_book_id,
+                    created_at=moz_created_at,
+                    imported_at=imported_at_ts,
+                )
+                summary["created"] += 1
+                created_ids.append(order.id)
+            except RepoOrderExistsError:
+                users_books_repo.mark_imported(
+                    email_norm,
+                    handle_raw,
+                    imported_at_ts,
+                    calibre_user_id=calibre_user_id,
+                    calibre_book_id=calibre_book_id,
+                )
+                summary["updated"] += 1
+            except Exception as exc:  # pragma: no cover - defensive
+                summary["errors"].append({
+                    "email": email_norm,
+                    "handle": handle_raw,
+                    "error": str(exc),
+                })
+                LOG.warning("Mozello import failed email=%s handle=%s error=%s", email_norm, handle_raw, exc)
+
+    summary["created_ids"] = created_ids
+    return {"status": "ok", "summary": summary}
+
+
 __all__ = [
     "list_orders",
     "create_order",
     "create_user_for_order",
     "refresh_order",
+    "delete_order",
+    "import_paid_orders",
     "OrderValidationError",
     "OrderAlreadyExistsError",
     "OrderNotFoundError",
+    "OrderImportError",
     "CalibreUnavailableError",
     "UserAlreadyExistsError",
 ]

@@ -148,6 +148,32 @@ def api_orders_refresh(order_id: int):
     return jsonify(result)
 
 
+@bp.route("/orders/api/import_paid", methods=["POST"])
+@_maybe_exempt
+def api_orders_import_paid():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = orders_service.import_paid_orders()
+    except orders_service.OrderImportError as exc:
+        return _json_error(str(exc), 502)
+    return jsonify(result)
+
+
+@bp.route("/orders/api/<int:order_id>", methods=["DELETE"])
+@_maybe_exempt
+def api_orders_delete(order_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = orders_service.delete_order(order_id)
+    except orders_service.OrderNotFoundError:
+        return _json_error("order_missing", 404)
+    return jsonify(result)
+
+
 @bp.route("/books/api/data", methods=["GET"])  # list calibre only
 def api_books_data():
     auth = _require_admin_json()
