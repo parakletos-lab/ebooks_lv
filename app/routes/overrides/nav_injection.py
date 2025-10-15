@@ -142,8 +142,18 @@ def register_loader_injection(app: Any) -> None:
     env = getattr(app, "jinja_env", None)
     if not env or not getattr(env, "loader", None):  # pragma: no cover
         return
-    if isinstance(env.loader, _NavPatchedLoader):  # type: ignore[attr-defined]
-        return
+    # If the loader is already our patched loader or already wraps our
+    # patched loader deeper in the chain, don't install another wrapper.
+    try:
+        if isinstance(env.loader, _NavPatchedLoader):  # type: ignore[attr-defined]
+            return
+        # If loader is another wrapper that wraps a NavPatchedLoader, skip
+        inner = getattr(env.loader, '_wrapped', None)
+        if inner is not None and isinstance(inner, _NavPatchedLoader):  # type: ignore[attr-defined]
+            return
+    except Exception:
+        # If any introspection fails, fall back to safe behaviour below.
+        pass
     env.loader = _NavPatchedLoader(env.loader)  # type: ignore[assignment]
     setattr(app, "_users_books_nav_loader", True)
     LOG.debug("navigation loader wrapper registered")
