@@ -1,37 +1,78 @@
-"""users_books ORM models (migrated from legacy plugin).
-
-Original source: plugins.users_books.models
-Purpose: define per-user allow list mapping table.
-"""
+"""ORM models for users_books DB (Mozello orders + config)."""
 from __future__ import annotations
 
+import datetime
+import json
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, UniqueConstraint, Index, String, Text, DateTime
-import json, datetime
 
 Base = declarative_base()
 
 
-class UserFilter(Base):
+class MozelloOrder(Base):
+    """Mozello order import table (repurposed legacy users_books DB).
+
+    Stores email ↔ Mozello handle combinations with optional links to
+    Calibre users/books. Each (email, mz_handle) pair is unique.
+    """
+
     __tablename__ = "users_books"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False, index=True)
-    book_id = Column(Integer, nullable=False, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    mz_handle = Column(String(255), nullable=False, index=True)
+    calibre_user_id = Column(Integer, nullable=True, index=True)
+    calibre_book_id = Column(Integer, nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+        nullable=False,
+    )
 
     __table_args__ = (
-        UniqueConstraint("user_id", "book_id", name="uq_users_books_user_book"),
-        Index("ix_users_books_user_book", "user_id", "book_id"),
+        UniqueConstraint("email", "mz_handle", name="uq_mozello_order_email_handle"),
+        Index("ix_users_books_handle_email", "mz_handle", "email"),
     )
 
     def as_dict(self) -> dict:
-        return {"id": self.id, "user_id": self.user_id, "book_id": self.book_id}
+        return {
+            "id": self.id,
+            "email": self.email,
+            "mz_handle": self.mz_handle,
+            "calibre_user_id": self.calibre_user_id,
+            "calibre_book_id": self.calibre_book_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<UserFilter id={self.id} user_id={self.user_id} book_id={self.book_id}>"
+        return (
+            "<MozelloOrder id={0} email={1} mz_handle={2} user_id={3} book_id={4}>".format(
+                self.id,
+                self.email,
+                self.mz_handle,
+                self.calibre_user_id,
+                self.calibre_book_id,
+            )
+        )
 
 
-__all__ = ["Base", "UserFilter"]
+# Backward compatible alias for any legacy imports that still reference
+# the old name. Remove once callers migrate fully.
+UserFilter = MozelloOrder
+
+__all__ = ["Base", "MozelloOrder", "UserFilter"]
 
 
 # ---------------- Mozello Integration (notification settings storage) ---------------

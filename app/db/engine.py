@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - non-POSIX fallback (not expected in dr
 from contextlib import contextmanager
 from typing import Optional, Iterator, Callable
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, scoped_session, Session as SASession
 
@@ -73,6 +73,19 @@ def _safe_create_schema():
     """
     from sqlalchemy.exc import OperationalError  # local import, lightweight
     try:
+        if _engine is None:
+            return
+        # Detect legacy schema (pre-orders) and drop the table for a clean recreate.
+        with _engine.begin() as conn:  # type: ignore[assignment]
+            table_exists = conn.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table' AND name='users_books'")
+            ).fetchone()
+            if table_exists:
+                columns = conn.execute(text("PRAGMA table_info('users_books')")).fetchall()
+                col_names = {row[1] for row in columns}
+                if not {"email", "mz_handle"}.issubset(col_names):
+                    LOG.warning("Dropping legacy users_books table prior to Mozello orders schema upgrade")
+                    conn.execute(text("DROP TABLE users_books"))
         Base.metadata.create_all(_engine)  # type: ignore[arg-type]
     except OperationalError as e:  # pragma: no cover - concurrency edge
         msg = str(e).lower()

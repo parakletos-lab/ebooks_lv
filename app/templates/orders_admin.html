@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+{% set title = 'Mozello Orders' %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Mozello Orders</h3>
+    <input type="hidden" id="orders-csrf" value="{{ ub_csrf_token|default('') }}" />
+  </div>
+  <div class="panel-body">
+    <p class="text-muted ub-panel-note">
+      Manage Mozello order records captured in the users_books database. Each entry stores the Mozello handle and customer email.
+      When a matching Calibre book or user exists, it is linked automatically; otherwise you can create the Calibre user manually.
+    </p>
+    <form id="orders-create-form" class="form-inline ub-margin-b-16" autocomplete="off">
+      <div class="form-group">
+        <label class="sr-only" for="orders-email">Email</label>
+        <input type="email" class="form-control input-sm" id="orders-email" placeholder="customer@example.com" required />
+      </div>
+      <div class="form-group ub-form-group-gap">
+        <label class="sr-only" for="orders-handle">Mozello handle</label>
+        <input type="text" class="form-control input-sm" id="orders-handle" placeholder="mozello-handle" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Add Order</button>
+      <button type="button" class="btn btn-default btn-sm" id="orders-refresh">Reload</button>
+    </form>
+  <div id="orders-alert" class="alert hidden"></div>
+    <div class="text-muted ub-micro" id="orders-summary"></div>
+    <div class="table-responsive ub-table-gap">
+      <table class="table table-condensed table-striped" id="orders-table">
+        <thead>
+          <tr class="ub-sticky-top">
+            <th class="ub-w-bookid">Mozello handle</th>
+            <th>Calibre book</th>
+            <th class="ub-w-email">Email</th>
+            <th>Calibre user</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  const api = {
+    list: "/admin/ebookslv/orders/api/list",
+    create: "/admin/ebookslv/orders/api/create",
+    createUser: (id) => `/admin/ebookslv/orders/api/${id}/create_user`,
+    refresh: (id) => `/admin/ebookslv/orders/api/${id}/refresh`
+  };
+  const form = document.getElementById("orders-create-form");
+  const emailInput = document.getElementById("orders-email");
+  const handleInput = document.getElementById("orders-handle");
+  const refreshBtn = document.getElementById("orders-refresh");
+  const alertBox = document.getElementById("orders-alert");
+  const summaryBox = document.getElementById("orders-summary");
+  const tableBody = document.getElementById("orders-table-body");
+  const csrfInput = document.getElementById("orders-csrf");
+
+  function csrfToken(){
+    return csrfInput ? csrfInput.value : "";
+  }
+
+  function showAlert(message, type="info"){
+    if(!alertBox) return;
+    alertBox.className = `alert alert-${type}`;
+    alertBox.classList.remove("hidden");
+    alertBox.textContent = message;
+  }
+
+  function hideAlert(){
+    if(alertBox){
+      alertBox.className = "alert hidden";
+      alertBox.textContent = "";
+    }
+  }
+
+  function renderSummary(summary){
+    if(!summaryBox) return;
+    summaryBox.textContent = `Total: ${summary.total || 0} | Linked books: ${summary.linked_books || 0} | Linked users: ${summary.linked_users || 0}`;
+  }
+
+  function renderRows(rows){
+    tableBody.innerHTML = "";
+    if(!rows || !rows.length){
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 4;
+      td.className = "text-muted";
+      td.textContent = "No orders recorded.";
+      tr.appendChild(td);
+      tableBody.appendChild(tr);
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.dataset.orderId = row.id;
+      tr.innerHTML = `
+        <td><code>${escapeHtml(row.mz_handle || "")}</code></td>
+        <td>${renderBookCell(row)}</td>
+        <td>${escapeHtml(row.email || "")}</td>
+        <td>${renderUserCell(row)}</td>`;
+      frag.appendChild(tr);
+    });
+    tableBody.appendChild(frag);
+  }
+
+  function renderBookCell(row){
+    if(row.calibre_book){
+      const title = row.calibre_book.title || `Book #${row.calibre_book.book_id}`;
+      return `<span class="text-success">${escapeHtml(title)}</span>`;
+    }
+    const message = row.book_error || "Calibre book missing";
+    const refreshBtn = `<button type="button" class="btn btn-xs btn-default orders-btn-refresh" data-order="${row.id}">Refresh</button>`;
+    return `<span class="text-danger">${escapeHtml(message)}</span> ${refreshBtn}`;
+  }
+
+  function renderUserCell(row){
+    if(!row.user_missing && row.calibre_user){
+      const name = row.calibre_user.name || `User #${row.calibre_user.id}`;
+      return `<span class="text-success">${escapeHtml(name)}</span>`;
+    }
+    const btn = `<button type="button" class="btn btn-xs btn-primary orders-btn-create-user" data-order="${row.id}">Create User</button>`;
+    return `<span class="text-muted">Not linked</span> ${btn}`;
+  }
+
+  function escapeHtml(str){
+    return (str || "").replace(/[&<>"']/g, function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch] || ch;
+    });
+  }
+
+  async function apiFetch(url, options){
+    const opts = options || {};
+    opts.headers = opts.headers || {};
+    if(opts.method && opts.method !== "GET"){
+      opts.headers["Content-Type"] = "application/json";
+      const tok = csrfToken();
+      if(tok) opts.headers["X-CSRFToken"] = tok;
+    }
+    const response = await fetch(url, opts);
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok){
+      const message = data && data.error ? data.error : `HTTP ${response.status}`;
+      throw new Error(message);
+    }
+    return data;
+  }
+
+  async function loadOrders(){
+    hideAlert();
+    try{
+      const data = await apiFetch(api.list);
+      renderRows(data.orders || []);
+      renderSummary(data.summary || {});
+    }catch(err){
+      showAlert(`Failed to load orders: ${err.message || err}`, "danger");
+    }
+  }
+
+  form.addEventListener("submit", async (evt) => {
+    evt.preventDefault();
+    const email = emailInput.value.trim();
+    const handle = handleInput.value.trim();
+    if(!email || !handle){
+      showAlert("Email and Mozello handle are required", "warning");
+      return;
+    }
+    hideAlert();
+    try{
+      await apiFetch(api.create, {
+        method: "POST",
+        body: JSON.stringify({ email, mz_handle: handle })
+      });
+      showAlert("Order saved", "success");
+      emailInput.value = "";
+      handleInput.value = "";
+      await loadOrders();
+    }catch(err){
+      showAlert(`Unable to save order: ${err.message || err}`, "danger");
+    }
+  });
+
+  refreshBtn.addEventListener("click", async () => {
+    hideAlert();
+    await loadOrders();
+  });
+
+  tableBody.addEventListener("click", async (evt) => {
+    const createBtn = evt.target.closest(".orders-btn-create-user");
+    const refreshRowBtn = evt.target.closest(".orders-btn-refresh");
+    if(createBtn){
+      const orderId = Number(createBtn.getAttribute("data-order"));
+      if(!orderId) return;
+      createBtn.disabled = true;
+      try{
+        const data = await apiFetch(api.createUser(orderId), { method: "POST" });
+        const message = data.password ? `Calibre user created. Temporary password: ${data.password}` : "Linked to existing user.";
+        showAlert(message, "success");
+        await loadOrders();
+      }catch(err){
+        showAlert(`Create user failed: ${err.message || err}`, "danger");
+      }finally{
+        createBtn.disabled = false;
+      }
+    }
+    if(refreshRowBtn){
+      const orderId = Number(refreshRowBtn.getAttribute("data-order"));
+      if(!orderId) return;
+      refreshRowBtn.disabled = true;
+      try{
+        await apiFetch(api.refresh(orderId), { method: "POST" });
+        await loadOrders();
+      }catch(err){
+        showAlert(`Refresh failed: ${err.message || err}`, "danger");
+      }finally{
+        refreshRowBtn.disabled = false;
+      }
+    }
+  });
+
+  loadOrders();
+})();
+</script>
+{% endblock %}

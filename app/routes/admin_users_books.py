@@ -1,87 +1,22 @@
+"""Legacy placeholder for retired users_books admin routes.
+
+The Mozello orders implementation replaces this blueprint. Importing this
+module is considered an error to surface any lingering references.
+"""
+from __future__ import annotations
+
+
+def register_blueprint(app):  # pragma: no cover - defensive guard
+    raise RuntimeError("users_books admin routes have been removed; use orders admin")
+
+__all__ = ["register_blueprint"]
+
 """Admin routes for users ↔ book allow‑list (migrated from legacy plugin).
 
 Primary JSON API namespace: /admin/users_books/*
 UI page is now also served at the collection root: /admin/users_books
 
-Backward compatibility:
-    /admin/users_books/admin  (legacy dev path) still renders the page
-    /users_books/admin        (old public path) now redirects (302) to /admin/users_books
-All routes enforce admin access via ``ensure_admin``.
-"""
-from __future__ import annotations
-from typing import List, Dict, Any, Optional, Iterable
-try:  # runtime dependency, editor may not resolve
-    from flask import Blueprint, request, jsonify, redirect  # type: ignore
-except Exception:  # pragma: no cover
-    Blueprint = object  # type: ignore
-    def request():  # type: ignore
-        raise RuntimeError("Flask not available")
-    def jsonify(*a, **k):  # type: ignore
-        return {"error": "Flask missing"}, 500
-
-from app.services import (
-    list_allowed_book_ids,
-    add_mapping,
-    remove_mapping,
-    bulk_add,
-    upsert,
-)
-from app.utils import ensure_admin, PermissionError
-from app.db import plugin_session
-from app.db.models import UserFilter
-from app.db import models as db_models  # to access User model
-import os, sqlite3
-from app.utils import constants as app_constants
-
-
-bp = Blueprint("users_books_admin", __name__, url_prefix="/admin/users_books", template_folder="../templates")
-
-# Optional CSRF exemption (Calibre-Web's global CSRFProtect) for pure JSON API routes.
-try:  # runtime guard
-    from cps import csrf  # type: ignore
-except Exception:  # pragma: no cover
-    csrf = None  # type: ignore
-
-# Helper decorator to safely exempt routes from CSRF (works even if csrf is None)
-def _maybe_exempt(func):  # type: ignore
-    if csrf:  # type: ignore
-        try:
-            return csrf.exempt(func)  # type: ignore
-        except Exception:  # pragma: no cover
-            return func
-    return func
-
-
-def _json_error(msg: str, status: int = 400):
-    return jsonify({"error": msg}), status
-
-
-def _require_admin():
-    try:
-        ensure_admin()
-    except PermissionError as exc:  # type: ignore
-        return _json_error(str(exc), 403)
-    return True
-
-
-@bp.route("/<int:user_id>/filters", methods=["GET"])
-def admin_list_filters(user_id: int):
-    auth = _require_admin()
-    if auth is not True:
-        return auth
-    ids = list_allowed_book_ids(user_id)
-    return jsonify({"user_id": user_id, "allowed_book_ids": ids, "count": len(ids)})
-
-
-@bp.route("/<int:user_id>/filters", methods=["POST"])
-@_maybe_exempt
-def admin_add_filter(user_id: int):
-    auth = _require_admin()
-    if auth is not True:
-        return auth
-    data = request.get_json(silent=True) or {}
-    book_id = data.get("book_id")
-    try:
+__all__ = ["register_blueprint"]
         book_id = int(book_id)
     except Exception:
         return _json_error("Missing or invalid 'book_id'")

@@ -4,7 +4,7 @@ Read Calibre metadata.db for book list, mz_price custom column and mz_handle
 identifier. Provides minimal read helpers plus identifier insert/delete.
 """
 from __future__ import annotations
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 import os, sqlite3, base64
 from app.utils.logging import get_logger
 
@@ -171,4 +171,38 @@ __all__ = [
     "clear_mz_handle",
     "get_cover_base64",
     "get_book_description",
+    "lookup_books_by_handles",
+    "lookup_book_by_handle",
 ]
+
+
+def lookup_books_by_handles(handles: Iterable[str]) -> Dict[str, Dict[str, Optional[str]]]:
+    """Return mapping of lower-case handle -> book metadata for provided handles."""
+    normalized = {h.strip().lower() for h in handles if isinstance(h, str) and h.strip()}
+    if not normalized:
+        return {}
+    conn = _connect_rw()
+    placeholders = ",".join(["?"] * len(normalized))
+    sql = (
+        "SELECT lower(i.val) AS handle, b.id, b.title "
+        "FROM identifiers i "
+        "JOIN books b ON b.id = i.book "
+        "WHERE i.type='mz' AND lower(i.val) IN (" + placeholders + ")"
+    )
+    rows = conn.execute(sql, tuple(normalized)).fetchall()
+    result: Dict[str, Dict[str, Optional[str]]] = {}
+    for handle, book_id, title in rows:
+        key = (handle or "").strip().lower()
+        if not key:
+            continue
+        result[key] = {
+            "handle": handle,
+            "book_id": int(book_id),
+            "title": title,
+        }
+    return result
+
+
+def lookup_book_by_handle(handle: str) -> Optional[Dict[str, Optional[str]]]:
+    mapping = lookup_books_by_handles([handle])
+    return mapping.get(handle.strip().lower() if isinstance(handle, str) else "")
