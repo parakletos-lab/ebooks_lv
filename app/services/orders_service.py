@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 from typing import Any, Dict, List, Optional, Set
 import json
 
@@ -251,8 +251,32 @@ def _parse_mozello_timestamp(raw: Optional[str]) -> Optional[datetime]:
         return None
 
 
-def import_paid_orders() -> Dict[str, Any]:
-    ok, payload = mozello_service.fetch_paid_orders()
+def _parse_date_input(raw: Optional[str]) -> Optional[datetime]:
+    if raw is None:
+        return None
+    value = raw.strip()
+    if not value:
+        return None
+    try:
+        parsed = datetime.strptime(value, "%Y-%m-%d")
+    except ValueError as exc:
+        raise OrderValidationError("invalid_date") from exc
+    return parsed
+
+
+def import_paid_orders(
+    *,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> Dict[str, Any]:
+    start_parsed = _parse_date_input(start_date)
+    end_parsed = _parse_date_input(end_date)
+    if start_parsed and end_parsed and end_parsed < start_parsed:
+        raise OrderValidationError("invalid_date_range")
+    start_dt = datetime.combine(start_parsed, time.min) if start_parsed else None
+    end_dt = datetime.combine(end_parsed, time(23, 59, 59)) if end_parsed else None
+
+    ok, payload = mozello_service.fetch_paid_orders(start_date=start_dt, end_date=end_dt)
     if not ok:
         # Surface full payload for diagnostics (will be returned as error message)
         try:
@@ -287,36 +311,55 @@ def import_paid_orders() -> Dict[str, Any]:
     summary = {
         "fetched": len(raw_orders),
         "created": 0,
-        "updated": 0,
         "skipped": 0,
+        "skipped_existing": 0,
+        "skipped_filtered": 0,
         "errors": [],
     }
     created_ids: List[int] = []
 
+    existing_pairs: Set[tuple[str, str]] = set()
+    for record in users_books_repo.list_orders():
+        email_key = normalize_email(record.email)
+        handle_key = (record.mz_handle or "").strip().lower()
+        if not email_key or not handle_key:
+            continue
+        existing_pairs.add((email_key, handle_key))
+
     for item in raw_orders:
         if not isinstance(item, dict):
-            summary["skipped"] += 1
+            summary["skipped_filtered"] += 1
             continue
         email_norm = normalize_email(item.get("email"))
         if not email_norm:
-            summary["skipped"] += 1
+            summary["skipped_filtered"] += 1
             continue
         moz_created_at = _parse_mozello_timestamp(item.get("created_at"))
+        if start_dt and moz_created_at and moz_created_at < start_dt:
+            summary["skipped_filtered"] += 1
+            continue
+        if end_dt and moz_created_at and moz_created_at > end_dt:
+            summary["skipped_filtered"] += 1
+            continue
         user_info = user_map.get(email_norm)
         cart = item.get("cart") or []
         if not cart:
-            summary["skipped"] += 1
+            summary["skipped_filtered"] += 1
             continue
         seen_handles: Set[str] = set()
         for cart_item in cart:
             handle_raw = (cart_item.get("product_handle") or "").strip()
             if not handle_raw:
-                summary["skipped"] += 1
+                summary["skipped_filtered"] += 1
                 continue
             handle_key = handle_raw.lower()
             if handle_key in seen_handles:
                 continue
             seen_handles.add(handle_key)
+            pair_key = (email_norm, handle_key)
+            if pair_key in existing_pairs:
+                summary["skipped_existing"] += 1
+                continue
             book_info = book_map.get(handle_key)
             calibre_user_id = user_info.get("id") if user_info else None
             calibre_book_id = book_info.get("book_id") if book_info else None
@@ -331,15 +374,9 @@ def import_paid_orders() -> Dict[str, Any]:
                 )
                 summary["created"] += 1
                 created_ids.append(order.id)
+                existing_pairs.add(pair_key)
             except RepoOrderExistsError:
-                users_books_repo.mark_imported(
-                    email_norm,
-                    handle_raw,
-                    imported_at_ts,
-                    calibre_user_id=calibre_user_id,
-                    calibre_book_id=calibre_book_id,
-                )
-                summary["updated"] += 1
+                summary["skipped_existing"] += 1
             except Exception as exc:  # pragma: no cover - defensive
                 summary["errors"].append({
                     "email": email_norm,
@@ -348,6 +385,7 @@ def import_paid_orders() -> Dict[str, Any]:
                 })
                 LOG.warning("Mozello import failed email=%s handle=%s error=%s", email_norm, handle_raw, exc)
 
+    summary["skipped"] = summary["skipped_existing"] + summary["skipped_filtered"]
     summary["created_ids"] = created_ids
     return {"status": "ok", "summary": summary}
 

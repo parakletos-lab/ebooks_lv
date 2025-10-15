@@ -15,9 +15,18 @@
       Manage Mozello order records captured in the users_books database. Each entry stores the Mozello handle and customer email.
       When a matching Calibre book or user exists, it is linked automatically; otherwise you can create the Calibre user manually.
     </p>
-    <div class="ub-margin-b-8">
+    <form id="orders-import-form" class="form-inline ub-margin-b-8" autocomplete="off">
+      <div class="form-group">
+        <label class="sr-only" for="orders-start-date">From</label>
+        <input type="date" class="form-control input-sm" id="orders-start-date" />
+      </div>
+      <div class="form-group ub-form-group-gap">
+        <label class="sr-only" for="orders-end-date">To</label>
+        <input type="date" class="form-control input-sm" id="orders-end-date" />
+      </div>
       <button type="button" class="btn btn-success btn-sm" id="orders-import">Import paid Mozello orders</button>
-    </div>
+      <span class="text-muted ub-micro ub-form-group-gap" id="orders-import-hint">Defaults to last 10 days</span>
+    </form>
     <form id="orders-create-form" class="form-inline ub-margin-b-16" autocomplete="off">
       <div class="form-group">
         <label class="sr-only" for="orders-email">Email</label>
@@ -66,6 +75,8 @@
   const handleInput = document.getElementById("orders-handle");
   const refreshBtn = document.getElementById("orders-refresh");
   const importBtn = document.getElementById("orders-import");
+  const importStartInput = document.getElementById("orders-start-date");
+  const importEndInput = document.getElementById("orders-end-date");
   const alertBox = document.getElementById("orders-alert");
   const summaryBox = document.getElementById("orders-summary");
   const tableBody = document.getElementById("orders-table-body");
@@ -73,6 +84,24 @@
 
   function csrfToken(){
     return csrfInput ? csrfInput.value : "";
+  }
+
+  function formatDateInput(date){
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function primeDefaultDateRange(){
+    if(!importStartInput || !importEndInput) return;
+    if(importStartInput.value || importEndInput.value) return;
+    const today = new Date();
+    const endValue = formatDateInput(today);
+    const startBaseline = new Date(today);
+    startBaseline.setDate(startBaseline.getDate() - 9);
+    importStartInput.value = formatDateInput(startBaseline);
+    importEndInput.value = endValue;
   }
 
   function showAlert(message, type="info"){
@@ -195,6 +224,8 @@
     }
   }
 
+  primeDefaultDateRange();
+
   form.addEventListener("submit", async (evt) => {
     evt.preventDefault();
     const email = emailInput.value.trim();
@@ -226,17 +257,53 @@
   if(importBtn){
     importBtn.addEventListener("click", async () => {
       hideAlert();
+      const startValue = importStartInput ? importStartInput.value : "";
+      const endValue = importEndInput ? importEndInput.value : "";
+      if(startValue && endValue && startValue > endValue){
+        showAlert("Invalid date range: start must be on or before end", "warning");
+        return;
+      }
       importBtn.disabled = true;
       try{
-        const data = await apiFetch(api.importPaid, { method: "POST" });
+        const payload = {};
+        if(startValue){
+          payload.start_date = startValue;
+        }
+        if(endValue){
+          payload.end_date = endValue;
+        }
+        const data = await apiFetch(api.importPaid, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
         const summary = data.summary || {};
         const created = summary.created || 0;
-        const updated = summary.updated || 0;
-        const skipped = summary.skipped || 0;
-        showAlert(`Import finished: ${created} new, ${updated} updated, ${skipped} skipped.`, "success");
+        const existing = summary.skipped_existing || 0;
+        const filtered = summary.skipped_filtered || 0;
+        const skipped = typeof summary.skipped === "number" ? summary.skipped : (existing + filtered);
+        const errors = Array.isArray(summary.errors) ? summary.errors.length : 0;
+        const parts = [];
+        parts.push(`${created} new`);
+        if(existing){
+          parts.push(`${existing} existing ignored`);
+        }
+        if(skipped){
+          parts.push(`${skipped} skipped`);
+        }
+        if(errors){
+          parts.push(`${errors} errors`);
+        }
+        showAlert(`Import finished: ${parts.join(", ")}.`, "success");
         await loadOrders();
       }catch(err){
-        showAlert(`Mozello import failed: ${err.message || err}`, "danger");
+        const message = err && err.message ? String(err.message) : "";
+        if(message === "invalid_date"){
+          showAlert("Invalid date: please select a valid calendar day.", "warning");
+        }else if(message === "invalid_date_range"){
+          showAlert("Invalid date range: start must be on or before end.", "warning");
+        }else{
+          showAlert(`Mozello import failed: ${err.message || err}`, "danger");
+        }
       }finally{
         importBtn.disabled = false;
       }

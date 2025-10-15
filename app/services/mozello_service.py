@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
 import hmac, hashlib, base64, json, time, threading
+from datetime import datetime
 from urllib.parse import quote_plus
 from sqlalchemy import text
 import requests
@@ -386,14 +387,26 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
 __all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
 
 
-def fetch_paid_orders(page_size: int = 100, max_pages: int = 50) -> Tuple[bool, Dict[str, Any]]:
+def fetch_paid_orders(
+    page_size: int = 100,
+    max_pages: int = 50,
+    *,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+) -> Tuple[bool, Dict[str, Any]]:
     headers = _api_headers()
     if not headers:
         return False, {"error": "api_key_missing"}
-    filter_str = quote_plus("payment_status=paid")
-    next_url = _api_url(
-        f"/store/orders/?archived=false&desc=1&page_size={int(page_size)}&filter={filter_str}"
-    )
+    query_parts = ["desc=1", f"page_size={int(page_size)}"]
+    filters: List[str] = []
+    if start_date:
+        filters.append(f"created_at>={start_date.strftime('%Y-%m-%d %H:%M:%S')}")
+    if end_date:
+        filters.append(f"created_at<={end_date.strftime('%Y-%m-%d %H:%M:%S')}")
+    for expr in filters:
+        query_parts.append(f"filter={quote_plus(expr)}")
+    query_str = "&".join(query_parts)
+    next_url = _api_url(f"/store/orders/?{query_str}")
     orders: List[Dict[str, Any]] = []
     pages = 0
     try:

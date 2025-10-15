@@ -154,8 +154,14 @@ def api_orders_import_paid():
     auth = _require_admin_json()
     if auth is not True:
         return auth
+    payload = request.get_json(silent=True) or {}
     try:
-        result = orders_service.import_paid_orders()
+        result = orders_service.import_paid_orders(
+            start_date=payload.get("start_date"),
+            end_date=payload.get("end_date"),
+        )
+    except orders_service.OrderValidationError as exc:
+        return _json_error(str(exc), 400)
     except orders_service.OrderImportError as exc:
         return _json_error(str(exc), 502)
     return jsonify(result)
