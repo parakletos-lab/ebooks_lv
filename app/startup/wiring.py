@@ -32,10 +32,20 @@ def _prepend_template_path(app):
         return
     # Use a dummy blueprint with template_folder pointing to override_dir (and static for custom assets)
     if not getattr(app, '_app_templates_bp', None):
-        bp = Blueprint('_app_templates', __name__, template_folder=override_dir, static_folder=static_dir)
+        bp = Blueprint(
+            '_app_templates',
+            __name__,
+            template_folder=override_dir,
+            static_folder=static_dir,
+            static_url_path='/app_static'
+        )
         app.register_blueprint(bp)
         setattr(app, '_app_templates_bp', bp)
-        log.debug("Registered _app_templates blueprint for override dir %s", override_dir)
+        log.debug(
+            "Registered _app_templates blueprint for override dir %s with static /app_static (%s)",
+            override_dir,
+            static_dir,
+        )
 
 
 def init_app(app: Any) -> None:
