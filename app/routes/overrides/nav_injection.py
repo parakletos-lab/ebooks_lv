@@ -43,10 +43,17 @@ MOZELLO_LINK_HTML = (
     '<span class="hidden-sm">Mozello</span></a></li>'
 )
 
-COMBINED_HTML = LINK_HTML + MOZELLO_LINK_HTML
+ORDERS_LINK_HTML = (
+    '<li><a id="top_orders" data-text="Orders" '
+    'href="/admin/ebookslv/orders/">'
+    '<span class="glyphicon glyphicon-list-alt"></span> '
+    '<span class="hidden-sm">Orders</span></a></li>'
+)
+
+COMBINED_HTML = LINK_HTML + ORDERS_LINK_HTML + MOZELLO_LINK_HTML
 
 LINK_HTML_JINJA = (
-    '{% if current_user and current_user.role_admin() %}' + LINK_HTML + MOZELLO_LINK_HTML + '{% endif %}'
+    '{% if current_user and current_user.role_admin() %}' + LINK_HTML + ORDERS_LINK_HTML + MOZELLO_LINK_HTML + '{% endif %}'
 )
 
 MAX_BODY_SIZE = 1_500_000  # bytes

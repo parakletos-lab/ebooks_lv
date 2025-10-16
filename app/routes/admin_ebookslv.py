@@ -1,15 +1,12 @@
 """ebooks.lv consolidated admin UI blueprint.
 
-Provides a new landing hub under /admin/ebookslv/ which links to
-sub‑sections (currently Users ↔ Books allow‑list management and a
-placeholder Books page). The existing JSON API for users_books remains
-under /admin/users_books/* for backward compatibility; only the UI page
-path is changing.
+Provides a landing hub under /admin/ebookslv/ linking to custom Mozello
+administration tools (orders management, product sync, etc.).
 
 Routes:
-    /admin/ebookslv/               -> landing page with navigation buttons
-    /admin/ebookslv/users_books/   -> existing allow‑list UI (template reuse)
-    /admin/ebookslv/books/         -> placeholder (future feature)
+    /admin/ebookslv/          -> landing page with navigation buttons
+    /admin/ebookslv/orders/   -> Mozello orders admin UI
+    /admin/ebookslv/books/    -> placeholder (future feature)
 
 All routes enforce admin access via ensure_admin.
 """
@@ -30,8 +27,7 @@ except Exception:  # pragma: no cover
         return ""
 
 from app.utils import ensure_admin, PermissionError
-from app.services import mozello_service
-from app.services import books_sync
+from app.services import books_sync, mozello_service, orders_service
 from flask import jsonify, request  # type: ignore
 from typing import List, Dict
 
@@ -69,12 +65,12 @@ def landing():  # pragma: no cover - thin render wrapper
     return render_template("ebookslv_admin.html")
 
 
-@bp.route("/users_books/", methods=["GET"])  # new UI path for existing page
-def users_books_page():  # pragma: no cover - thin render wrapper
+@bp.route("/orders/", methods=["GET"])
+def orders_page():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("users_books_admin.html", ub_csrf_token=generate_csrf())
+    return render_template("orders_admin.html", ub_csrf_token=generate_csrf())
 
 
 @bp.route("/books/", methods=["GET"])  # placeholder page
@@ -95,6 +91,93 @@ def _require_admin_json():
     if auth is not True:
         return auth
     return True
+
+
+@bp.route("/orders/api/list", methods=["GET"])
+def api_orders_list():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    data = orders_service.list_orders()
+    return jsonify(data)
+
+
+@bp.route("/orders/api/create", methods=["POST"])
+@_maybe_exempt
+def api_orders_create():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = orders_service.create_order(payload.get("email"), payload.get("mz_handle"))
+    except orders_service.OrderValidationError as exc:
+        return _json_error(str(exc), 400)
+    except orders_service.OrderAlreadyExistsError:
+        return _json_error("order_exists", 409)
+    return jsonify(result)
+
+
+@bp.route("/orders/api/<int:order_id>/create_user", methods=["POST"])
+@_maybe_exempt
+def api_orders_create_user(order_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = orders_service.create_user_for_order(order_id)
+    except orders_service.OrderNotFoundError:
+        return _json_error("order_missing", 404)
+    except orders_service.CalibreUnavailableError:
+        return _json_error("calibre_unavailable", 503)
+    except orders_service.UserAlreadyExistsError:
+        return _json_error("user_exists", 409)
+    return jsonify(result)
+
+
+@bp.route("/orders/api/<int:order_id>/refresh", methods=["POST"])
+@_maybe_exempt
+def api_orders_refresh(order_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = orders_service.refresh_order(order_id)
+    except orders_service.OrderNotFoundError:
+        return _json_error("order_missing", 404)
+    return jsonify(result)
+
+
+@bp.route("/orders/api/import_paid", methods=["POST"])
+@_maybe_exempt
+def api_orders_import_paid():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = orders_service.import_paid_orders(
+            start_date=payload.get("start_date"),
+            end_date=payload.get("end_date"),
+        )
+    except orders_service.OrderValidationError as exc:
+        return _json_error(str(exc), 400)
+    except orders_service.OrderImportError as exc:
+        return _json_error(str(exc), 502)
+    return jsonify(result)
+
+
+@bp.route("/orders/api/<int:order_id>", methods=["DELETE"])
+@_maybe_exempt
+def api_orders_delete(order_id: int):
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = orders_service.delete_order(order_id)
+    except orders_service.OrderNotFoundError:
+        return _json_error("order_missing", 404)
+    return jsonify(result)
 
 
 @bp.route("/books/api/data", methods=["GET"])  # list calibre only

@@ -2,13 +2,11 @@
 
 Page: /admin/mozello
 API:  /admin/mozello/settings (GET/PUT)
-Webhook: /mozello/webhook (POST) – currently only logs PAYMENT_CHANGED
+Webhook: /mozello/webhook (POST) – verifies Mozello signature and imports paid orders
 """
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-import os, json, base64, traceback
-from datetime import datetime
 
 try:
     from flask import Blueprint, request, jsonify, render_template
@@ -20,7 +18,7 @@ except Exception:  # pragma: no cover
         return {"error": "Flask missing"}, 500
 
 from app.utils import ensure_admin, PermissionError
-from app.services import mozello_service
+from app.services import mozello_service, orders_service, OrderValidationError, CalibreUnavailableError
 from app.utils.logging import get_logger
 
 LOG = get_logger("mozello.routes")
@@ -119,58 +117,63 @@ def mozello_update_settings():
 @webhook_bp.route("/mozello/webhook", methods=["POST"])
 @_maybe_exempt
 def mozello_webhook():
-    ts = datetime.utcnow()
-    ts_tag = ts.strftime('%Y%m%dT%H%M%S%fZ')
-    raw = request.get_data()  # raw body for signature
+    raw = request.get_data()
     headers = {k: v for k, v in request.headers.items()}
-    remote = getattr(request, 'remote_addr', None)
-    dump_dir = os.path.join('config', 'mozello_webhook')  # segregate debug artifacts
-    os.makedirs(dump_dir, exist_ok=True)
+    ok, event_name, payload = mozello_service.handle_webhook(raw, headers)
+    if not ok:
+        LOG.warning("Mozello webhook rejected reason=%s remote=%s", event_name, getattr(request, "remote_addr", None))
+        return jsonify({"status": "rejected", "reason": event_name}), 400
 
-    debug_record: Dict[str, Any] = {
-        "timestamp": ts.isoformat() + 'Z',
-        "remote_addr": remote,
-        "method": request.method,
-        "path": request.path,
-        "headers": headers,
-        "raw_length": len(raw),
-    }
+    event_upper = (event_name or "").upper()
+    data = payload if isinstance(payload, dict) else {}
+    order_data = data.get("order") if isinstance(data.get("order"), dict) else None
 
-    # Try decode raw body (text & parsed JSON) – do not trust encoding
+    if event_upper != "PAYMENT_CHANGED":
+        LOG.debug("Mozello webhook ignoring event=%s", event_upper)
+        return jsonify({"status": "ignored", "reason": "event_ignored", "event": event_upper}), 200
+
+    if not isinstance(order_data, dict):
+        LOG.warning("Mozello webhook missing order payload event=%s", event_upper)
+        return jsonify({"status": "rejected", "reason": "order_missing"}), 400
+
+    payment_status = str(order_data.get("payment_status") or "").strip().lower()
+    if payment_status != "paid":
+        LOG.info(
+            "Mozello webhook skipping order payment_status=%s order_id=%s",
+            payment_status,
+            order_data.get("order_id"),
+        )
+        return jsonify({
+            "status": "ignored",
+            "reason": "payment_status",
+            "payment_status": order_data.get("payment_status"),
+        }), 200
+
     try:
-        decoded = raw.decode('utf-8')
-        debug_record["raw_text"] = decoded
-        try:
-            debug_record["json_payload"] = json.loads(decoded)
-        except Exception as e:  # not valid JSON
-            debug_record["json_error"] = str(e)
-    except Exception as e:  # pragma: no cover
-        debug_record["decode_error"] = str(e)
-        debug_record["raw_b64"] = base64.b64encode(raw).decode('ascii')
+        result = orders_service.process_webhook_order(order_data)
+    except OrderValidationError as exc:
+        LOG.warning(
+            "Mozello webhook order validation failed order_id=%s error=%s",
+            order_data.get("order_id"),
+            exc,
+        )
+        return jsonify({"status": "rejected", "reason": str(exc)}), 400
+    except CalibreUnavailableError as exc:
+        LOG.error(
+            "Mozello webhook Calibre unavailable order_id=%s email=%s error=%s",
+            order_data.get("order_id"),
+            order_data.get("email"),
+            exc,
+        )
+        return jsonify({"status": "retry", "reason": "calibre_unavailable"}), 503
+    except Exception as exc:  # pragma: no cover - defensive
+        LOG.exception(
+            "Mozello webhook processing failure order_id=%s",
+            order_data.get("order_id"),
+        )
+        return jsonify({"status": "error", "reason": "internal_error"}), 500
 
-    service_ok = False
-    service_msg = "unprocessed"
-    try:
-        service_ok, service_msg = mozello_service.handle_webhook("", raw, headers)
-        debug_record["service_ok"] = service_ok
-        debug_record["service_msg"] = service_msg
-    except Exception as e:  # pragma: no cover
-        debug_record["service_exception"] = str(e)
-        debug_record["service_traceback"] = traceback.format_exc()
-        LOG.exception("Mozello webhook internal error")
-
-    # Persist structured record (even if service failed)
-    try:
-        dump_path = os.path.join(dump_dir, f"mozello_webhook_{ts_tag}.json")
-        with open(dump_path, 'w', encoding='utf-8') as f:
-            json.dump(debug_record, f, ensure_ascii=False, indent=2, sort_keys=True)
-        LOG.info("Mozello webhook debug record saved %s service_ok=%s", dump_path, service_ok)
-    except Exception:  # pragma: no cover
-        LOG.exception("Failed to write mozello webhook debug record")
-
-    if not service_ok:
-        return jsonify({"status": "rejected", "reason": service_msg}), 400
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "result": result})
 
 def register_blueprints(app):
     if not getattr(app, "_mozello_admin_bp", None):

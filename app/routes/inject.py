@@ -10,7 +10,6 @@ plugin package.
 from __future__ import annotations
 from typing import Any
 
-from .admin_users_books import register_blueprint as register_admin_bp
 from .admin_ebookslv import register_ebookslv_blueprint
 from .admin_mozello import register_blueprints as register_mozello_bps
 from .health import register_health
@@ -33,7 +32,6 @@ def _ensure_nav_injection(app: Any) -> None:
 
 def register_all(app: Any) -> None:
     # Register our admin blueprint & navigation injection.
-    register_admin_bp(app)  # API + legacy redirects
     register_ebookslv_blueprint(app)  # new consolidated UI
     register_mozello_bps(app)
     register_health(app)

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import List, Tuple, Optional, Dict, Any
 import hmac, hashlib, base64, json, time, threading
+from datetime import datetime
+from urllib.parse import quote_plus
 from sqlalchemy import text
 import requests
 from app import config
@@ -68,32 +70,32 @@ def verify_signature(raw_body: bytes, provided_hash: str, api_key: str) -> bool:
         return False
 
 
-def handle_webhook(event: str, raw_body: bytes, headers: Dict[str, str]) -> Tuple[bool, str]:
-    """Process inbound Mozello webhook.
+def handle_webhook(raw_body: bytes, headers: Dict[str, str]) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """Verify and parse inbound Mozello webhook payload.
 
-    For now we just log PAYMENT_CHANGED events. Returns (accepted, message).
+    Returns (accepted, event, payload). Payload is None when rejected.
     """
     cfg = _get_singleton()
     if not cfg.api_key:
-        return False, "api_key_not_configured"
+        return False, "api_key_not_configured", None
     provided = headers.get("X-Mozello-Hash") or headers.get("x-mozello-hash", "")
     # Allow explicit local test bypass (not sent by Mozello) only if header present
     if headers.get("X-Mozello-Test", "").lower() == "unsigned" and provided == "":
         pass
     else:
         if not verify_signature(raw_body, provided, cfg.api_key):
-            return False, "signature_invalid"
+            return False, "signature_invalid", None
     # Parse JSON (defensive)
     try:
         payload = json.loads(raw_body.decode("utf-8"))
     except Exception:
-        return False, "invalid_json"
-    evt = payload.get("event") or event
-    if evt == "PAYMENT_CHANGED":
-        LOG.info("Mozello PAYMENT_CHANGED received: %s", payload)
-    else:
-        LOG.debug("Mozello event received (ignored for now): %s", evt)
-    return True, "ok"
+        return False, "invalid_json", None
+    evt_raw = payload.get("event")
+    evt = str(evt_raw).strip().upper() if evt_raw else ""
+    order_info = payload.get("order") if isinstance(payload.get("order"), dict) else None
+    order_id = order_info.get("order_id") if isinstance(order_info, dict) else None
+    LOG.info("Mozello webhook accepted event=%s order=%s", evt or "UNKNOWN", order_id)
+    return True, evt or "UNKNOWN", payload
 
 __all__ = [
     "get_settings",
@@ -383,6 +385,65 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
         return False, {"error": str(exc)}
 
 __all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
+
+
+def fetch_paid_orders(
+    page_size: int = 100,
+    max_pages: int = 50,
+    *,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+) -> Tuple[bool, Dict[str, Any]]:
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    query_parts = ["desc=1", f"page_size={int(page_size)}"]
+    filters: List[str] = []
+    if start_date:
+        filters.append(f"created_at>={start_date.strftime('%Y-%m-%d %H:%M:%S')}")
+    if end_date:
+        filters.append(f"created_at<={end_date.strftime('%Y-%m-%d %H:%M:%S')}")
+    for expr in filters:
+        query_parts.append(f"filter={quote_plus(expr)}")
+    query_str = "&".join(query_parts)
+    next_url = _api_url(f"/store/orders/?{query_str}")
+    orders: List[Dict[str, Any]] = []
+    pages = 0
+    try:
+        while next_url and pages < max_pages:
+            _throttle_wait()
+            r = requests.get(next_url, headers=headers, timeout=20)
+            pages += 1
+            status = r.status_code
+            try:
+                payload = r.json()
+            except Exception:
+                return False, {"error": "invalid_json", "status": status}
+            if status != 200 or payload.get("error") is True:
+                return False, {"error": "http_error", "status": status, "details": payload}
+            batch = payload.get("orders") or []
+            if isinstance(batch, list):
+                for entry in batch:
+                    if not isinstance(entry, dict):
+                        continue
+                    if entry.get("payment_status") != "paid":
+                        continue
+                    if entry.get("archived") is True:
+                        continue
+                    orders.append(entry)
+            next_rel = payload.get("next_page_uri")
+            if next_rel:
+                base = config.mozello_api_base().rstrip('/')
+                next_url = base + next_rel
+            else:
+                next_url = None
+        return True, {"orders": orders, "count": len(orders), "pages": pages}
+    except Exception as exc:  # pragma: no cover - network defensive
+        LOG.warning("fetch_paid_orders failed: %s", exc)
+        return False, {"error": str(exc)}
+
+
+__all__.append("fetch_paid_orders")
 
 
 # --------------------- Product Pictures --------------------------------------

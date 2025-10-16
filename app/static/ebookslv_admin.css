@@ -47,6 +47,8 @@
 .ub-w-userid { width:60px; }
 .ub-w-bookid { width:70px; }
 .ub-w-del { width:50px; }
+.ub-w-date { width:150px; }
+.ub-w-actions { width:80px; }
 .ub-small-heading { font-size:0.65em; letter-spacing:0.5px; }
 .ub-card-lead { margin-top:-4px; font-size:12px; }
 .ub-selections-ul { padding-left:14px; margin:0; font-size:11px; line-height:1.4; }

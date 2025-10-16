@@ -2,7 +2,7 @@
 
 Includes MozelloConfig for notification settings persistence.
 """
-from .users_books import UserFilter, Base, MozelloConfig  # noqa: F401
+from .users_books import UserFilter, Base, MozelloConfig, MozelloOrder  # noqa: F401
 
-__all__ = ["UserFilter", "Base", "MozelloConfig"]
+__all__ = ["UserFilter", "MozelloOrder", "Base", "MozelloConfig"]
 

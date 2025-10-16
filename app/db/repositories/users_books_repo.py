@@ -1,44 +1,143 @@
-"""Repository for user->book allow list mappings.
-
-Thin wrapper over the existing plugin service calls. This is a transitional
-adapter so higher layers can depend on repositories.* instead of directly
-referencing plugin modules. Later we can move logic from services into here
-and slim down services.
-"""
+"""Repository helpers for Mozello order records (users_books DB)."""
 from __future__ import annotations
-from typing import Iterable, Dict, Any, List
 
-from app.services import internal_users_books as _svc
+from datetime import datetime
+from typing import Iterable, List, Optional
 
+from sqlalchemy.exc import IntegrityError
 
-def list_allowed_book_ids(user_id: int) -> List[int]:
-    return _svc.list_user_book_ids(user_id)
-
-
-def user_has_book(user_id: int, book_id: int) -> bool:
-    return _svc.user_has_book(user_id, book_id)
+from app.db import plugin_session
+from app.db.models import MozelloOrder
 
 
-def add_mapping(user_id: int, book_id: int) -> bool:
-    return _svc.add_user_book(user_id, book_id)
+class OrderExistsError(Exception):
+    """Raised when attempting to insert a duplicate (email, mz_handle) pair."""
 
 
-def remove_mapping(user_id: int, book_id: int) -> bool:
-    return _svc.remove_user_book(user_id, book_id)
+def list_orders() -> List[MozelloOrder]:
+    with plugin_session() as session:
+        return (
+            session.query(MozelloOrder)
+            .order_by(MozelloOrder.created_at.desc(), MozelloOrder.id.desc())
+            .all()
+        )
 
 
-def bulk_add(user_id: int, book_ids: Iterable[int]) -> Dict[str, Any]:
-    return _svc.bulk_add_user_books(user_id, book_ids)
+def get_order(order_id: int) -> Optional[MozelloOrder]:
+    with plugin_session() as session:
+        return session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
 
 
-def upsert(user_id: int, book_ids: Iterable[int]) -> Dict[str, Any]:
-    return _svc.upsert_user_books(user_id, book_ids)
+def get_order_by_email_handle(email: str, mz_handle: str) -> Optional[MozelloOrder]:
+    """Fetch order by normalized email and Mozello handle."""
+    with plugin_session() as session:
+        return (
+            session.query(MozelloOrder)
+            .filter(MozelloOrder.email == email, MozelloOrder.mz_handle == mz_handle)
+            .one_or_none()
+        )
+
+
+def create_order(
+    email: str,
+    mz_handle: str,
+    calibre_user_id: Optional[int] = None,
+    calibre_book_id: Optional[int] = None,
+    *,
+    created_at: Optional[datetime] = None,
+    imported_at: Optional[datetime] = None,
+) -> MozelloOrder:
+    payload = {
+        "email": email,
+        "mz_handle": mz_handle,
+        "calibre_user_id": calibre_user_id,
+        "calibre_book_id": calibre_book_id,
+    }
+    if created_at is not None:
+        payload["created_at"] = created_at
+    if imported_at is not None:
+        payload["updated_at"] = imported_at
+    order = MozelloOrder(**payload)
+    try:
+        with plugin_session() as session:
+            session.add(order)
+    except IntegrityError as exc:
+        raise OrderExistsError("Order already exists for email/handle") from exc
+    return order
+
+
+def update_links(
+    order_id: int,
+    calibre_user_id: Optional[int] = None,
+    calibre_book_id: Optional[int] = None,
+) -> Optional[MozelloOrder]:
+    with plugin_session() as session:
+        order = session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
+        if not order:
+            return None
+        if calibre_user_id is not None:
+            order.calibre_user_id = calibre_user_id
+        if calibre_book_id is not None:
+            order.calibre_book_id = calibre_book_id
+        return order
+
+
+def bulk_update_links(updates: Iterable[tuple[int, Optional[int], Optional[int]]]) -> None:
+    updates_list = list(updates)
+    if not updates_list:
+        return
+    with plugin_session() as session:
+        for order_id, user_id, book_id in updates_list:
+            order = session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
+            if not order:
+                continue
+            if user_id is not None:
+                order.calibre_user_id = user_id
+            if book_id is not None:
+                order.calibre_book_id = book_id
+
+
+def mark_imported(
+    email: str,
+    mz_handle: str,
+    imported_at: datetime,
+    *,
+    calibre_user_id: Optional[int] = None,
+    calibre_book_id: Optional[int] = None,
+) -> Optional[MozelloOrder]:
+    with plugin_session() as session:
+        order = (
+            session.query(MozelloOrder)
+            .filter(MozelloOrder.email == email, MozelloOrder.mz_handle == mz_handle)
+            .one_or_none()
+        )
+        if not order:
+            return None
+        order.updated_at = imported_at
+        if calibre_user_id is not None and not order.calibre_user_id:
+            order.calibre_user_id = calibre_user_id
+        if calibre_book_id is not None and not order.calibre_book_id:
+            order.calibre_book_id = calibre_book_id
+        return order
+
+
+def delete_order(order_id: int) -> bool:
+    with plugin_session() as session:
+        order = session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
+        if not order:
+            return False
+        session.delete(order)
+        return True
+
 
 __all__ = [
-    "list_allowed_book_ids",
-    "user_has_book",
-    "add_mapping",
-    "remove_mapping",
-    "bulk_add",
-    "upsert",
+    "OrderExistsError",
+    "list_orders",
+    "get_order",
+    "get_order_by_email_handle",
+    "create_order",
+    "update_links",
+    "bulk_update_links",
+    "mark_imported",
+    "delete_order",
 ]
