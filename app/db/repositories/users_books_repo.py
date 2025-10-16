@@ -28,6 +28,16 @@ def get_order(order_id: int) -> Optional[MozelloOrder]:
         return session.query(MozelloOrder).filter(MozelloOrder.id == order_id).one_or_none()
 
 
+def get_order_by_email_handle(email: str, mz_handle: str) -> Optional[MozelloOrder]:
+    """Fetch order by normalized email and Mozello handle."""
+    with plugin_session() as session:
+        return (
+            session.query(MozelloOrder)
+            .filter(MozelloOrder.email == email, MozelloOrder.mz_handle == mz_handle)
+            .one_or_none()
+        )
+
+
 def create_order(
     email: str,
     mz_handle: str,
@@ -124,6 +134,7 @@ __all__ = [
     "OrderExistsError",
     "list_orders",
     "get_order",
+    "get_order_by_email_handle",
     "create_order",
     "update_links",
     "bulk_update_links",

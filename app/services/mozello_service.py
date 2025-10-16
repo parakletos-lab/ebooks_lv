@@ -70,32 +70,32 @@ def verify_signature(raw_body: bytes, provided_hash: str, api_key: str) -> bool:
         return False
 
 
-def handle_webhook(event: str, raw_body: bytes, headers: Dict[str, str]) -> Tuple[bool, str]:
-    """Process inbound Mozello webhook.
+def handle_webhook(raw_body: bytes, headers: Dict[str, str]) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """Verify and parse inbound Mozello webhook payload.
 
-    For now we just log PAYMENT_CHANGED events. Returns (accepted, message).
+    Returns (accepted, event, payload). Payload is None when rejected.
     """
     cfg = _get_singleton()
     if not cfg.api_key:
-        return False, "api_key_not_configured"
+        return False, "api_key_not_configured", None
     provided = headers.get("X-Mozello-Hash") or headers.get("x-mozello-hash", "")
     # Allow explicit local test bypass (not sent by Mozello) only if header present
     if headers.get("X-Mozello-Test", "").lower() == "unsigned" and provided == "":
         pass
     else:
         if not verify_signature(raw_body, provided, cfg.api_key):
-            return False, "signature_invalid"
+            return False, "signature_invalid", None
     # Parse JSON (defensive)
     try:
         payload = json.loads(raw_body.decode("utf-8"))
     except Exception:
-        return False, "invalid_json"
-    evt = payload.get("event") or event
-    if evt == "PAYMENT_CHANGED":
-        LOG.info("Mozello PAYMENT_CHANGED received: %s", payload)
-    else:
-        LOG.debug("Mozello event received (ignored for now): %s", evt)
-    return True, "ok"
+        return False, "invalid_json", None
+    evt_raw = payload.get("event")
+    evt = str(evt_raw).strip().upper() if evt_raw else ""
+    order_info = payload.get("order") if isinstance(payload.get("order"), dict) else None
+    order_id = order_info.get("order_id") if isinstance(order_info, dict) else None
+    LOG.info("Mozello webhook accepted event=%s order=%s", evt or "UNKNOWN", order_id)
+    return True, evt or "UNKNOWN", payload
 
 __all__ = [
     "get_settings",

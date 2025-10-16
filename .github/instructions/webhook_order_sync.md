@@ -1,3 +1,70 @@
+# Webhook test:
+```
+curl -i -X POST 'http://localhost:8083/mozello/webhook' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Mozello-Test: unsigned' \
+  --data-binary @- <<'JSON'
+{
+  "event": "PAYMENT_CHANGED",
+  "order": {
+    "address": "Siguldas, 37",
+    "archived": false,
+    "cart": [
+      {
+        "product_handle": "uid-4900329",
+        "product_name": "My cond Product, 0002",
+        "product_price": 11,
+        "product_price_original": 11,
+        "product_quantity": 1,
+        "product_sku": "0002",
+        "product_variant": null,
+        "product_variant_handle": null,
+        "tax_exclusive_percent": 0,
+        "tax_inclusive_percent": 0,
+        "weight": 0
+      }
+    ],
+    "city": "Daugavpils",
+    "company": "Sia \"Simulacra\"",
+    "company_id": "",
+    "country_code": "lv",
+    "country_name": "Latvia",
+    "created_at": "2025-10-09 15:34:17",
+    "currency": "EUR",
+    "discount_amount": 0,
+    "discount_code": null,
+    "dispatched": false,
+    "email": "deniss.muhla@gmail.com",
+    "name": "Test 1212",
+    "notes": "",
+    "order_id": "M-2475405-19",
+    "origin_url": "https://druidegrey.mozello.shop/store/",
+    "payment_method": "gateway",
+    "payment_method_details": "",
+    "payment_status": "paid",
+    "phone": "+37129966072",
+    "print_url": "https://druidegrey.mozello.com/m/invoice/b3acee7a059f3772fe59c05761395ea4/",
+    "province_code": "",
+    "shipping": null,
+    "shipping_method": "",
+    "shipping_method_details": "",
+    "shipping_price": 0,
+    "shipping_price_original": 0,
+    "shipping_tax_exclusive_percent": null,
+    "shipping_tax_inclusive_percent": null,
+    "shipping_tracking_code": "",
+    "shipping_tracking_url": "",
+    "subtotal": 11,
+    "taxes": 0,
+    "total": 11,
+    "vat_id": "",
+    "weight": 0,
+    "zip": "LV5417"
+  }
+}
+JSON
+```
+
 ```
 {
   "headers": {

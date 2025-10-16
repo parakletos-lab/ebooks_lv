@@ -390,6 +390,164 @@ def import_paid_orders(
     return {"status": "ok", "summary": summary}
 
 
+def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist a paid Mozello order delivered via webhook and ensure Calibre user.
+
+    Returns summary containing per-handle outcomes and user creation/link status.
+    Raises OrderValidationError for invalid payloads and propagates CalibreUnavailableError
+    when Calibre is unreachable.
+    """
+    if not isinstance(order_payload, dict):
+        raise OrderValidationError("invalid_payload")
+
+    payment_status = str(order_payload.get("payment_status") or "").strip().lower()
+    if payment_status != "paid":
+        raise OrderValidationError("payment_not_paid")
+
+    email_norm = normalize_email(order_payload.get("email"))
+    if not email_norm:
+        raise OrderValidationError("email_required")
+
+    cart_raw = order_payload.get("cart") or []
+    if not isinstance(cart_raw, list) or not cart_raw:
+        raise OrderValidationError("cart_required")
+
+    seen_handles: Set[str] = set()
+    handles: List[str] = []
+    for item in cart_raw:
+        if not isinstance(item, dict):
+            continue
+        handle_raw = (item.get("product_handle") or "").strip()
+        if not handle_raw:
+            continue
+        handle_key = handle_raw.lower()
+        if handle_key in seen_handles:
+            continue
+        seen_handles.add(handle_key)
+        handles.append(handle_raw)
+
+    if not handles:
+        raise OrderValidationError("handles_missing")
+
+    moz_created_at = _parse_mozello_timestamp(order_payload.get("created_at"))
+    imported_at = datetime.utcnow()
+
+    book_map = books_sync.lookup_books_by_handles(seen_handles) if seen_handles else {}
+    existing_user = lookup_user_by_email(email_norm)
+
+    summary: Dict[str, Any] = {
+        "email": email_norm,
+        "mozello_order_id": order_payload.get("order_id"),
+        "orders_total": len(handles),
+        "orders_created": 0,
+        "orders_existing": 0,
+        "user_created": 0,
+        "user_linked": 0,
+        "orders": [],
+        "errors": [],
+    }
+
+    for handle in handles:
+        handle_key = handle.lower()
+        book_info = book_map.get(handle_key)
+        calibre_user_id = existing_user.get("id") if existing_user else None
+        calibre_book_id = book_info.get("book_id") if book_info else None
+        created = False
+        order_obj: Optional[MozelloOrder]
+        try:
+            order_obj = users_books_repo.create_order(
+                email_norm,
+                handle,
+                calibre_user_id=calibre_user_id,
+                calibre_book_id=calibre_book_id,
+                created_at=moz_created_at,
+                imported_at=imported_at,
+            )
+            created = True
+            summary["orders_created"] += 1
+        except RepoOrderExistsError:
+            summary["orders_existing"] += 1
+            order_obj = users_books_repo.mark_imported(
+                email_norm,
+                handle,
+                imported_at,
+                calibre_user_id=calibre_user_id,
+                calibre_book_id=calibre_book_id,
+            )
+            if not order_obj:
+                order_obj = users_books_repo.get_order_by_email_handle(email_norm, handle)
+
+        if not order_obj:
+            LOG.warning("Webhook Mozello order missing after persistence email=%s handle=%s", email_norm, handle)
+            summary["errors"].append({"handle": handle, "error": "order_missing"})
+            summary["orders"].append({
+                "order_id": None,
+                "mz_handle": handle,
+                "status": "error",
+                "user_status": None,
+            })
+            continue
+
+        user_status = "already_linked" if order_obj.calibre_user_id else None
+
+        if not order_obj.calibre_user_id:
+            try:
+                ensure_resp = create_user_for_order(order_obj.id)
+                ensure_status = ensure_resp.get("status") or "linked_existing"
+                user_status = ensure_status
+                user_obj = ensure_resp.get("user")
+                if user_obj:
+                    existing_user = user_obj
+                else:
+                    refreshed = lookup_user_by_email(email_norm)
+                    if refreshed:
+                        existing_user = refreshed
+                if ensure_status == "created":
+                    summary["user_created"] += 1
+                else:
+                    summary["user_linked"] += 1
+            except UserAlreadyExistsError:
+                refreshed_user = lookup_user_by_email(email_norm)
+                if refreshed_user:
+                    existing_user = refreshed_user
+                    summary["user_linked"] += 1
+                    user_status = "linked_existing"
+                else:
+                    summary["errors"].append({
+                        "handle": handle,
+                        "error": "user_exists_without_lookup",
+                    })
+                    user_status = "user_error"
+            except CalibreUnavailableError as exc:
+                LOG.error(
+                    "Mozello webhook Calibre unavailable email=%s handle=%s error=%s",
+                    email_norm,
+                    handle,
+                    exc,
+                )
+                raise
+            except Exception as exc:  # pragma: no cover - defensive logging
+                LOG.warning(
+                    "Mozello webhook user creation failed email=%s handle=%s error=%s",
+                    email_norm,
+                    handle,
+                    exc,
+                )
+                summary["errors"].append({"handle": handle, "error": str(exc)})
+                user_status = "user_error"
+        else:
+            summary["user_linked"] += 1
+
+        summary["orders"].append({
+            "order_id": order_obj.id,
+            "mz_handle": handle,
+            "status": "created" if created else "existing",
+            "user_status": user_status,
+        })
+
+    return summary
+
+
 __all__ = [
     "list_orders",
     "create_order",
@@ -397,6 +555,7 @@ __all__ = [
     "refresh_order",
     "delete_order",
     "import_paid_orders",
+    "process_webhook_order",
     "OrderValidationError",
     "OrderAlreadyExistsError",
     "OrderNotFoundError",
