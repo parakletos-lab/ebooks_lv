@@ -157,6 +157,14 @@ docker compose down
 
 ---
 
+## Admin setup
+
+1. SMTP settings
+2. Mozello webhook
+
+
+---
+
 ## Pre-Seeding the Settings Database
 
 Why pre-seed?
