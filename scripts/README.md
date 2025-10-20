@@ -8,7 +8,6 @@ Scripts:
 
 Future scripts (ideas):
 - upgrade.sh to pull latest git changes & re-run setup.
-- rotate_key.sh to rotate MOZELLO_API_KEY if needed.
 
 ## Manual bootstrap on a fresh droplet (private repo, logged in as root)
 
@@ -116,8 +115,11 @@ Init (ebooks_lv_init.sh) does:
 Setup (ebooks_lv_setup.sh) does each run:
 - Ensures docker + compose + git available
 - Updates code (git fetch/pull, submodules)
-- Prompts / updates MOZELLO_API_KEY, TZ (and future vars)
+- Prompts / updates TZ (and future env vars)
 - Pulls images and starts stack (compose.yml + compose.droplet.yml)
+
+Mozello store configuration (store URL and API key) is now managed inside the Calibre-Web admin UI under “Mozello Settings”.
+Optional: define `MOZELLO_STORE_URL` in the environment or `.env` file to seed the initial value into `config/users_books.db` (skipped if already present).
 
 Re-run setup anytime after changing env vars or after publishing a new image tag.
 

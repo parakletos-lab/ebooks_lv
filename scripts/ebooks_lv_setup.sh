@@ -138,7 +138,6 @@ main() {
   fi
   ensure_env_file
   log "Collecting / updating required environment variables..."
-  prompt_env_var MOZELLO_API_KEY "Mozello API key used by backend" ""
   prompt_env_var TZ "System timezone (IANA)" "Europe/Riga"
   # Future vars can be added here safely; script is re-runnable.
 

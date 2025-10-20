@@ -76,6 +76,31 @@ def mozello_admin_page():  # pragma: no cover (thin render)
     }
     return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
 
+
+@bp.route("/app_settings", methods=["GET"])
+def mozello_get_app_settings():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return jsonify(mozello_service.get_app_settings())
+
+
+@bp.route("/app_settings", methods=["PUT"])
+@_maybe_exempt
+def mozello_update_app_settings():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    data: Dict[str, Any] = request.get_json(silent=True) or {}
+    try:
+        updated = mozello_service.update_app_settings(
+            store_url=data.get("mz_store_url"),
+            api_key=data.get("mz_api_key"),
+        )
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
+    return jsonify(updated)
+
 @bp.route("/settings", methods=["GET"])
 def mozello_get_settings():
     auth = _require_admin()
@@ -188,6 +213,7 @@ def register_blueprints(app):
             csrf.exempt(webhook_bp)  # type: ignore[arg-type]
             csrf.exempt(mozello_webhook)
             csrf.exempt(mozello_update_settings)
+            csrf.exempt(mozello_update_app_settings)
         except Exception:
             pass
 

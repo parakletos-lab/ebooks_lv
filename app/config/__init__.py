@@ -79,13 +79,25 @@ __all__ = [
 
 
 def mozello_api_key() -> str | None:
-    """Return MOZELLO_API_KEY from environment (no default).
-
-    Not cached so operator can rotate key and trigger a restart to pick it up.
-    """
-    return os.getenv("MOZELLO_API_KEY")
+    """Return MOZELLO_API_KEY from environment (no default)."""
+    value = os.getenv("MOZELLO_API_KEY")
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
 
 __all__.append("mozello_api_key")
+
+
+def mozello_store_url() -> str | None:
+    """Optional Mozello store URL from environment."""
+    value = os.getenv("MOZELLO_STORE_URL")
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+__all__.append("mozello_store_url")
 
 
 def mozello_webhook_force_port() -> str | None:

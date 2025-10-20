@@ -3,16 +3,37 @@
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
+    <h3 class="panel-title">Mozello Settings</h3>
+  </div>
+  <div class="panel-body">
+    <form id="mz-settings-form" class="form">
+      <div class="form-group" style="max-width:600px;">
+        <label for="mz-store-url">Mozello Store URL</label>
+        <input type="url" class="form-control" id="mz-store-url" placeholder="https://example.mozello.com/store/" />
+        <p class="help-block">Displayed in admin tools and used when cross-linking to the live storefront.</p>
+      </div>
+      <div class="form-group" style="max-width:600px;">
+        <label for="mz-api-key">Mozello API Key</label>
+        <input type="text" class="form-control" id="mz-api-key" autocomplete="off" />
+        <p class="help-block">Stored in the integration database (<code>config/users_books.db</code>); required for API calls and webhook verification.</p>
+      </div>
+      <button type="button" id="mz-settings-save" class="btn btn-primary">
+        <span class="glyphicon glyphicon-floppy-disk"></span> Save Settings
+      </button>
+      <button type="button" id="mz-settings-reload" class="btn btn-default">Reload</button>
+    </form>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
     <h3 class="panel-title">Mozello Notification Settings</h3>
   </div>
   <div class="panel-body">
     <p class="text-muted" style="margin-top:-4px;">
-      Manage subscribed webhook events. API Key is supplied via server environment (<code>MOZELLO_API_KEY</code>).
+      Manage subscribed webhook events. API key and store URL are configured above.
     </p>
     <form id="mz-form" class="form">
-      <div class="alert alert-info" style="max-width:600px;">
-        <strong>API Key Managed Externally.</strong> Rotate by updating the deployment environment variable and restarting the service.
-      </div>
       <div class="form-group">
         <label for="mz-url">Candidate Webhook URL (computed)</label>
         <input type="text" class="form-control" id="mz-url" readonly />
@@ -54,6 +75,10 @@
   const btnLoad = document.getElementById('mz-load');
   const btnTest = document.getElementById('mz-test');
   const btnReset = document.getElementById('mz-reset');
+  const storeInput = document.getElementById('mz-store-url');
+  const apiKeyInput = document.getElementById('mz-api-key');
+  const btnSettingsSave = document.getElementById('mz-settings-save');
+  const btnSettingsReload = document.getElementById('mz-settings-reload');
   const portInput = null; // removed forced port feature
 
   function selectedEvents() {
@@ -74,9 +99,18 @@
       pre.textContent = JSON.stringify(data, null, 2);
       // Prefer the actual remote URL if returned; fall back to candidate
       urlInput.value = data.remote_notifications_url || data.notifications_url || '';
-  setSelected(data.notifications_wanted || []);
+      setSelected(data.notifications_wanted || []);
     } catch (e) {
       pre.textContent = 'Error loading settings: '+ e;
+    }
+  }
+  async function loadMozelloSettings() {
+    try {
+      const data = await fetchJSON('/admin/mozello/app_settings');
+      storeInput.value = data.mz_store_url || '';
+      apiKeyInput.value = data.mz_api_key || '';
+    } catch (e) {
+      alert('Failed to load Mozello settings: '+ e);
     }
   }
   async function saveSettings() {
@@ -95,6 +129,29 @@
       btnSave.disabled = false;
     }
   }
+  async function saveMozelloSettings() {
+    btnSettingsSave.disabled = true;
+    try {
+      const body = {
+        mz_store_url: storeInput.value || '',
+        mz_api_key: apiKeyInput.value || ''
+      };
+      const data = await fetchJSON('/admin/mozello/app_settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      storeInput.value = data.mz_store_url || '';
+      if (Object.prototype.hasOwnProperty.call(data, 'mz_api_key')) {
+        apiKeyInput.value = data.mz_api_key || '';
+      }
+      alert('Mozello settings saved.');
+    } catch (e) {
+      alert('Failed to save Mozello settings: '+ e);
+    } finally {
+      btnSettingsSave.disabled = false;
+    }
+  }
   async function postTest() {
     const fake = { event: 'PAYMENT_CHANGED', order: { payment_status: 'paid', test: true, ts: Date.now() } };
     const raw = JSON.stringify(fake);
@@ -108,6 +165,9 @@
     urlInput.value = candidateURL || '';
   });
   btnTest.addEventListener('click', postTest);
+  btnSettingsSave.addEventListener('click', saveMozelloSettings);
+  btnSettingsReload.addEventListener('click', loadMozelloSettings);
+  loadMozelloSettings();
   // No automatic remote API call on load (conservative mode)
 })();
 </script>
