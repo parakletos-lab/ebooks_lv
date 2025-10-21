@@ -9,13 +9,17 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 try:
-    from flask import Blueprint, request, jsonify, render_template
+    from flask import Blueprint, request, jsonify, render_template, redirect, abort
 except Exception:  # pragma: no cover
     Blueprint = object  # type: ignore
     def request():  # type: ignore
         raise RuntimeError("Flask not available")
     def jsonify(*a, **k):  # type: ignore
         return {"error": "Flask missing"}, 500
+        def redirect(*a, **k):  # type: ignore
+            raise RuntimeError("Flask not available")
+        def abort(*a, **k):  # type: ignore
+            raise RuntimeError("Flask not available")
 
 from app.utils import ensure_admin, PermissionError
 from app.services import mozello_service, orders_service, OrderValidationError, CalibreUnavailableError
@@ -75,6 +79,46 @@ def mozello_admin_page():  # pragma: no cover (thin render)
         "remote_raw": None,
     }
     return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
+
+
+def _extract_category_from_product(payload: Dict[str, Any] | None) -> Optional[str]:
+    if not isinstance(payload, dict):
+        return None
+    product = payload.get("product") if isinstance(payload.get("product"), dict) else payload
+    if not isinstance(product, dict):
+        return None
+    candidate = product.get("category_handle")
+    if isinstance(candidate, str) and candidate.strip():
+        return candidate.strip()
+    return None
+
+
+@webhook_bp.route("/mozello/books/<path:mz_handle>", methods=["GET"])
+def mozello_product_redirect(mz_handle: str):
+    handle = (mz_handle or "").strip()
+    if not handle:
+        abort(404)
+
+    category_handle = orders_service.get_product_category_handle(handle)
+    if not category_handle:
+        ok_product, payload = mozello_service.fetch_product(handle)
+        if ok_product:
+            category_candidate = _extract_category_from_product(payload)
+            if category_candidate:
+                category_handle = category_candidate
+                orders_service.update_product_category_handle(handle, category_handle)
+        else:
+            LOG.debug(
+                "Mozello product redirect could not fetch product handle=%s error=%s",
+                handle,
+                payload.get("error") if isinstance(payload, dict) else payload,
+            )
+
+    url = mozello_service.build_product_url(handle, category_handle)
+    if not url:
+        LOG.info("Mozello product redirect missing url handle=%s", handle)
+        abort(404)
+    return redirect(url)
 
 
 @bp.route("/app_settings", methods=["GET"])
@@ -152,6 +196,32 @@ def mozello_webhook():
     event_upper = (event_name or "").upper()
     data = payload if isinstance(payload, dict) else {}
     order_data = data.get("order") if isinstance(data.get("order"), dict) else None
+
+    if event_upper == "PRODUCT_CHANGED":
+        product_data = data.get("product") if isinstance(data.get("product"), dict) else None
+        if not product_data:
+            LOG.warning("Mozello webhook PRODUCT_CHANGED missing product payload")
+            return jsonify({"status": "rejected", "reason": "product_missing"}), 400
+        product_handle = (product_data.get("handle") or "").strip()
+        if not product_handle:
+            LOG.warning("Mozello webhook PRODUCT_CHANGED missing product handle")
+            return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
+        category_value = product_data.get("category_handle")
+        category_clean = category_value.strip() if isinstance(category_value, str) and category_value.strip() else None
+        updated = 0
+        if category_clean:
+            updated = orders_service.update_product_category_handle(product_handle, category_clean)
+        else:
+            LOG.info("Mozello PRODUCT_CHANGED without category handle handle=%s", product_handle)
+        response_payload = {
+            "status": "ok",
+            "event": event_upper,
+            "updated": updated,
+            "mz_handle": product_handle,
+        }
+        if category_clean:
+            response_payload["mz_category_handle"] = category_clean
+        return jsonify(response_payload)
 
     if event_upper != "PAYMENT_CHANGED":
         LOG.debug("Mozello webhook ignoring event=%s", event_upper)

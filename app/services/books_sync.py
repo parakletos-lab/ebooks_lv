@@ -69,6 +69,7 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             "title": r[1],
             "mz_price": prices.get(bid),
             "mz_handle": handles.get(bid),
+            "mz_category_handle": None,
         })
     return out
 
@@ -165,6 +166,25 @@ def clear_mz_handle(handle: str) -> int:
         LOG.warning("clear_mz_handle failed handle=%s: %s", handle, exc)
         return 0
 
+
+def get_mz_handle_for_book(book_id: int) -> Optional[str]:
+    """Return Mozello handle for a specific Calibre book if present."""
+    try:
+        conn = _connect_rw()
+        cur = conn.execute("SELECT val FROM identifiers WHERE type='mz' AND book=? LIMIT 1", (book_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        value = row[0]
+        if isinstance(value, str):
+            cleaned = value.strip()
+            return cleaned or None
+        return None
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("get_mz_handle_for_book failed book_id=%s: %s", book_id, exc)
+        return None
+
+
 __all__ = [
     "list_calibre_books",
     "set_mz_handle",
@@ -173,6 +193,7 @@ __all__ = [
     "get_book_description",
     "lookup_books_by_handles",
     "lookup_book_by_handle",
+    "get_mz_handle_for_book",
 ]
 
 

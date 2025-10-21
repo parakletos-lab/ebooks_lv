@@ -72,6 +72,32 @@ def _current_store_url() -> Optional[str]:
     return None
 
 
+def get_store_url() -> Optional[str]:
+    """Return configured Mozello store base URL if available."""
+    _seed_store_url_from_env()
+    value = _current_store_url()
+    if value:
+        return value.rstrip("/")
+    env_value = config.mozello_store_url()
+    if env_value:
+        cleaned_env = env_value.strip()
+        return cleaned_env.rstrip("/") if cleaned_env else None
+    return None
+
+
+def build_product_url(mz_handle: Optional[str], mz_category_handle: Optional[str]) -> Optional[str]:
+    """Construct Mozello storefront URL for a product."""
+    store = get_store_url()
+    handle = (mz_handle or "").strip()
+    category = (mz_category_handle or "").strip()
+    if not store or not handle:
+        return None
+    base = store.rstrip("/")
+    if category:
+        return f"{base}/store/item/{category}/{handle}/"
+    return f"{base}/store/item/{handle}/"
+
+
 def get_app_settings() -> Dict[str, Any]:
     seeded_key = _resolve_api_key()
     _seed_store_url_from_env()
@@ -210,8 +236,11 @@ __all__ = [
     "allowed_events",
     "handle_webhook",
     "get_app_settings",
+    "get_store_url",
     "update_app_settings",
 ]
+
+__all__.append("build_product_url")
 
 
 def _get_api_key_raw() -> Optional[str]:
@@ -405,6 +434,7 @@ def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool
                     "handle": p.get("handle"),
                     "title": (p.get("title") if isinstance(p.get("title"), str) else (p.get("title", {}).get("en") if isinstance(p.get("title"), dict) else None)),
                     "price": p.get("price"),
+                    "category_handle": p.get("category_handle") if isinstance(p.get("category_handle"), str) else None,
                 })
             next_rel = payload.get("next_page_uri")
             if next_rel:
@@ -415,6 +445,31 @@ def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool
         return True, {"products": products, "count": len(products), "pages": pages}
     except Exception as exc:  # pragma: no cover
         LOG.warning("list_products_full failed: %s", exc)
+        return False, {"error": str(exc)}
+
+
+def fetch_product(handle: str, timeout: int = 10) -> Tuple[bool, Dict[str, Any]]:
+    """Fetch a single Mozello product by handle."""
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    target = (handle or "").strip()
+    if not target:
+        return False, {"error": "handle_required"}
+    try:
+        _throttle_wait()
+        r = requests.get(_api_url(f"/store/product/{target}/"), headers=headers, timeout=timeout)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code == 404:
+            return False, {"error": "not_found"}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("fetch_product failed handle=%s error=%s", handle, exc)
         return False, {"error": str(exc)}
 
 
@@ -457,6 +512,8 @@ def upsert_product_basic(handle: str, title: str, price: float | None, descripti
     if not headers:
         return False, {"error": "api_key_missing"}
     product_obj: Dict[str, Any] = {"title": {"en": title}, "price": price or 0.0, "visible": True}
+    if handle:
+        product_obj["url"] = {"en": handle}
     if description_html:
         product_obj["description"] = {"en": description_html}
     # Attempt update
@@ -499,7 +556,7 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
 
-__all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
+__all__.extend(["list_products_full", "fetch_product", "upsert_product_minimal", "delete_product"])
 
 
 def fetch_paid_orders(

@@ -30,6 +30,7 @@ class MozelloOrder(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), nullable=False, index=True)
     mz_handle = Column(String(255), nullable=False, index=True)
+    mz_category_handle = Column(String(255), nullable=True, index=True)
     calibre_user_id = Column(Integer, nullable=True, index=True)
     calibre_book_id = Column(Integer, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
@@ -51,6 +52,7 @@ class MozelloOrder(Base):
             "id": self.id,
             "email": self.email,
             "mz_handle": self.mz_handle,
+            "mz_category_handle": self.mz_category_handle,
             "calibre_user_id": self.calibre_user_id,
             "calibre_book_id": self.calibre_book_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,

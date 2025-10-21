@@ -12,6 +12,7 @@
         "mktemp",
         "MOZELLO",
         "netrc",
+        "onupdate",
         "pipefail",
         "runcmd",
         "usermod"

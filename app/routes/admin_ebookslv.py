@@ -29,7 +29,7 @@ except Exception:  # pragma: no cover
 from app.utils import ensure_admin, PermissionError
 from app.services import books_sync, mozello_service, orders_service
 from flask import jsonify, request  # type: ignore
-from typing import List, Dict
+from typing import List, Dict, Any, Optional
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
 
@@ -192,6 +192,19 @@ def api_books_data():
 _PRODUCT_CACHE = {"loaded": False, "products": []}
 
 
+def _extract_category_handle(payload: Any) -> Optional[str]:
+    product = payload
+    if isinstance(payload, dict) and isinstance(payload.get("product"), dict):
+        product = payload.get("product")
+    if not isinstance(product, dict):
+        return None
+    value = product.get("category_handle")
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned or None
+    return None
+
+
 def _merge_products(calibre_rows, products):
     by_handle = {r.get("mz_handle"): r for r in calibre_rows if r.get("mz_handle")}
     # Attach mozello info
@@ -201,11 +214,15 @@ def _merge_products(calibre_rows, products):
         if row:
             row["mozello_title"] = p.get("title")
             row["mozello_price"] = p.get("price")
+            category_value = p.get("category_handle")
+            row["mz_category_handle"] = category_value.strip() if isinstance(category_value, str) and category_value.strip() else row.get("mz_category_handle")
     # Orphans
     orphan_rows = []
     for p in products:
         h = p.get("handle")
         if h and h not in by_handle:
+            category_value = p.get("category_handle")
+            category_clean = category_value.strip() if isinstance(category_value, str) and category_value.strip() else None
             orphan_rows.append({
                 "book_id": None,
                 "title": None,
@@ -213,6 +230,7 @@ def _merge_products(calibre_rows, products):
                 "mz_handle": h,
                 "mozello_title": p.get("title"),
                 "mozello_price": p.get("price"),
+                "mz_category_handle": category_clean,
                 "orphan": True,
             })
     # Order: orphans first then calibre rows
@@ -231,6 +249,11 @@ def api_books_load_products():
     if not ok:
         return _json_error(data.get("error", "mozello_error"), 502)
     products = data.get("products", [])
+    for p in products:
+        handle = p.get("handle")
+        category_value = p.get("category_handle")
+        if isinstance(handle, str) and handle.strip() and isinstance(category_value, str) and category_value.strip():
+            orders_service.update_product_category_handle(handle.strip(), category_value.strip())
     merged = _merge_products(calibre_rows, products)
     _PRODUCT_CACHE["loaded"] = True
     _PRODUCT_CACHE["products"] = products
@@ -260,6 +283,17 @@ def api_books_export_one(book_id: int):
     # Refresh Mozello info for this row only (lightweight)
     target["mozello_title"] = (resp.get("product") or {}).get("title") if isinstance(resp.get("product"), dict) else target.get("title")
     target["mozello_price"] = target.get("mz_price")
+    category_handle = target.get("mz_category_handle")
+    candidate = _extract_category_handle(resp)
+    if candidate:
+        category_handle = candidate
+    elif not category_handle:
+        ok_product, product_payload = mozello_service.fetch_product(handle)
+        if ok_product:
+            category_handle = _extract_category_handle(product_payload)
+    if category_handle:
+        target["mz_category_handle"] = category_handle
+        orders_service.update_product_category_handle(handle, category_handle)
     # Attempt cover upload (best-effort; ignore failures but surface flag)
     cover_uploaded = False
     ok_cov, b64 = books_sync.get_cover_base64(book_id)
@@ -291,6 +325,14 @@ def api_books_export_all():
             r["mz_handle"] = handle
             r["mozello_title"] = r.get("title")
             r["mozello_price"] = r.get("mz_price")
+            category_handle = _extract_category_handle(resp)
+            if not category_handle:
+                ok_product, product_payload = mozello_service.fetch_product(handle)
+                if ok_product:
+                    category_handle = _extract_category_handle(product_payload)
+            if category_handle:
+                r["mz_category_handle"] = category_handle
+                orders_service.update_product_category_handle(handle, category_handle)
             # Cover upload (best-effort per book)
             ok_cov, b64 = books_sync.get_cover_base64(r["book_id"])  # type: ignore
             if ok_cov and b64:

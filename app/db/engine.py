@@ -86,6 +86,9 @@ def _safe_create_schema():
                 if not {"email", "mz_handle"}.issubset(col_names):
                     LOG.warning("Dropping legacy users_books table prior to Mozello orders schema upgrade")
                     conn.execute(text("DROP TABLE users_books"))
+                elif "mz_category_handle" not in col_names:
+                    LOG.info("Applying schema migration: adding users_books.mz_category_handle column")
+                    conn.execute(text("ALTER TABLE users_books ADD COLUMN mz_category_handle VARCHAR(255)"))
         Base.metadata.create_all(_engine)  # type: ignore[arg-type]
     except OperationalError as e:  # pragma: no cover - concurrency edge
         msg = str(e).lower()

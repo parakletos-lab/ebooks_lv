@@ -43,6 +43,7 @@ def create_order(
     mz_handle: str,
     calibre_user_id: Optional[int] = None,
     calibre_book_id: Optional[int] = None,
+    mz_category_handle: Optional[str] = None,
     *,
     created_at: Optional[datetime] = None,
     imported_at: Optional[datetime] = None,
@@ -53,6 +54,8 @@ def create_order(
         "calibre_user_id": calibre_user_id,
         "calibre_book_id": calibre_book_id,
     }
+    if mz_category_handle is not None:
+        payload["mz_category_handle"] = (mz_category_handle or "").strip() or None
     if created_at is not None:
         payload["created_at"] = created_at
     if imported_at is not None:
@@ -104,6 +107,7 @@ def mark_imported(
     *,
     calibre_user_id: Optional[int] = None,
     calibre_book_id: Optional[int] = None,
+    mz_category_handle: Optional[str] = None,
 ) -> Optional[MozelloOrder]:
     with plugin_session() as session:
         order = (
@@ -118,6 +122,10 @@ def mark_imported(
             order.calibre_user_id = calibre_user_id
         if calibre_book_id is not None and not order.calibre_book_id:
             order.calibre_book_id = calibre_book_id
+        if mz_category_handle is not None:
+            cleaned = (mz_category_handle or "").strip() or None
+            if order.mz_category_handle != cleaned:
+                order.mz_category_handle = cleaned
         return order
 
 
@@ -140,4 +148,46 @@ __all__ = [
     "bulk_update_links",
     "mark_imported",
     "delete_order",
+    "update_category_handle_for_handle",
+    "get_category_handle_for_handle",
 ]
+
+
+def update_category_handle_for_handle(mz_handle: str, mz_category_handle: Optional[str]) -> int:
+    cleaned_handle = (mz_handle or "").strip()
+    if not cleaned_handle:
+        return 0
+    cleaned_category = (mz_category_handle or "").strip() or None
+    updated = 0
+    with plugin_session() as session:
+        rows = (
+            session.query(MozelloOrder)
+            .filter(MozelloOrder.mz_handle == cleaned_handle)
+            .all()
+        )
+        for row in rows:
+            if row.mz_category_handle != cleaned_category:
+                row.mz_category_handle = cleaned_category
+                updated += 1
+    return updated
+
+
+def get_category_handle_for_handle(mz_handle: str) -> Optional[str]:
+    cleaned_handle = (mz_handle or "").strip()
+    if not cleaned_handle:
+        return None
+    with plugin_session() as session:
+        order = (
+            session.query(MozelloOrder)
+            .filter(
+                MozelloOrder.mz_handle == cleaned_handle,
+                MozelloOrder.mz_category_handle.isnot(None),
+                MozelloOrder.mz_category_handle != "",
+            )
+            .order_by(MozelloOrder.updated_at.desc(), MozelloOrder.id.desc())
+            .first()
+        )
+        if not order:
+            return None
+        value = (order.mz_category_handle or "").strip()
+        return value or None
