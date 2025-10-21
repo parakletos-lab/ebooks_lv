@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Iterable, List, Optional
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 
 from app.db import plugin_session
 from app.db.models import MozelloOrder
@@ -150,6 +151,7 @@ __all__ = [
     "delete_order",
     "update_category_handle_for_handle",
     "get_category_handle_for_handle",
+    "list_orders_for_user",
 ]
 
 
@@ -191,3 +193,21 @@ def get_category_handle_for_handle(mz_handle: str) -> Optional[str]:
             return None
         value = (order.mz_category_handle or "").strip()
         return value or None
+
+
+def list_orders_for_user(
+    *,
+    calibre_user_id: Optional[int] = None,
+    email: Optional[str] = None,
+) -> List[MozelloOrder]:
+    """Return all Mozello orders linked to the provided user identity."""
+    filters = []
+    if calibre_user_id is not None:
+        filters.append(MozelloOrder.calibre_user_id == calibre_user_id)
+    if email:
+        filters.append(MozelloOrder.email == email)
+    if not filters:
+        return []
+    with plugin_session() as session:
+        query = session.query(MozelloOrder).filter(or_(*filters))
+        return query.all()

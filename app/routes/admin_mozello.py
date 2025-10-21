@@ -22,7 +22,13 @@ except Exception:  # pragma: no cover
             raise RuntimeError("Flask not available")
 
 from app.utils import ensure_admin, PermissionError
-from app.services import mozello_service, orders_service, OrderValidationError, CalibreUnavailableError
+from app.services import (
+    mozello_service,
+    orders_service,
+    OrderValidationError,
+    CalibreUnavailableError,
+    books_sync,
+)
 from app.utils.logging import get_logger
 
 LOG = get_logger("mozello.routes")
@@ -96,6 +102,10 @@ def _extract_category_from_product(payload: Dict[str, Any] | None) -> Optional[s
 @webhook_bp.route("/mozello/books/<path:mz_handle>", methods=["GET"])
 def mozello_product_redirect(mz_handle: str):
     handle = (mz_handle or "").strip()
+    if handle.isdigit():
+        lookup = books_sync.get_mz_handle_for_book(int(handle))
+        if lookup:
+            handle = lookup.strip()
     if not handle:
         abort(404)
 

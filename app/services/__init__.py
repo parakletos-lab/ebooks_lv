@@ -15,6 +15,7 @@ from .orders_service import (
     CalibreUnavailableError,
     UserAlreadyExistsError,
 )
+from . import books_sync
 
 __all__ = [
     "list_orders",
@@ -30,4 +31,5 @@ __all__ = [
     "OrderImportError",
     "CalibreUnavailableError",
     "UserAlreadyExistsError",
+    "books_sync",
 ]

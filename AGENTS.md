@@ -27,7 +27,7 @@
 
 18. Throttle Mozello Store API calls: maximum 1 request per second (enforced in mozello_service). Serialize all product operations.
 
-19. Optional env var `MOZELLO_STORE_URL` seeds the Mozello store URL into `config/users_books.db` on startup if the database value is empty.
-
+19. "/mozello/books/<book_id>" route will navigate to Mozello Web Shop product page to purchase or view.
+20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
 ---
 Add more rules if needed
