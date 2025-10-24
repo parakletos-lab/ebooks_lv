@@ -13,7 +13,8 @@ services:
     #   dockerfile: Dockerfile
     # image: calibre-web-server:local
     environment:
-      MOZELLO_API_KEY: ${MOZELLO_API_KEY:?set MOZELLO_API_KEY in .env}
+      TZ: ${TZ:-Europe/Riga}
+      MOZELLO_WEBHOOK_DUMP_PATH: /app/config/webhook_dumps
     volumes:
       - /opt/calibre/config:/app/config
       - /opt/calibre/library:/app/library

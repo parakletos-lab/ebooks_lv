@@ -18,9 +18,47 @@ def get_session_email_key() -> str:
     return app_config.session_email_key()
 
 
+def _cw_current_user():
+    try:
+        from cps.cw_login import current_user as login_current_user  # type: ignore
+        return login_current_user
+    except Exception:
+        return None
+
+
+def _ub_current_user():
+    try:
+        from cps import ub as cw_ub  # type: ignore
+        return getattr(cw_ub, "current_user", None)
+    except Exception:
+        return None
+
+
 def get_current_user_email() -> Optional[str]:
     raw = session.get(get_session_email_key())
-    return normalize_email(raw)
+    email = normalize_email(raw)
+    if email:
+        return email
+
+    current = _cw_current_user()
+    try:
+        candidate = getattr(current, "email", None)
+        email = normalize_email(candidate)
+        if email:
+            return email
+    except Exception:
+        pass
+
+    ub_user = _ub_current_user()
+    try:
+        candidate = getattr(ub_user, "email", None)
+        email = normalize_email(candidate)
+        if email:
+            return email
+    except Exception:
+        pass
+
+    return None
 
 
 def get_current_user_id() -> Optional[int]:
@@ -30,10 +68,44 @@ def get_current_user_id() -> Optional[int]:
     try:
         return int(uid)
     except (TypeError, ValueError):
-        return None
+        pass
+
+    current = _cw_current_user()
+    try:
+        candidate = getattr(current, "id", None)
+        if candidate is not None:
+            return int(candidate)
+    except Exception:
+        pass
+
+    ub_user = _ub_current_user()
+    try:
+        candidate = getattr(ub_user, "id", None)
+        if candidate is not None:
+            return int(candidate)
+    except Exception:
+        pass
+
+    return None
 
 
 def is_admin_user() -> bool:  # simplified migration copy
+    try:
+        current = _cw_current_user()
+        if current and getattr(current, "is_authenticated", False):
+            has_role_admin = getattr(current, "role_admin", None)
+            if callable(has_role_admin):
+                return bool(has_role_admin())
+            role_attr = getattr(current, "role", None)
+            if role_attr is not None:
+                try:
+                    from cps import constants as cw_consts  # type: ignore
+                    return bool(int(role_attr) & int(getattr(cw_consts, "ROLE_ADMIN", 1)))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
     try:
         from cps import ub  # type: ignore
         cu = getattr(ub, "current_user", None)

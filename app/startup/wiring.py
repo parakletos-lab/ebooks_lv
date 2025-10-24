@@ -55,7 +55,7 @@ def init_app(app: Any) -> None:
     register_routes(app)
     register_mozello(app)
     log.debug("Routes registered (users_books + mozello)")
-    # Bootstrap Mozello API key from env if present and not already stored.
+    # Bootstrap Mozello API key from environment if present and DB empty
     try:
         env_key = mozello_api_key()
         if env_key:
@@ -64,7 +64,7 @@ def init_app(app: Any) -> None:
                 mozello_service.update_settings(env_key, None, None)
                 log.info("Mozello API key seeded from environment.")
             else:
-                log.debug("Mozello API key already present; env value ignored.")
+                log.debug("Mozello API key already stored; environment value ignored.")
     except Exception:
         log.exception("Failed seeding Mozello API key from environment")
     _prepend_template_path(app)

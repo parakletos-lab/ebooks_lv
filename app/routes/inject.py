@@ -17,6 +17,7 @@ from app.routes.overrides.nav_injection import (
     register_loader_injection,
     register_response_injection,
 )
+from app.routes.overrides.catalog_access import register_catalog_access
 
 def _ensure_nav_injection(app: Any) -> None:
     """Register both loader and response nav injection handlers."""
@@ -35,6 +36,7 @@ def register_all(app: Any) -> None:
     register_ebookslv_blueprint(app)  # new consolidated UI
     register_mozello_bps(app)
     register_health(app)
+    register_catalog_access(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

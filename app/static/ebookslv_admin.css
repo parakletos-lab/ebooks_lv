@@ -1,6 +1,9 @@
 /* Books Sync Page */
 .mz-col { background:#eef6ff; }
 .mz-handle-badge { font-family:monospace; background:#ddd; padding:2px 4px; border-radius:4px; font-size:11px; }
+.mz-cat-badge { font-family:monospace; background:#e2ecff; padding:2px 4px; border-radius:4px; font-size:10px; color:#2f4f9a; }
+.mz-handle-actions { margin-top:4px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.mz-handle-btn { padding:1px 8px; font-family:monospace; }
 .orphan-row { background:#ffecec; }
 .mz-log { background:#1e1e1e; color:#e6e6e6; font-family:monospace; font-size:11px; padding:6px 8px; max-height:160px; overflow:auto; border-radius:4px; }
 .mz-toolbar { margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }

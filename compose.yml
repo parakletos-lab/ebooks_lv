@@ -12,7 +12,6 @@ services:
       CALIBRE_LIBRARY_PATH: /app/library
       TZ: Europe/Riga
       # CALIBRE_WEB_DEBUG intentionally omitted in prod
-      # MOZELLO_API_KEY: ${MOZELLO_API_KEY:?set this in your environment}
     ports:
       - "80:8083"
     command: ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:application", "--workers", "1", "--timeout", "90"]

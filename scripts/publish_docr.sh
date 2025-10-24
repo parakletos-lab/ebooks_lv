@@ -20,6 +20,7 @@ set -euo pipefail
 #   ./scripts/publish_docr.sh v0.1.0
 #   ./scripts/publish_docr.sh $(git rev-parse --short HEAD)
 #   VERSION=$(date +%Y%m%d%H%M) ./scripts/publish_docr.sh
+#   ./scripts/publish_docr.sh        # bumps patch from .version
 #
 # Environment overrides:
 #   IMAGE_NAME       (default: calibre-web-server)
@@ -31,6 +32,10 @@ set -euo pipefail
 #   PRUNE_OTHERS     (default: 1) delete all remote tags except latest & backup
 #   DRY_RUN          (default: 0) if 1, show actions without mutating registry
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+VERSION_FILE="${VERSION_FILE:-${REPO_ROOT}/.version}"
+
 IMAGE_NAME=${IMAGE_NAME:-calibre-web-server}
 REGISTRY=${REGISTRY:-registry.digitalocean.com/ebookslv-registry}
 PUSH_LATEST=${PUSH_LATEST:-1}
@@ -40,11 +45,101 @@ PLATFORMS=${PLATFORMS:-linux/amd64}
 PRUNE_OTHERS=${PRUNE_OTHERS:-1}
 DRY_RUN=${DRY_RUN:-0}
 
+SHOULD_UPDATE_VERSION_FILE=0
+
+parse_version(){
+  local raw="$1"
+  local __prefix_var="$2"
+  local __major_var="$3"
+  local __minor_var="$4"
+  local __patch_var="$5"
+  local version="$raw"
+  local prefix=""
+  if [[ "$version" =~ ^[vV] ]]; then
+    prefix="${version:0:1}"
+    version="${version:1}"
+  fi
+  IFS='.' read -r major minor patch remainder <<< "$version"
+  unset IFS
+  major=${major:-0}
+  minor=${minor:-0}
+  patch=${patch:-0}
+  if [[ -n "$remainder" ]]; then
+    return 1
+  fi
+  if ! [[ "$major" =~ ^[0-9]+$ && "$minor" =~ ^[0-9]+$ && "$patch" =~ ^[0-9]+$ ]]; then
+    return 1
+  fi
+  printf -v "$__prefix_var" '%s' "$prefix"
+  printf -v "$__major_var" '%s' "$major"
+  printf -v "$__minor_var" '%s' "$minor"
+  printf -v "$__patch_var" '%s' "$patch"
+  return 0
+}
+
+next_patch_version(){
+  local raw="$1"
+  local prefix major minor patch
+  if ! parse_version "$raw" prefix major minor patch; then
+    return 1
+  fi
+  patch=$((patch + 1))
+  printf '%s%s.%s.%s\n' "$prefix" "$major" "$minor" "$patch"
+}
+
+read_version_file(){
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    tr -d '[:space:]' < "$file"
+  fi
+}
+
+persist_version_file(){
+  local file="$1"
+  local value="$2"
+  if ! printf '%s\n' "$value" > "$file"; then
+    echo "Warning: failed to update version file $file" >&2
+    return 1
+  fi
+  echo "Updated $file to $value"
+}
+
+trackable_version(){
+  local raw="$1"
+  local _p _maj _min _patch
+  if parse_version "$raw" _p _maj _min _patch; then
+    unset _p _maj _min _patch
+    return 0
+  fi
+  unset _p _maj _min _patch
+  return 1
+}
+
 # Determine tag argument or environment provided VERSION
 TAG_ARG=${1:-}
-VERSION=${VERSION:-${TAG_ARG:-}}
+REQUESTED_VERSION=${VERSION:-${TAG_ARG:-}}
+if [[ -z "$REQUESTED_VERSION" ]]; then
+  current_version=$(read_version_file "$VERSION_FILE")
+  if [[ -n "$current_version" ]]; then
+    if ! VERSION=$(next_patch_version "$current_version"); then
+      echo "Unable to derive next version from $VERSION_FILE (found: $current_version)" >&2
+      exit 1
+    fi
+    echo "Auto-generated version $VERSION from $VERSION_FILE"
+  else
+    VERSION="0.0.1"
+    echo "Auto-generated version $VERSION (starting new sequence)"
+  fi
+  SHOULD_UPDATE_VERSION_FILE=1
+else
+  VERSION="$REQUESTED_VERSION"
+  if trackable_version "$VERSION"; then
+    SHOULD_UPDATE_VERSION_FILE=1
+  fi
+fi
+
 if [[ -z "${VERSION}" ]]; then
-  echo "No version/tag provided. Provide an argument or set VERSION env var." >&2
+  echo "No version/tag provided. Provide an argument, set VERSION env var, or ensure $VERSION_FILE is valid." >&2
   exit 1
 fi
 
@@ -137,6 +232,10 @@ if [[ "${DRY_RUN}" == "0" && "${VERSION}" != "latest" && "${VERSION}" != "${BACK
     echo "Removing intermediate version tag ${VERSION} (keeping only latest & backup)"
     doctl registry repository delete-tag -f "${IMAGE_NAME}" "${VERSION}" || echo "Warning: failed to delete version tag ${VERSION}" >&2
   fi
+fi
+
+if [[ "${SHOULD_UPDATE_VERSION_FILE}" == "1" ]]; then
+  persist_version_file "$VERSION_FILE" "$VERSION" || true
 fi
 
 echo "Done. Registry should now contain at most: latest and ${BACKUP_TAG}."

@@ -27,11 +27,13 @@ except Exception:  # pragma: no cover
         return ""
 
 from app.utils import ensure_admin, PermissionError
+from app.utils.logging import get_logger
 from app.services import books_sync, mozello_service, orders_service
 from flask import jsonify, request  # type: ignore
-from typing import List, Dict
+from typing import List, Dict, Any, Optional
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
+LOG = get_logger("ebookslv.admin")
 
 # Optional CSRF exemption (reuse pattern from users_books) for pure JSON API routes.
 try:  # runtime guard
@@ -62,7 +64,7 @@ def landing():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("ebookslv_admin.html")
+    return render_template("ebookslv_admin.html", ub_csrf_token=generate_csrf())
 
 
 @bp.route("/orders/", methods=["GET"])
@@ -93,6 +95,39 @@ def _require_admin_json():
     return True
 
 
+def _apply_default_user_configuration() -> Dict[str, Any]:
+    """Apply curated Calibre-Web defaults for new user roles and sidebar."""
+    try:
+        from cps import config as cw_config  # type: ignore
+        from cps import constants as cw_constants  # type: ignore
+    except Exception as exc:  # pragma: no cover - runtime dependency guard
+        raise RuntimeError("calibre_runtime_unavailable") from exc
+
+    desired_roles = int(cw_constants.ROLE_VIEWER | cw_constants.ROLE_PASSWD)
+    desired_visibility = int(
+        cw_constants.SIDEBAR_HOT
+        | cw_constants.SIDEBAR_READ_AND_UNREAD
+        | cw_constants.SIDEBAR_CATEGORY
+        | cw_constants.SIDEBAR_SERIES
+        | cw_constants.SIDEBAR_AUTHOR
+        | cw_constants.SIDEBAR_LANGUAGE
+        | cw_constants.SIDEBAR_FORMAT
+        | cw_constants.SIDEBAR_ARCHIVED
+        | cw_constants.SIDEBAR_LIST
+    )
+
+    cw_config.config_default_role = desired_roles
+    cw_config.config_default_show = desired_visibility
+    cw_config.config_uploading = 1
+    cw_config.save()
+
+    return {
+        "roles_mask": desired_roles,
+        "visibility_mask": desired_visibility,
+        "upload_enabled": bool(cw_config.config_uploading),
+    }
+
+
 @bp.route("/orders/api/list", methods=["GET"])
 def api_orders_list():
     auth = _require_admin_json()
@@ -100,6 +135,26 @@ def api_orders_list():
         return auth
     data = orders_service.list_orders()
     return jsonify(data)
+
+
+@bp.route("/apply_defaults", methods=["POST"])
+@_maybe_exempt
+def api_apply_defaults():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = _apply_default_user_configuration()
+    except RuntimeError as exc:
+        LOG.warning("Unable to apply default user configuration: %s", exc)
+        return _json_error(str(exc), 503)
+    LOG.info(
+        "Applied ebooks.lv default Calibre settings roles_mask=%s visibility_mask=%s upload_enabled=%s",
+        result.get("roles_mask"),
+        result.get("visibility_mask"),
+        result.get("upload_enabled"),
+    )
+    return jsonify({"status": "ok", "result": result})
 
 
 @bp.route("/orders/api/create", methods=["POST"])
@@ -192,6 +247,19 @@ def api_books_data():
 _PRODUCT_CACHE = {"loaded": False, "products": []}
 
 
+def _extract_category_handle(payload: Any) -> Optional[str]:
+    product = payload
+    if isinstance(payload, dict) and isinstance(payload.get("product"), dict):
+        product = payload.get("product")
+    if not isinstance(product, dict):
+        return None
+    value = product.get("category_handle")
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned or None
+    return None
+
+
 def _merge_products(calibre_rows, products):
     by_handle = {r.get("mz_handle"): r for r in calibre_rows if r.get("mz_handle")}
     # Attach mozello info
@@ -201,11 +269,15 @@ def _merge_products(calibre_rows, products):
         if row:
             row["mozello_title"] = p.get("title")
             row["mozello_price"] = p.get("price")
+            category_value = p.get("category_handle")
+            row["mz_category_handle"] = category_value.strip() if isinstance(category_value, str) and category_value.strip() else row.get("mz_category_handle")
     # Orphans
     orphan_rows = []
     for p in products:
         h = p.get("handle")
         if h and h not in by_handle:
+            category_value = p.get("category_handle")
+            category_clean = category_value.strip() if isinstance(category_value, str) and category_value.strip() else None
             orphan_rows.append({
                 "book_id": None,
                 "title": None,
@@ -213,6 +285,7 @@ def _merge_products(calibre_rows, products):
                 "mz_handle": h,
                 "mozello_title": p.get("title"),
                 "mozello_price": p.get("price"),
+                "mz_category_handle": category_clean,
                 "orphan": True,
             })
     # Order: orphans first then calibre rows
@@ -231,6 +304,11 @@ def api_books_load_products():
     if not ok:
         return _json_error(data.get("error", "mozello_error"), 502)
     products = data.get("products", [])
+    for p in products:
+        handle = p.get("handle")
+        category_value = p.get("category_handle")
+        if isinstance(handle, str) and handle.strip() and isinstance(category_value, str) and category_value.strip():
+            orders_service.update_product_category_handle(handle.strip(), category_value.strip())
     merged = _merge_products(calibre_rows, products)
     _PRODUCT_CACHE["loaded"] = True
     _PRODUCT_CACHE["products"] = products
@@ -260,6 +338,17 @@ def api_books_export_one(book_id: int):
     # Refresh Mozello info for this row only (lightweight)
     target["mozello_title"] = (resp.get("product") or {}).get("title") if isinstance(resp.get("product"), dict) else target.get("title")
     target["mozello_price"] = target.get("mz_price")
+    category_handle = target.get("mz_category_handle")
+    candidate = _extract_category_handle(resp)
+    if candidate:
+        category_handle = candidate
+    elif not category_handle:
+        ok_product, product_payload = mozello_service.fetch_product(handle)
+        if ok_product:
+            category_handle = _extract_category_handle(product_payload)
+    if category_handle:
+        target["mz_category_handle"] = category_handle
+        orders_service.update_product_category_handle(handle, category_handle)
     # Attempt cover upload (best-effort; ignore failures but surface flag)
     cover_uploaded = False
     ok_cov, b64 = books_sync.get_cover_base64(book_id)
@@ -291,6 +380,14 @@ def api_books_export_all():
             r["mz_handle"] = handle
             r["mozello_title"] = r.get("title")
             r["mozello_price"] = r.get("mz_price")
+            category_handle = _extract_category_handle(resp)
+            if not category_handle:
+                ok_product, product_payload = mozello_service.fetch_product(handle)
+                if ok_product:
+                    category_handle = _extract_category_handle(product_payload)
+            if category_handle:
+                r["mz_category_handle"] = category_handle
+                orders_service.update_product_category_handle(handle, category_handle)
             # Cover upload (best-effort per book)
             ok_cov, b64 = books_sync.get_cover_base64(r["book_id"])  # type: ignore
             if ok_cov and b64:

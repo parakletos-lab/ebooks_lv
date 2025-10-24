@@ -18,6 +18,51 @@ APPUSER_GID=1000
 log(){ echo "[init] $*"; }
 err(){ echo "[init][error] $*" >&2; }
 
+prompt_env_var(){
+  local key="$1"; shift
+  local desc="$1"; shift || true
+  local default="${1:-}"; shift || true
+  local current=""
+  if [ -f "$ENV_FILE" ]; then
+    current=$(grep -E "^${key}=" "$ENV_FILE" | sed -E "s/^${key}=//") || true
+  fi
+  if [ -n "$current" ]; then
+    echo "$key is currently set. Leave blank to keep (value hidden)."
+  fi
+  local prompt
+  local input=""
+  prompt="${key} (${desc})"
+  [ -n "$default" ] && prompt+=" [${default}]"
+  prompt+=" : "
+  read -r -p "$prompt" input || true
+  if [ -z "$input" ]; then
+    if [ -n "$current" ]; then
+      log "Keeping existing $key"
+      return 0
+    fi
+    if [ -n "$default" ]; then
+      input="$default"
+    else
+      err "$key is required."; prompt_env_var "$key" "$desc" "$default"; return 0
+    fi
+  fi
+  input=${input//$'\n'/}
+  if [ -f "$ENV_FILE" ] && grep -qE "^${key}=" "$ENV_FILE"; then
+    sed -i.bak -E "s|^${key}=.*|${key}=${input}|" "$ENV_FILE"
+  else
+    echo "${key}=${input}" >> "$ENV_FILE"
+  fi
+}
+
+summary_env(){
+  if [ -f "$ENV_FILE" ]; then
+    log "Current .env:"
+    grep -E '^[A-Z0-9_]+=' "$ENV_FILE" | sed 's/=.*/=***hidden***/'
+  else
+    log "No .env present yet."
+  fi
+}
+
 need_bins(){
   local missing=0
   for b in docker git; do
@@ -97,6 +142,9 @@ main(){
   preflight_dirs
   migrate_legacy_library
   ensure_env
+  log "Collecting required environment variables..."
+  prompt_env_var TZ "System timezone (IANA)" "Europe/Riga"
+  summary_env
   summary
 }
 

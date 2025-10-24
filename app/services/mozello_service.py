@@ -22,6 +22,132 @@ from app.utils.logging import get_logger
 LOG = get_logger("mozello.mozello_service")
 
 
+def _resolve_api_key() -> Optional[str]:
+    cfg = _get_singleton(create=False)
+    if cfg and cfg.api_key:
+        cleaned = cfg.api_key.strip()
+        if cleaned:
+            return cleaned
+    env_key = config.mozello_api_key()
+    if env_key:
+        cleaned_env = env_key.strip()
+        if cleaned_env:
+            if not cfg or not (cfg.api_key and cfg.api_key.strip()):
+                try:
+                    update_settings(cleaned_env, None, None)
+                    LOG.info("Mozello API key seeded from environment into mozello_config table.")
+                except Exception:  # pragma: no cover - best effort
+                    LOG.warning("Failed persisting Mozello API key from environment", exc_info=True)
+            return cleaned_env
+    return None
+
+
+def _seed_store_url_from_env() -> None:
+    env_url = config.mozello_store_url()
+    if not env_url:
+        return
+    cleaned_env = env_url.strip()
+    if not cleaned_env:
+        return
+    try:
+        _ensure_schema_migrations()
+        with app_session() as s:
+            cfg = s.get(MozelloConfig, 1)
+            if cfg is None:
+                cfg = MozelloConfig(id=1)
+                s.add(cfg)
+            existing = (cfg.store_url or "").strip()
+            if not existing:
+                cfg.store_url = cleaned_env
+                LOG.info("Mozello store URL seeded from environment into mozello_config table.")
+    except Exception:  # pragma: no cover - defensive
+        LOG.warning("Failed seeding Mozello store URL from environment", exc_info=True)
+
+
+def _current_store_url() -> Optional[str]:
+    cfg = _get_singleton(create=False)
+    if cfg and cfg.store_url:
+        cleaned = cfg.store_url.strip()
+        return cleaned or None
+    return None
+
+
+def get_store_url() -> Optional[str]:
+    """Return configured Mozello store base URL if available."""
+    _seed_store_url_from_env()
+    value = _current_store_url()
+    if value:
+        return value.rstrip("/")
+    env_value = config.mozello_store_url()
+    if env_value:
+        cleaned_env = env_value.strip()
+        return cleaned_env.rstrip("/") if cleaned_env else None
+    return None
+
+
+def build_product_url(mz_handle: Optional[str], mz_category_handle: Optional[str]) -> Optional[str]:
+    """Construct Mozello storefront URL for a product."""
+    store = get_store_url()
+    handle = (mz_handle or "").strip()
+    category = (mz_category_handle or "").strip()
+    if not store or not handle:
+        return None
+    base = store.rstrip("/")
+    if category:
+        return f"{base}/store/item/{category}/{handle}/"
+    return f"{base}/store/item/{handle}/"
+
+
+def get_app_settings() -> Dict[str, Any]:
+    seeded_key = _resolve_api_key()
+    _seed_store_url_from_env()
+    cfg = _get_singleton(create=True)
+    key_value = cfg.api_key.strip() if cfg and isinstance(cfg.api_key, str) else None
+    if not key_value and seeded_key:
+        key_value = seeded_key.strip() or None
+    url_value = cfg.store_url.strip() if cfg and isinstance(cfg.store_url, str) else None
+    if not url_value:
+        env_url = config.mozello_store_url()
+        if env_url:
+            url_value = env_url.strip() or None
+    return {
+        "mz_store_url": url_value or None,
+        "mz_api_key": key_value or None,
+        "mz_api_key_set": bool(key_value),
+    }
+
+
+def update_app_settings(store_url: Optional[str], api_key: Optional[str]) -> Dict[str, Any]:
+    _ensure_schema_migrations()
+    with app_session() as s:
+        cfg = s.get(MozelloConfig, 1)
+        if cfg is None:
+            cfg = MozelloConfig(id=1)
+            s.add(cfg)
+        changed = False
+
+        if store_url is not None:
+            sanitized_url = (store_url or "").strip() or None
+            if cfg.store_url != sanitized_url:
+                cfg.store_url = sanitized_url
+                changed = True
+
+        if api_key is not None:
+            sanitized_key = (api_key or "").strip() or None
+            if cfg.api_key != sanitized_key:
+                cfg.api_key = sanitized_key
+                changed = True
+
+        if changed:
+            LOG.info(
+                "Mozello app settings updated store_url_set=%s api_key_set=%s",
+                bool(cfg.store_url),
+                bool(cfg.api_key),
+            )
+
+    return get_app_settings()
+
+
 def _get_singleton(create: bool = True) -> MozelloConfig:
     _ensure_schema_migrations()
     with app_session() as s:
@@ -41,20 +167,27 @@ def get_settings() -> Dict[str, Any]:
 
 
 def update_settings(api_key: Optional[str], notifications_url: Optional[str], events: Optional[List[str]], forced_port: Optional[str] = None) -> Dict[str, Any]:
+    sanitized_key: Optional[str] = None
     with app_session() as s:
         cfg = s.get(MozelloConfig, 1)
         if cfg is None:
             cfg = MozelloConfig(id=1)
             s.add(cfg)
         if api_key is not None:
-            cfg.api_key = api_key.strip() or None
+            sanitized_key = (api_key or "").strip() or None
+            cfg.api_key = sanitized_key
         # notifications_url now computed dynamically; ignore writes unless explicitly provided (migration support)
         if notifications_url:
             cfg.notifications_url = notifications_url.strip() or None
         if events is not None:
             cfg.set_events(events)
-    # forced_port persistence deprecated (no longer used for webhook URL)
-        LOG.info("Mozello settings updated url=%s events=%s api_key_set=%s", cfg.notifications_url, cfg.events_list(), bool(cfg.api_key))
+        LOG.info(
+            "Mozello settings updated url=%s events=%s api_key_set=%s",
+            cfg.notifications_url,
+            cfg.events_list(),
+            bool(sanitized_key or cfg.api_key),
+        )
+
     return get_settings()
 
 
@@ -75,15 +208,15 @@ def handle_webhook(raw_body: bytes, headers: Dict[str, str]) -> Tuple[bool, str,
 
     Returns (accepted, event, payload). Payload is None when rejected.
     """
-    cfg = _get_singleton()
-    if not cfg.api_key:
+    api_key = _resolve_api_key()
+    if not api_key:
         return False, "api_key_not_configured", None
     provided = headers.get("X-Mozello-Hash") or headers.get("x-mozello-hash", "")
     # Allow explicit local test bypass (not sent by Mozello) only if header present
     if headers.get("X-Mozello-Test", "").lower() == "unsigned" and provided == "":
         pass
     else:
-        if not verify_signature(raw_body, provided, cfg.api_key):
+        if not verify_signature(raw_body, provided, api_key):
             return False, "signature_invalid", None
     # Parse JSON (defensive)
     try:
@@ -102,13 +235,21 @@ __all__ = [
     "update_settings",
     "allowed_events",
     "handle_webhook",
+    "get_app_settings",
+    "get_store_url",
+    "update_app_settings",
 ]
+
+__all__.append("build_product_url")
 
 
 def _get_api_key_raw() -> Optional[str]:
     try:
         cfg = _get_singleton(create=True)
-        return cfg.api_key
+        if cfg and cfg.api_key:
+            cleaned = cfg.api_key.strip()
+            return cleaned or None
+        return None
     except Exception:  # pragma: no cover
         return None
 
@@ -129,6 +270,9 @@ def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
             if "forced_port" not in cols:
                 LOG.warning("Applying schema migration: adding mozello_config.forced_port column")
                 s.execute(text("ALTER TABLE mozello_config ADD COLUMN forced_port VARCHAR(10)"))
+            if "store_url" not in cols:
+                LOG.info("Applying schema migration: adding mozello_config.store_url column")
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url VARCHAR(500)"))
     except Exception as exc:
         LOG.error("Mozello schema migration check failed: %s", exc)
     finally:
@@ -140,7 +284,7 @@ __all__.append("_ensure_schema_migrations")
 # --------------------- Outbound Mozello Sync ---------------------------
 
 def _api_headers() -> Dict[str, str]:
-    key = config.mozello_api_key() or ""
+    key = _resolve_api_key() or ""
     if not key:
         return {}
     # Mozello spec: Authorization: ApiKey <KEY>
@@ -290,6 +434,7 @@ def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool
                     "handle": p.get("handle"),
                     "title": (p.get("title") if isinstance(p.get("title"), str) else (p.get("title", {}).get("en") if isinstance(p.get("title"), dict) else None)),
                     "price": p.get("price"),
+                    "category_handle": p.get("category_handle") if isinstance(p.get("category_handle"), str) else None,
                 })
             next_rel = payload.get("next_page_uri")
             if next_rel:
@@ -300,6 +445,31 @@ def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool
         return True, {"products": products, "count": len(products), "pages": pages}
     except Exception as exc:  # pragma: no cover
         LOG.warning("list_products_full failed: %s", exc)
+        return False, {"error": str(exc)}
+
+
+def fetch_product(handle: str, timeout: int = 10) -> Tuple[bool, Dict[str, Any]]:
+    """Fetch a single Mozello product by handle."""
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    target = (handle or "").strip()
+    if not target:
+        return False, {"error": "handle_required"}
+    try:
+        _throttle_wait()
+        r = requests.get(_api_url(f"/store/product/{target}/"), headers=headers, timeout=timeout)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code == 404:
+            return False, {"error": "not_found"}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("fetch_product failed handle=%s error=%s", handle, exc)
         return False, {"error": str(exc)}
 
 
@@ -342,6 +512,8 @@ def upsert_product_basic(handle: str, title: str, price: float | None, descripti
     if not headers:
         return False, {"error": "api_key_missing"}
     product_obj: Dict[str, Any] = {"title": {"en": title}, "price": price or 0.0, "visible": True}
+    if handle:
+        product_obj["url"] = {"en": handle}
     if description_html:
         product_obj["description"] = {"en": description_html}
     # Attempt update
@@ -384,7 +556,7 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
 
-__all__.extend(["list_products_full", "upsert_product_minimal", "delete_product"])
+__all__.extend(["list_products_full", "fetch_product", "upsert_product_minimal", "delete_product"])
 
 
 def fetch_paid_orders(

@@ -6,25 +6,40 @@ Webhook: /mozello/webhook (POST) – verifies Mozello signature and imports paid
 """
 from __future__ import annotations
 
+import json
+import os
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 try:
-    from flask import Blueprint, request, jsonify, render_template
+    from flask import Blueprint, request, jsonify, render_template, redirect, abort
 except Exception:  # pragma: no cover
     Blueprint = object  # type: ignore
     def request():  # type: ignore
         raise RuntimeError("Flask not available")
     def jsonify(*a, **k):  # type: ignore
         return {"error": "Flask missing"}, 500
+        def redirect(*a, **k):  # type: ignore
+            raise RuntimeError("Flask not available")
+        def abort(*a, **k):  # type: ignore
+            raise RuntimeError("Flask not available")
 
 from app.utils import ensure_admin, PermissionError
-from app.services import mozello_service, orders_service, OrderValidationError, CalibreUnavailableError
+from app.services import (
+    mozello_service,
+    orders_service,
+    OrderValidationError,
+    CalibreUnavailableError,
+    books_sync,
+)
 from app.utils.logging import get_logger
 
 LOG = get_logger("mozello.routes")
 
 bp = Blueprint("mozello_admin", __name__, url_prefix="/admin/mozello", template_folder="../templates")
 webhook_bp = Blueprint("mozello_webhook", __name__)
+
+_ALL_WEBHOOK_EVENTS = {event.upper() for event in mozello_service.allowed_events()}
 
 try:
     from cps import csrf  # type: ignore
@@ -75,6 +90,75 @@ def mozello_admin_page():  # pragma: no cover (thin render)
         "remote_raw": None,
     }
     return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
+
+
+def _extract_category_from_product(payload: Dict[str, Any] | None) -> Optional[str]:
+    if not isinstance(payload, dict):
+        return None
+    product = payload.get("product") if isinstance(payload.get("product"), dict) else payload
+    if not isinstance(product, dict):
+        return None
+    candidate = product.get("category_handle")
+    if isinstance(candidate, str) and candidate.strip():
+        return candidate.strip()
+    return None
+
+
+@webhook_bp.route("/mozello/books/<path:mz_handle>", methods=["GET"])
+def mozello_product_redirect(mz_handle: str):
+    handle = (mz_handle or "").strip()
+    if handle.isdigit():
+        lookup = books_sync.get_mz_handle_for_book(int(handle))
+        if lookup:
+            handle = lookup.strip()
+    if not handle:
+        abort(404)
+
+    category_handle = orders_service.get_product_category_handle(handle)
+    if not category_handle:
+        ok_product, payload = mozello_service.fetch_product(handle)
+        if ok_product:
+            category_candidate = _extract_category_from_product(payload)
+            if category_candidate:
+                category_handle = category_candidate
+                orders_service.update_product_category_handle(handle, category_handle)
+        else:
+            LOG.debug(
+                "Mozello product redirect could not fetch product handle=%s error=%s",
+                handle,
+                payload.get("error") if isinstance(payload, dict) else payload,
+            )
+
+    url = mozello_service.build_product_url(handle, category_handle)
+    if not url:
+        LOG.info("Mozello product redirect missing url handle=%s", handle)
+        abort(404)
+    return redirect(url)
+
+
+@bp.route("/app_settings", methods=["GET"])
+def mozello_get_app_settings():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    return jsonify(mozello_service.get_app_settings())
+
+
+@bp.route("/app_settings", methods=["PUT"])
+@_maybe_exempt
+def mozello_update_app_settings():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    data: Dict[str, Any] = request.get_json(silent=True) or {}
+    try:
+        updated = mozello_service.update_app_settings(
+            store_url=data.get("mz_store_url"),
+            api_key=data.get("mz_api_key"),
+        )
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
+    return jsonify(updated)
 
 @bp.route("/settings", methods=["GET"])
 def mozello_get_settings():
@@ -127,6 +211,34 @@ def mozello_webhook():
     event_upper = (event_name or "").upper()
     data = payload if isinstance(payload, dict) else {}
     order_data = data.get("order") if isinstance(data.get("order"), dict) else None
+
+    _dump_webhook_event(event_upper, data or {}, raw)
+
+    if event_upper == "PRODUCT_CHANGED":
+        product_data = data.get("product") if isinstance(data.get("product"), dict) else None
+        if not product_data:
+            LOG.warning("Mozello webhook PRODUCT_CHANGED missing product payload")
+            return jsonify({"status": "rejected", "reason": "product_missing"}), 400
+        product_handle = (product_data.get("handle") or "").strip()
+        if not product_handle:
+            LOG.warning("Mozello webhook PRODUCT_CHANGED missing product handle")
+            return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
+        category_value = product_data.get("category_handle")
+        category_clean = category_value.strip() if isinstance(category_value, str) and category_value.strip() else None
+        updated = 0
+        if category_clean:
+            updated = orders_service.update_product_category_handle(product_handle, category_clean)
+        else:
+            LOG.info("Mozello PRODUCT_CHANGED without category handle handle=%s", product_handle)
+        response_payload = {
+            "status": "ok",
+            "event": event_upper,
+            "updated": updated,
+            "mz_handle": product_handle,
+        }
+        if category_clean:
+            response_payload["mz_category_handle"] = category_clean
+        return jsonify(response_payload)
 
     if event_upper != "PAYMENT_CHANGED":
         LOG.debug("Mozello webhook ignoring event=%s", event_upper)
@@ -188,7 +300,32 @@ def register_blueprints(app):
             csrf.exempt(webhook_bp)  # type: ignore[arg-type]
             csrf.exempt(mozello_webhook)
             csrf.exempt(mozello_update_settings)
+            csrf.exempt(mozello_update_app_settings)
         except Exception:
             pass
 
 __all__ = ["register_blueprints"]
+
+
+def _dump_webhook_event(event: str, payload: Dict[str, Any], raw_body: bytes) -> None:
+    """Persist webhook payload to disk when dump path configured."""
+    dump_root = os.getenv("MOZELLO_WEBHOOK_DUMP_PATH", "").strip()
+    if not dump_root:
+        return
+    if event.upper() not in _ALL_WEBHOOK_EVENTS:
+        return
+    try:
+        os.makedirs(dump_root, exist_ok=True)
+        safe_event = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in (event or "UNKNOWN")) or "UNKNOWN"
+        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%S%f")
+        file_path = os.path.join(dump_root, f"{safe_event}_{timestamp}.json")
+        dump_payload = {
+            "event": event or "UNKNOWN",
+            "received_at": datetime.utcnow().isoformat() + "Z",
+            "payload": payload,
+            "raw_body": raw_body.decode("utf-8", errors="replace"),
+        }
+        with open(file_path, "w", encoding="utf-8") as handle:
+            json.dump(dump_payload, handle, indent=2, sort_keys=True)
+    except Exception:  # pragma: no cover - defensive dump guard
+        LOG.warning("Failed dumping Mozello webhook event=%s", event or "UNKNOWN", exc_info=True)

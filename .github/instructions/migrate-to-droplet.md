@@ -22,7 +22,7 @@ sudo usermod -aG docker $USER
 
 git clone https://github.com/<your-org>/ebooks_lv.git /opt/ebooks_lv
 cd /opt/ebooks_lv
-cp .env.example .env   # set MOZELLO_API_KEY + TZ
+cp .env.example .env   # adjust TZ if required (Mozello settings configured in-app)
 docker compose -f compose.yaml -f compose.droplet.yml pull
 docker compose -f compose.yaml -f compose.droplet.yml up -d
 curl -fsS http://localhost:8083/healthz
@@ -118,12 +118,12 @@ scp -r ./library deploy@droplet:/opt/calibre/library
 ---
 
 ## 7. Environment / Secrets
-`.env.example` provided—copy and edit:
+`.env.example` provided—copy and edit timezone or other optional values:
 ```
-MOZELLO_API_KEY=replace_me
 TZ=Europe/Riga
 ```
-MOZELLO_API_KEY is seeded once if DB empty (no overwrite). Request a force flag later if rotation needed.
+Mozello store URL and API key are configured through the Calibre-Web admin UI (Mozello Settings) after the stack is running.
+Optional: set `MOZELLO_STORE_URL` in `.env` to seed the initial store URL; the value persists in `config/users_books.db` once saved.
 
 ---
 

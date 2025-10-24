@@ -1,7 +1,7 @@
 
 ## Agent Quick Rules
 
-1. Never touch core without approval.
+1. Never touch core "/calibre-web" without approval.
 2. Use service layer (no raw SQL). 
 3. Invalidate cache after every mutation.
 4. Use config accessors (not raw os.environ in logic).
@@ -27,5 +27,7 @@
 
 18. Throttle Mozello Store API calls: maximum 1 request per second (enforced in mozello_service). Serialize all product operations.
 
+19. "/mozello/books/<book_id>" route will navigate to Mozello Web Shop product page to purchase or view.
+20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
 ---
 Add more rules if needed
