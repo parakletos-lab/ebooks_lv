@@ -137,8 +137,7 @@ main() {
     fi
   fi
   ensure_env_file
-  log "Collecting / updating required environment variables..."
-  prompt_env_var TZ "System timezone (IANA)" "Europe/Riga"
+  log "Ensuring required environment variables are present (interactive prompts run during init)."
   # Future vars can be added here safely; script is re-runnable.
 
   summary_env
