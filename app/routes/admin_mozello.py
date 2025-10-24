@@ -6,6 +6,9 @@ Webhook: /mozello/webhook (POST) – verifies Mozello signature and imports paid
 """
 from __future__ import annotations
 
+import json
+import os
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 try:
@@ -35,6 +38,8 @@ LOG = get_logger("mozello.routes")
 
 bp = Blueprint("mozello_admin", __name__, url_prefix="/admin/mozello", template_folder="../templates")
 webhook_bp = Blueprint("mozello_webhook", __name__)
+
+_ALL_WEBHOOK_EVENTS = {event.upper() for event in mozello_service.allowed_events()}
 
 try:
     from cps import csrf  # type: ignore
@@ -207,6 +212,8 @@ def mozello_webhook():
     data = payload if isinstance(payload, dict) else {}
     order_data = data.get("order") if isinstance(data.get("order"), dict) else None
 
+    _dump_webhook_event(event_upper, data or {}, raw)
+
     if event_upper == "PRODUCT_CHANGED":
         product_data = data.get("product") if isinstance(data.get("product"), dict) else None
         if not product_data:
@@ -298,3 +305,27 @@ def register_blueprints(app):
             pass
 
 __all__ = ["register_blueprints"]
+
+
+def _dump_webhook_event(event: str, payload: Dict[str, Any], raw_body: bytes) -> None:
+    """Persist webhook payload to disk when dump path configured."""
+    dump_root = os.getenv("MOZELLO_WEBHOOK_DUMP_PATH", "").strip()
+    if not dump_root:
+        return
+    if event.upper() not in _ALL_WEBHOOK_EVENTS:
+        return
+    try:
+        os.makedirs(dump_root, exist_ok=True)
+        safe_event = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in (event or "UNKNOWN")) or "UNKNOWN"
+        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%S%f")
+        file_path = os.path.join(dump_root, f"{safe_event}_{timestamp}.json")
+        dump_payload = {
+            "event": event or "UNKNOWN",
+            "received_at": datetime.utcnow().isoformat() + "Z",
+            "payload": payload,
+            "raw_body": raw_body.decode("utf-8", errors="replace"),
+        }
+        with open(file_path, "w", encoding="utf-8") as handle:
+            json.dump(dump_payload, handle, indent=2, sort_keys=True)
+    except Exception:  # pragma: no cover - defensive dump guard
+        LOG.warning("Failed dumping Mozello webhook event=%s", event or "UNKNOWN", exc_info=True)

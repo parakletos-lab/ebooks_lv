@@ -10,7 +10,10 @@
     <h3 class="panel-title">ebooks.lv Administration</h3>
   </div>
   <div class="panel-body">
-  <p class="text-muted ub-card-lead">Central hub for ebooks.lv custom admin tools.</p>
+    <input type="hidden" id="ebookslv-csrf" value="{{ ub_csrf_token|default('') }}" />
+    <p class="text-muted ub-card-lead">Central hub for ebooks.lv custom admin tools.</p>
+    <button type="button" class="btn btn-warning btn-sm" id="ebookslv-defaults-btn">Set default settings</button>
+    <p id="ebookslv-defaults-status" class="ub-micro ub-help-margin text-muted"></p>
     <div class="ebooks-admin-cards">
       <div class="ebooks-admin-card">
         <h4><span class="glyphicon glyphicon-list-alt"></span> Orders</h4>
@@ -25,4 +28,58 @@
     </div>
   </div>
 </div>
+<script>
+(function(){
+  "use strict";
+  var applyBtn = document.getElementById("ebookslv-defaults-btn");
+  if(!applyBtn){
+    return;
+  }
+  var statusEl = document.getElementById("ebookslv-defaults-status");
+  var csrfInput = document.getElementById("ebookslv-csrf");
+
+  function setStatus(message, level){
+    if(!statusEl){
+      return;
+    }
+    var base = "ub-micro ub-help-margin";
+    var tone = "text-muted";
+    if(level === "success"){
+      tone = "text-success";
+    } else if(level === "error"){
+      tone = "text-danger";
+    }
+    statusEl.className = base + " " + tone;
+    statusEl.textContent = message;
+  }
+
+  applyBtn.addEventListener("click", function(){
+  setStatus("Applying defaults...", "info");
+    applyBtn.disabled = true;
+    var headers = {"Content-Type": "application/json"};
+    if(csrfInput && csrfInput.value){
+      headers["X-CSRFToken"] = csrfInput.value;
+    }
+    fetch("/admin/ebookslv/apply_defaults", {method: "POST", headers: headers})
+      .then(function(response){
+        return response.json().catch(function(){ return {}; }).then(function(data){
+          if(!response.ok){
+            var message = data && data.error ? data.error : "HTTP " + response.status;
+            throw new Error(message);
+          }
+          return data;
+        });
+      })
+      .then(function(){
+        setStatus("Defaults applied.", "success");
+      })
+      .catch(function(err){
+        setStatus("Failed to apply defaults: " + (err && err.message ? err.message : err), "error");
+      })
+      .finally(function(){
+        applyBtn.disabled = false;
+      });
+  });
+})();
+</script>
 {% endblock %}

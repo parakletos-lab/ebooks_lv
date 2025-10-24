@@ -27,11 +27,13 @@ except Exception:  # pragma: no cover
         return ""
 
 from app.utils import ensure_admin, PermissionError
+from app.utils.logging import get_logger
 from app.services import books_sync, mozello_service, orders_service
 from flask import jsonify, request  # type: ignore
 from typing import List, Dict, Any, Optional
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
+LOG = get_logger("ebookslv.admin")
 
 # Optional CSRF exemption (reuse pattern from users_books) for pure JSON API routes.
 try:  # runtime guard
@@ -62,7 +64,7 @@ def landing():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("ebookslv_admin.html")
+    return render_template("ebookslv_admin.html", ub_csrf_token=generate_csrf())
 
 
 @bp.route("/orders/", methods=["GET"])
@@ -93,6 +95,39 @@ def _require_admin_json():
     return True
 
 
+def _apply_default_user_configuration() -> Dict[str, Any]:
+    """Apply curated Calibre-Web defaults for new user roles and sidebar."""
+    try:
+        from cps import config as cw_config  # type: ignore
+        from cps import constants as cw_constants  # type: ignore
+    except Exception as exc:  # pragma: no cover - runtime dependency guard
+        raise RuntimeError("calibre_runtime_unavailable") from exc
+
+    desired_roles = int(cw_constants.ROLE_VIEWER | cw_constants.ROLE_PASSWD)
+    desired_visibility = int(
+        cw_constants.SIDEBAR_HOT
+        | cw_constants.SIDEBAR_READ_AND_UNREAD
+        | cw_constants.SIDEBAR_CATEGORY
+        | cw_constants.SIDEBAR_SERIES
+        | cw_constants.SIDEBAR_AUTHOR
+        | cw_constants.SIDEBAR_LANGUAGE
+        | cw_constants.SIDEBAR_FORMAT
+        | cw_constants.SIDEBAR_ARCHIVED
+        | cw_constants.SIDEBAR_LIST
+    )
+
+    cw_config.config_default_role = desired_roles
+    cw_config.config_default_show = desired_visibility
+    cw_config.config_uploading = 1
+    cw_config.save()
+
+    return {
+        "roles_mask": desired_roles,
+        "visibility_mask": desired_visibility,
+        "upload_enabled": bool(cw_config.config_uploading),
+    }
+
+
 @bp.route("/orders/api/list", methods=["GET"])
 def api_orders_list():
     auth = _require_admin_json()
@@ -100,6 +135,26 @@ def api_orders_list():
         return auth
     data = orders_service.list_orders()
     return jsonify(data)
+
+
+@bp.route("/apply_defaults", methods=["POST"])
+@_maybe_exempt
+def api_apply_defaults():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    try:
+        result = _apply_default_user_configuration()
+    except RuntimeError as exc:
+        LOG.warning("Unable to apply default user configuration: %s", exc)
+        return _json_error(str(exc), 503)
+    LOG.info(
+        "Applied ebooks.lv default Calibre settings roles_mask=%s visibility_mask=%s upload_enabled=%s",
+        result.get("roles_mask"),
+        result.get("visibility_mask"),
+        result.get("upload_enabled"),
+    )
+    return jsonify({"status": "ok", "result": result})
 
 
 @bp.route("/orders/api/create", methods=["POST"])

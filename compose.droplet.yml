@@ -14,6 +14,7 @@ services:
     # image: calibre-web-server:local
     environment:
       TZ: ${TZ:-Europe/Riga}
+      MOZELLO_WEBHOOK_DUMP_PATH: /app/config/webhook_dumps
     volumes:
       - /opt/calibre/config:/app/config
       - /opt/calibre/library:/app/library
