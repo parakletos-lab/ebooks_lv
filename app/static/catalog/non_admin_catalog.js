@@ -80,6 +80,8 @@
         badge.href = mozelloUrl;
         badge.title = buyLabel;
         badge.setAttribute('aria-label', buyLabel);
+    badge.target = '_blank';
+    badge.rel = 'noopener noreferrer';
         badge.innerHTML = `<span class="glyphicon ${iconClass}"></span>`;
         cover.appendChild(badge);
         bookEl.classList.add('book-available');
@@ -131,6 +133,8 @@
         const buyButton = document.createElement('a');
         buyButton.className = 'btn btn-primary catalog-buy-button';
         buyButton.href = mozelloUrl;
+    buyButton.target = '_blank';
+    buyButton.rel = 'noopener noreferrer';
         buyButton.innerHTML = `<span class="glyphicon ${iconClass}"></span> ${buyLabel}`;
         buyGroup.appendChild(buyButton);
         toolbarGroup.appendChild(buyGroup);
