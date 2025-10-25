@@ -10,6 +10,7 @@ services:
       CALIBRE_WEB_HOST: 0.0.0.0
       CALIBRE_DBPATH: /app/config
       CALIBRE_LIBRARY_PATH: /app/library
+      APP_TITLE: e-books.lv
       TZ: Europe/Riga
       # CALIBRE_WEB_DEBUG intentionally omitted in prod
     ports:

@@ -26,6 +26,7 @@ except Exception:  # pragma: no cover
     def generate_csrf():  # type: ignore
         return ""
 
+from app.config import app_title
 from app.utils import ensure_admin, PermissionError
 from app.utils.logging import get_logger
 from app.services import books_sync, mozello_service, orders_service
@@ -119,12 +120,16 @@ def _apply_default_user_configuration() -> Dict[str, Any]:
     cw_config.config_default_role = desired_roles
     cw_config.config_default_show = desired_visibility
     cw_config.config_uploading = 1
+    configured_title = app_title()
+    if configured_title:
+        cw_config.config_calibre_web_title = configured_title
     cw_config.save()
 
     return {
         "roles_mask": desired_roles,
         "visibility_mask": desired_visibility,
         "upload_enabled": bool(cw_config.config_uploading),
+        "title": cw_config.config_calibre_web_title,
     }
 
 
@@ -149,10 +154,11 @@ def api_apply_defaults():
         LOG.warning("Unable to apply default user configuration: %s", exc)
         return _json_error(str(exc), 503)
     LOG.info(
-        "Applied ebooks.lv default Calibre settings roles_mask=%s visibility_mask=%s upload_enabled=%s",
+        "Applied ebooks.lv default Calibre settings roles_mask=%s visibility_mask=%s upload_enabled=%s title=%s",
         result.get("roles_mask"),
         result.get("visibility_mask"),
         result.get("upload_enabled"),
+        result.get("title"),
     )
     return jsonify({"status": "ok", "result": result})
 

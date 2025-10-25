@@ -16,6 +16,7 @@
 12. Logging must go through `app.utils.logging.get_logger`.
 13. Repositories/services must not import from any retired namespace.
 14. If adding a new env var, document it here and implement accessor in `app.config`.
+	- `APP_TITLE` sets the Calibre-Web UI title applied via the ebooks.lv admin "Set default settings" action.
 
 15. After adding or editing any admin UI page (templates/routes): rebuild container (`docker compose up -d --build calibre-web-server`) and verify page source has its hidden CSRF `<input>` before testing API actions (prevents stale template/CSRF misses).
 

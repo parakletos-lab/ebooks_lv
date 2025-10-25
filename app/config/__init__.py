@@ -65,6 +65,15 @@ def summarize_runtime_config() -> dict:
     }
 
 
+def app_title() -> str | None:
+    """Optional override for Calibre-Web UI title."""
+    value = os.getenv("APP_TITLE")
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
 __all__ = [
     "APP_NAME",
     "APP_VERSION",
@@ -74,6 +83,7 @@ __all__ = [
     "log_level_name",
     "metadata",
     "summarize_runtime_config",
+    "app_title",
     "env_bool",
 ]
 
