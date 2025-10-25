@@ -374,19 +374,13 @@ Automated assertion scripts were removed to keep the repo documentation-focused.
 
 ## License
 
-Specify your chosen license here (e.g., MIT, Apache-2.0, GPL-3.0).  
-Example placeholder:
-
-```
-SPDX-License-Identifier: MIT
-Copyright (c) YEAR <YOUR>
-```
+This project is proprietary software owned by parakletos-lab. All rights reserved. Redistribution or modification is not permitted without prior written consent.
 
 ---
 
-## Attribution
+## Third-Party Components
 
-- Upstream project: https://github.com/janeczku/calibre-web
+- [Calibre-Web](https://github.com/janeczku/calibre-web) is included as an unmodified git submodule and is licensed under [GPLv3](https://github.com/janeczku/calibre-web/blob/master/LICENSE). No modifications have been made to the Calibre-Web source bundled with this project.
 
 ---
 

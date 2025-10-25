@@ -18,6 +18,7 @@ from app.routes.overrides.nav_injection import (
     register_response_injection,
 )
 from app.routes.overrides.catalog_access import register_catalog_access
+from app.routes.overrides.stats_notice import register_stats_notice
 
 def _ensure_nav_injection(app: Any) -> None:
     """Register both loader and response nav injection handlers."""
@@ -37,6 +38,7 @@ def register_all(app: Any) -> None:
     register_mozello_bps(app)
     register_health(app)
     register_catalog_access(app)
+    register_stats_notice(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

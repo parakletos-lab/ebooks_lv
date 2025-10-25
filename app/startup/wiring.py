@@ -15,8 +15,6 @@ from app.services import mozello_service
 from flask import Blueprint
 import os
 import logging
-
-
 log = logging.getLogger("app.startup")
 
 

@@ -29,5 +29,6 @@
 
 19. "/mozello/books/<book_id>" route will navigate to Mozello Web Shop product page to purchase or view.
 20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
+21. For "/calibre-web" pages overrides refer to "app/routes/overrides/*"
 ---
 Add more rules if needed
