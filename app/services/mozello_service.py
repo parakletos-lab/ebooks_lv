@@ -1,13 +1,14 @@
 """Mozello integration service layer.
 
 Responsibilities:
-  * Persist & fetch API key + notification settings (single-row table)
-  * Provide allowed event list
-  * Handle inbound webhook verification (PAYMENT_CHANGED etc.)
+    * Persist & fetch API key + notification settings (single-row table)
+    * Provide allowed event list
+    * Handle inbound webhook verification (PAYMENT_CHANGED etc.)
 """
 from __future__ import annotations
 
-from typing import List, Tuple, Optional, Dict, Any
+from dataclasses import dataclass
+from typing import List, Tuple, Optional, Dict, Any, Set, Iterable
 import hmac, hashlib, base64, json, time, threading
 from datetime import datetime
 from urllib.parse import quote_plus
@@ -20,6 +21,203 @@ from app.db.models import MozelloConfig
 from app.utils.logging import get_logger
 
 LOG = get_logger("mozello.mozello_service")
+
+
+@dataclass
+class _CategoryCacheEntry:
+    handle: str
+    seo_url: Optional[str]
+    parent_handle: Optional[str]
+    fetched_at: float
+
+
+_CATEGORY_CACHE: Dict[str, _CategoryCacheEntry] = {}
+_CATEGORY_CACHE_TTL = 3600.0  # seconds
+_CATEGORY_CACHE_LOCK = threading.Lock()
+
+
+def _normalize_category_path(value: str) -> str:
+    parts = [segment.strip("/") for segment in value.split("/") if segment.strip("/")]
+    return "/".join(parts)
+
+
+def _extract_text_value(raw: Any) -> Optional[str]:
+    if isinstance(raw, str):
+        cleaned = raw.strip()
+        return cleaned or None
+    if isinstance(raw, dict):
+        for key in ("en", "lv", "ru", "lt", "et", "de", "fr", "es"):
+            value = raw.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        for value in raw.values():
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    if isinstance(raw, Iterable) and not isinstance(raw, (str, bytes, dict)):
+        for item in raw:
+            candidate = _extract_text_value(item)
+            if candidate:
+                return candidate
+    return None
+
+
+def fetch_category(handle: str, timeout: int = 10) -> Tuple[bool, Dict[str, Any]]:
+    """Fetch Mozello category by handle."""
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    target = (handle or "").strip()
+    if not target:
+        return False, {"error": "handle_required"}
+    try:
+        _throttle_wait()
+        r = requests.get(_api_url(f"/store/category/{target}/"), headers=headers, timeout=timeout)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code == 404:
+            return False, {"error": "not_found"}
+        if r.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover - defensive network handling
+        LOG.warning("fetch_category failed handle=%s error=%s", handle, exc)
+        return False, {"error": str(exc)}
+
+
+def _category_cache_lookup(handle: str, *, force_refresh: bool = False) -> Optional[_CategoryCacheEntry]:
+    key = (handle or "").strip()
+    if not key:
+        return None
+    now = time.time()
+    with _CATEGORY_CACHE_LOCK:
+        entry = _CATEGORY_CACHE.get(key)
+        if entry and not force_refresh and now - entry.fetched_at < _CATEGORY_CACHE_TTL:
+            return entry
+    ok, payload = fetch_category(key)
+    if not ok:
+        # Only log at debug level to avoid noise when resolving legacy categories.
+        LOG.debug("category lookup failed handle=%s details=%s", key, payload)
+        with _CATEGORY_CACHE_LOCK:
+            stale = _CATEGORY_CACHE.get(key)
+        return stale
+    data = payload.get("category") if isinstance(payload.get("category"), dict) else payload
+    if not isinstance(data, dict):
+        return None
+    seo_field = data.get("seo_url") or data.get("seoUrl")
+    seo_url = _extract_text_value(seo_field)
+    if not seo_url:
+        path_field = data.get("path")
+        if isinstance(path_field, Iterable):
+            segments: List[str] = []
+            for entry in path_field:
+                segment = _extract_text_value(entry)
+                if segment:
+                    segments.append(_normalize_category_path(segment))
+            if segments:
+                seo_url = "/".join(part for part in segments if part)
+    parent_field = data.get("parent_handle")
+    parent_handle = parent_field.strip() if isinstance(parent_field, str) and parent_field.strip() else None
+    entry = _CategoryCacheEntry(handle=key, seo_url=seo_url, parent_handle=parent_handle, fetched_at=time.time())
+    with _CATEGORY_CACHE_LOCK:
+        _CATEGORY_CACHE[key] = entry
+    return entry
+
+
+def resolve_category_url_path(category_handle: Optional[str], *, force_refresh: bool = False) -> Optional[str]:
+    """Return seo_url path for category and its parents (e.g. 'parent/child')."""
+    raw = (category_handle or "").strip()
+    if not raw:
+        return None
+    if "/" in raw:
+        return _normalize_category_path(raw)
+    segments: List[str] = []
+    visited: Set[str] = set()
+    current = raw
+    refresh_flag = force_refresh
+    while current and current not in visited:
+        visited.add(current)
+        entry = _category_cache_lookup(current, force_refresh=refresh_flag)
+        refresh_flag = False
+        if not entry:
+            break
+        slug_source = entry.seo_url or entry.handle
+        normalized = _normalize_category_path(slug_source)
+        if normalized:
+            segments.append(normalized)
+        current = (entry.parent_handle or "").strip()
+    if not segments:
+        return None
+    segments.reverse()
+    return "/".join(segments)
+
+
+def extract_product_slug(product_payload: Dict[str, Any]) -> Optional[str]:
+    if not isinstance(product_payload, dict):
+        return None
+    product = product_payload.get("product") if isinstance(product_payload.get("product"), dict) else product_payload
+    if not isinstance(product, dict):
+        return None
+    url_field = product.get("url")
+    candidate: Optional[str] = None
+    if isinstance(url_field, dict):
+        value = url_field.get("en")
+        candidate = value if isinstance(value, str) else None
+    elif isinstance(url_field, str):
+        candidate = url_field
+    if not candidate and isinstance(product.get("handle"), str):
+        candidate = product.get("handle")
+    if not candidate:
+        return None
+    cleaned = candidate.strip().strip("/")
+    return cleaned or None
+
+
+def build_relative_product_path(
+    handle: Optional[str],
+    category_handle: Optional[str],
+    product_slug: Optional[str],
+    *,
+    force_refresh: bool = False,
+) -> Optional[str]:
+    handle_clean = (handle or "").strip()
+    if not handle_clean:
+        return None
+    slug = (product_slug or "").strip().strip("/")
+    category_path = resolve_category_url_path(category_handle, force_refresh=force_refresh) if category_handle else None
+    category_parts: List[str] = []
+    if category_path:
+        category_parts = [part for part in category_path.split("/") if part]
+
+    slug_parts: List[str] = []
+    if slug:
+        slug_parts = [part for part in slug.split("/") if part]
+    else:
+        slug_parts = [handle_clean.strip("/")]
+
+    if category_parts and slug_parts[:len(category_parts)] == category_parts:
+        combined_parts = slug_parts
+    else:
+        combined_parts = category_parts + slug_parts
+
+    if not combined_parts:
+        combined_parts = [handle_clean.strip("/")]
+
+    relative = "/".join(["store", "item", *combined_parts])
+    return f"/{relative.strip('/')}/"
+
+
+def derive_relative_url_from_product(product_payload: Dict[str, Any], *, force_refresh: bool = False) -> Optional[str]:
+    if not isinstance(product_payload, dict):
+        return None
+    product = product_payload.get("product") if isinstance(product_payload.get("product"), dict) else product_payload
+    if not isinstance(product, dict):
+        return None
+    handle = product.get("handle")
+    category_handle = product.get("category_handle") if isinstance(product.get("category_handle"), str) else None
+    slug = extract_product_slug(product)
+    return build_relative_product_path(handle, category_handle, slug, force_refresh=force_refresh)
 
 
 def _resolve_api_key() -> Optional[str]:
@@ -83,21 +281,6 @@ def get_store_url() -> Optional[str]:
         cleaned_env = env_value.strip()
         return cleaned_env.rstrip("/") if cleaned_env else None
     return None
-
-
-def build_product_url(mz_handle: Optional[str], mz_category_handle: Optional[str]) -> Optional[str]:
-    """Construct Mozello storefront URL for a product."""
-    store = get_store_url()
-    handle = (mz_handle or "").strip()
-    category = (mz_category_handle or "").strip()
-    if not store or not handle:
-        return None
-    base = store.rstrip("/")
-    if category:
-        return f"{base}/store/item/{category}/{handle}/"
-    return f"{base}/store/item/{handle}/"
-
-
 def get_app_settings() -> Dict[str, Any]:
     seeded_key = _resolve_api_key()
     _seed_store_url_from_env()
@@ -166,7 +349,7 @@ def get_settings() -> Dict[str, Any]:
     return cfg.as_dict()
 
 
-def update_settings(api_key: Optional[str], notifications_url: Optional[str], events: Optional[List[str]], forced_port: Optional[str] = None) -> Dict[str, Any]:
+def update_settings(api_key: Optional[str], notifications_url: Optional[str], events: Optional[List[str]]) -> Dict[str, Any]:
     sanitized_key: Optional[str] = None
     with app_session() as s:
         cfg = s.get(MozelloConfig, 1)
@@ -238,9 +421,12 @@ __all__ = [
     "get_app_settings",
     "get_store_url",
     "update_app_settings",
+    "fetch_category",
+    "resolve_category_url_path",
+    "extract_product_slug",
+    "build_relative_product_path",
+    "derive_relative_url_from_product",
 ]
-
-__all__.append("build_product_url")
 
 
 def _get_api_key_raw() -> Optional[str]:
@@ -267,9 +453,6 @@ def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
     try:
         with app_session() as s:
             cols = [row[1] for row in s.execute(text("PRAGMA table_info(mozello_config)"))]
-            if "forced_port" not in cols:
-                LOG.warning("Applying schema migration: adding mozello_config.forced_port column")
-                s.execute(text("ALTER TABLE mozello_config ADD COLUMN forced_port VARCHAR(10)"))
             if "store_url" not in cols:
                 LOG.info("Applying schema migration: adding mozello_config.store_url column")
                 s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url VARCHAR(500)"))
@@ -430,11 +613,13 @@ def list_products_full(page_size: int = 100, max_pages: int = 200) -> Tuple[bool
                 return False, {"error": "http_error", "status": status, "details": payload}
             page_items = payload.get("products") or []
             for p in page_items:
+                relative_url = derive_relative_url_from_product(p)
                 products.append({
                     "handle": p.get("handle"),
                     "title": (p.get("title") if isinstance(p.get("title"), str) else (p.get("title", {}).get("en") if isinstance(p.get("title"), dict) else None)),
                     "price": p.get("price"),
                     "category_handle": p.get("category_handle") if isinstance(p.get("category_handle"), str) else None,
+                    "relative_url": relative_url,
                 })
             next_rel = payload.get("next_page_uri")
             if next_rel:

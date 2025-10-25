@@ -28,6 +28,66 @@ def _connect_rw() -> sqlite3.Connection:
     return conn
 
 
+def _identifier_map(conn: sqlite3.Connection, type_name: str) -> Dict[int, str]:
+    mapping: Dict[int, str] = {}
+    try:
+        for row in conn.execute("SELECT book, val FROM identifiers WHERE type=?", (type_name,)):
+            value = row[1]
+            if isinstance(value, str) and value.strip():
+                mapping[int(row[0])] = value.strip()
+    except Exception:  # pragma: no cover
+        pass
+    return mapping
+
+
+def _get_identifier(conn: sqlite3.Connection, book_id: int, type_name: str) -> Optional[str]:
+    try:
+        cur = conn.execute(
+            "SELECT val FROM identifiers WHERE type=? AND book=? LIMIT 1",
+            (type_name, book_id),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        value = row[0]
+        if isinstance(value, str):
+            cleaned = value.strip()
+            return cleaned or None
+        return None
+    except Exception:  # pragma: no cover
+        return None
+
+
+def _set_identifier(book_id: int, type_name: str, value: Optional[str]) -> bool:
+    try:
+        conn = _connect_rw()
+        cleaned = (value or "").strip()
+        cur = conn.execute(
+            "SELECT val FROM identifiers WHERE book=? AND type=? LIMIT 1",
+            (book_id, type_name),
+        )
+        row = cur.fetchone()
+        if not cleaned:
+            if row:
+                conn.execute("DELETE FROM identifiers WHERE book=? AND type=?", (book_id, type_name))
+                conn.commit()
+            return True
+        if row:
+            if row[0] == cleaned:
+                return True
+            conn.execute("UPDATE identifiers SET val=? WHERE book=? AND type=?", (cleaned, book_id, type_name))
+        else:
+            conn.execute(
+                "INSERT INTO identifiers (book, type, val) VALUES (?, ?, ?)",
+                (book_id, type_name, cleaned),
+            )
+        conn.commit()
+        return True
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("_set_identifier failed type=%s book_id=%s: %s", type_name, book_id, exc)
+        return False
+
+
 def _mz_price_column_id(conn: sqlite3.Connection) -> Optional[int]:
     try:
         cur = conn.execute("SELECT id FROM custom_columns WHERE label = ? LIMIT 1", ("mz_price",))
@@ -53,14 +113,8 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
                     prices[int(r[0])] = float(r[1])
         except Exception:  # pragma: no cover
             pass
-    # identifiers (type='mz')
-    handles: Dict[int, str] = {}
-    try:
-        for r in conn.execute("SELECT book, val FROM identifiers WHERE type='mz'"):
-            if r[1]:
-                handles[int(r[0])] = r[1]
-    except Exception:  # pragma: no cover
-        pass
+    handles = _identifier_map(conn, "mz")
+    relative_urls = _identifier_map(conn, "mz_relative_url")
     out: List[Dict[str, Optional[str]]] = []
     for r in rows:
         bid = int(r[0])
@@ -69,7 +123,7 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             "title": r[1],
             "mz_price": prices.get(bid),
             "mz_handle": handles.get(bid),
-            "mz_category_handle": None,
+            "mz_relative_url": relative_urls.get(bid),
         })
     return out
 
@@ -138,21 +192,7 @@ def get_book_description(book_id: int, max_len: int = 8000) -> Optional[str]:
 
 def set_mz_handle(book_id: int, handle: str) -> bool:
     """Insert or update mz handle identifier for a book."""
-    try:
-        conn = _connect_rw()
-        cur = conn.execute("SELECT val FROM identifiers WHERE book=? AND type='mz' LIMIT 1", (book_id,))
-        row = cur.fetchone()
-        if row:
-            if row[0] == handle:
-                return True
-            conn.execute("UPDATE identifiers SET val=? WHERE book=? AND type='mz'", (handle, book_id))
-        else:
-            conn.execute("INSERT INTO identifiers (book, type, val) VALUES (?, 'mz', ?)", (book_id, handle))
-        conn.commit()
-        return True
-    except Exception as exc:  # pragma: no cover
-        LOG.warning("set_mz_handle failed book_id=%s: %s", book_id, exc)
-        return False
+    return _set_identifier(book_id, "mz", handle)
 
 
 def clear_mz_handle(handle: str) -> int:
@@ -169,20 +209,50 @@ def clear_mz_handle(handle: str) -> int:
 
 def get_mz_handle_for_book(book_id: int) -> Optional[str]:
     """Return Mozello handle for a specific Calibre book if present."""
+    conn = _connect_rw()
+    return _get_identifier(conn, book_id, "mz")
+
+
+def set_mz_relative_url(book_id: int, relative_url: Optional[str]) -> bool:
+    """Persist Mozello relative storefront URL identifier for a Calibre book."""
+    return _set_identifier(book_id, "mz_relative_url", relative_url)
+
+
+def get_mz_relative_url_for_book(book_id: int) -> Optional[str]:
+    conn = _connect_rw()
+    return _get_identifier(conn, book_id, "mz_relative_url")
+
+
+def set_mz_relative_url_for_handle(handle: str, relative_url: Optional[str]) -> bool:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return False
+    book_id = info.get("book_id")
+    if book_id is None:
+        return False
     try:
-        conn = _connect_rw()
-        cur = conn.execute("SELECT val FROM identifiers WHERE type='mz' AND book=? LIMIT 1", (book_id,))
-        row = cur.fetchone()
-        if not row:
-            return None
-        value = row[0]
-        if isinstance(value, str):
-            cleaned = value.strip()
-            return cleaned or None
+        bid = int(book_id)
+    except Exception:
+        return False
+    return set_mz_relative_url(bid, relative_url)
+
+
+def get_mz_relative_url_for_handle(handle: str) -> Optional[str]:
+    info = lookup_book_by_handle(handle)
+    if not info:
         return None
-    except Exception as exc:  # pragma: no cover
-        LOG.warning("get_mz_handle_for_book failed book_id=%s: %s", book_id, exc)
+    book_id = info.get("book_id")
+    if book_id is None:
         return None
+    try:
+        bid = int(book_id)
+    except Exception:
+        return None
+    return get_mz_relative_url_for_book(bid)
+
+
+def clear_mz_relative_url_for_handle(handle: str) -> bool:
+    return set_mz_relative_url_for_handle(handle, None)
 
 
 __all__ = [
@@ -194,6 +264,11 @@ __all__ = [
     "lookup_books_by_handles",
     "lookup_book_by_handle",
     "get_mz_handle_for_book",
+    "set_mz_relative_url",
+    "get_mz_relative_url_for_book",
+    "set_mz_relative_url_for_handle",
+    "get_mz_relative_url_for_handle",
+    "clear_mz_relative_url_for_handle",
 ]
 
 
@@ -211,6 +286,7 @@ def lookup_books_by_handles(handles: Iterable[str]) -> Dict[str, Dict[str, Optio
         "WHERE i.type='mz' AND lower(i.val) IN (" + placeholders + ")"
     )
     rows = conn.execute(sql, tuple(normalized)).fetchall()
+    relative_map = _identifier_map(conn, "mz_relative_url")
     result: Dict[str, Dict[str, Optional[str]]] = {}
     for handle, book_id, title in rows:
         key = (handle or "").strip().lower()
@@ -220,6 +296,7 @@ def lookup_books_by_handles(handles: Iterable[str]) -> Dict[str, Dict[str, Optio
             "handle": handle,
             "book_id": int(book_id),
             "title": title,
+            "relative_url": relative_map.get(int(book_id)),
         }
     return result
 

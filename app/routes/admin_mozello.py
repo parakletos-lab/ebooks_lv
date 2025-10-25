@@ -90,20 +90,6 @@ def mozello_admin_page():  # pragma: no cover (thin render)
         "remote_raw": None,
     }
     return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
-
-
-def _extract_category_from_product(payload: Dict[str, Any] | None) -> Optional[str]:
-    if not isinstance(payload, dict):
-        return None
-    product = payload.get("product") if isinstance(payload.get("product"), dict) else payload
-    if not isinstance(product, dict):
-        return None
-    candidate = product.get("category_handle")
-    if isinstance(candidate, str) and candidate.strip():
-        return candidate.strip()
-    return None
-
-
 @webhook_bp.route("/mozello/books/<path:mz_handle>", methods=["GET"])
 def mozello_product_redirect(mz_handle: str):
     handle = (mz_handle or "").strip()
@@ -114,26 +100,19 @@ def mozello_product_redirect(mz_handle: str):
     if not handle:
         abort(404)
 
-    category_handle = orders_service.get_product_category_handle(handle)
-    if not category_handle:
-        ok_product, payload = mozello_service.fetch_product(handle)
-        if ok_product:
-            category_candidate = _extract_category_from_product(payload)
-            if category_candidate:
-                category_handle = category_candidate
-                orders_service.update_product_category_handle(handle, category_handle)
-        else:
-            LOG.debug(
-                "Mozello product redirect could not fetch product handle=%s error=%s",
-                handle,
-                payload.get("error") if isinstance(payload, dict) else payload,
-            )
-
-    url = mozello_service.build_product_url(handle, category_handle)
-    if not url:
-        LOG.info("Mozello product redirect missing url handle=%s", handle)
+    relative_url = books_sync.get_mz_relative_url_for_handle(handle)
+    if not relative_url:
+        LOG.info("Mozello product redirect missing relative url handle=%s", handle)
         abort(404)
-    return redirect(url)
+
+    store_base = mozello_service.get_store_url()
+    if not store_base:
+        LOG.warning("Mozello store URL not configured for redirect handle=%s", handle)
+        abort(503)
+
+    normalized_relative = "/" + relative_url.lstrip("/")
+    target_url = f"{store_base.rstrip('/')}{normalized_relative}"
+    return redirect(target_url)
 
 
 @bp.route("/app_settings", methods=["GET"])
@@ -223,21 +202,20 @@ def mozello_webhook():
         if not product_handle:
             LOG.warning("Mozello webhook PRODUCT_CHANGED missing product handle")
             return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
-        category_value = product_data.get("category_handle")
-        category_clean = category_value.strip() if isinstance(category_value, str) and category_value.strip() else None
-        updated = 0
-        if category_clean:
-            updated = orders_service.update_product_category_handle(product_handle, category_clean)
+        relative_url = mozello_service.derive_relative_url_from_product(product_data, force_refresh=True)
+        stored_relative = False
+        if relative_url:
+            stored_relative = books_sync.set_mz_relative_url_for_handle(product_handle, relative_url)
         else:
-            LOG.info("Mozello PRODUCT_CHANGED without category handle handle=%s", product_handle)
+            books_sync.clear_mz_relative_url_for_handle(product_handle)
         response_payload = {
             "status": "ok",
             "event": event_upper,
-            "updated": updated,
             "mz_handle": product_handle,
         }
-        if category_clean:
-            response_payload["mz_category_handle"] = category_clean
+        if relative_url:
+            response_payload["mz_relative_url"] = relative_url
+        response_payload["relative_url_stored"] = bool(stored_relative)
         return jsonify(response_payload)
 
     if event_upper != "PAYMENT_CHANGED":

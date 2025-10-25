@@ -1,0 +1,49 @@
+{
+  "event": "PRODUCT_CHANGED",
+  "payload": {
+    "event": "PRODUCT_CHANGED",
+    "product": {
+      "category": {
+        "path": [
+          {
+            "en": "0000"
+          },
+          {
+            "en": "P\u0113d\u0113j\u0101"
+          }
+        ]
+      },
+      "category_handle": "uid-463755",
+      "created_at": "2025-10-21 16:13:12",
+      "description": {
+        "en": "<p>THE HOUSE WITH THE SILVER DOOR.<br>WHEN KNIGHTS WERE BOLD.<br>DIXIE KITTEN.<br>AN OLD, OLD STORY-BOOK.<br>THE CHAUCER STORY BOOK.<br>LETTERS FROM COLONIAL CHILDREN.<br>AMERICAN HERO STORIES.<br>THE STORY OF THE ROMAN PEOPLE.<br>THE STORY OF THE GREEK PEOPLE.<br>THE GOLDEN GOOSE AND OTHER FAIRY TALES.<br>THE CHRIST STORY.<br>OLD BALLADS IN PROSE.</p>\n<p>&lt;img src=\"https://www.gutenberg.org/cache/epub/77025/images/coversmall.jpg\" /&gt;</p>"
+      },
+      "featured": false,
+      "handle": "book-5",
+      "model": "",
+      "modified_at": "2025-10-24 10:49:26",
+      "pictures": [
+        {
+          "uid": "uid-7660507",
+          "url": "https://site-2741341.mozfiles.com/files/2741341/catitems/l/cover-e3b5ae7c80e5d4472117bb49bd07e190-4e4ed7c4.jpg?7660507"
+        }
+      ],
+      "price": 123,
+      "sale_price": null,
+      "sku": "",
+      "stock": null,
+      "tax": null,
+      "title": {
+        "en": "The house with the silver door"
+      },
+      "url": {
+        "en": "book-5"
+      },
+      "vendor": "",
+      "visible": true,
+      "weight": null
+    }
+  },
+  "raw_body": "{\"event\":\"PRODUCT_CHANGED\",\"product\":{\"handle\":\"book-5\",\"created_at\":\"2025-10-21 16:13:12\",\"modified_at\":\"2025-10-24 10:49:26\",\"category\":{\"path\":[{\"en\":\"0000\"},{\"en\":\"P\\u0113d\\u0113j\\u0101\"}]},\"category_handle\":\"uid-463755\",\"title\":{\"en\":\"The house with the silver door\"},\"description\":{\"en\":\"<p>THE HOUSE WITH THE SILVER DOOR.<br>WHEN KNIGHTS WERE BOLD.<br>DIXIE KITTEN.<br>AN OLD, OLD STORY-BOOK.<br>THE CHAUCER STORY BOOK.<br>LETTERS FROM COLONIAL CHILDREN.<br>AMERICAN HERO STORIES.<br>THE STORY OF THE ROMAN PEOPLE.<br>THE STORY OF THE GREEK PEOPLE.<br>THE GOLDEN GOOSE AND OTHER FAIRY TALES.<br>THE CHRIST STORY.<br>OLD BALLADS IN PROSE.<\\/p>\\n<p>&lt;img src=\\\"https:\\/\\/www.gutenberg.org\\/cache\\/epub\\/77025\\/images\\/coversmall.jpg\\\" \\/&gt;<\\/p>\"},\"url\":{\"en\":\"book-5\"},\"pictures\":[{\"uid\":\"uid-7660507\",\"url\":\"https:\\/\\/site-2741341.mozfiles.com\\/files\\/2741341\\/catitems\\/l\\/cover-e3b5ae7c80e5d4472117bb49bd07e190-4e4ed7c4.jpg?7660507\"}],\"price\":123,\"sale_price\":null,\"sku\":\"\",\"stock\":null,\"visible\":true,\"featured\":false,\"tax\":null,\"vendor\":\"\",\"model\":\"\",\"weight\":null}}",
+  "received_at": "2025-10-24T10:50:04.874433Z"
+}

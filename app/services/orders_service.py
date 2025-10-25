@@ -44,7 +44,6 @@ class OrderView:
     id: int
     email: str
     mz_handle: str
-    mz_category_handle: Optional[str]
     calibre_book: Optional[Dict[str, Any]]
     calibre_user: Optional[Dict[str, Any]]
     book_error: Optional[str]
@@ -63,7 +62,6 @@ def _order_to_view(
         id=order.id,
         email=order.email,
         mz_handle=order.mz_handle,
-        mz_category_handle=order.mz_category_handle,
         calibre_book=book,
         calibre_user=user,
         book_error=book_error,
@@ -365,18 +363,12 @@ def import_paid_orders(
             book_info = book_map.get(handle_key)
             calibre_user_id = user_info.get("id") if user_info else None
             calibre_book_id = book_info.get("book_id") if book_info else None
-            category_source = cart_item.get("product_category_handle")
-            if not isinstance(category_source, str) or not category_source.strip():
-                candidate = cart_item.get("category_handle")
-                category_source = candidate if isinstance(candidate, str) else None
-            category_clean = category_source.strip() if isinstance(category_source, str) else None
             try:
                 order = users_books_repo.create_order(
                     email_norm,
                     handle_raw,
                     calibre_user_id=calibre_user_id,
                     calibre_book_id=calibre_book_id,
-                    mz_category_handle=category_clean,
                     created_at=moz_created_at,
                     imported_at=imported_at_ts,
                 )
@@ -391,7 +383,6 @@ def import_paid_orders(
                     imported_at_ts,
                     calibre_user_id=calibre_user_id,
                     calibre_book_id=calibre_book_id,
-                    mz_category_handle=category_clean,
                 )
             except Exception as exc:  # pragma: no cover - defensive
                 summary["errors"].append({
@@ -430,7 +421,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
 
     seen_handles: Set[str] = set()
     handles: List[str] = []
-    handle_categories: Dict[str, Optional[str]] = {}
     for item in cart_raw:
         if not isinstance(item, dict):
             continue
@@ -442,13 +432,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             continue
         seen_handles.add(handle_key)
         handles.append(handle_raw)
-        category_source = item.get("product_category_handle")
-        if not isinstance(category_source, str) or not category_source.strip():
-            candidate = item.get("category_handle")
-            category_source = candidate if isinstance(candidate, str) else None
-        category_clean = category_source.strip() if isinstance(category_source, str) else None
-        if category_clean:
-            handle_categories[handle_key] = category_clean
 
     if not handles:
         raise OrderValidationError("handles_missing")
@@ -476,7 +459,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
         book_info = book_map.get(handle_key)
         calibre_user_id = existing_user.get("id") if existing_user else None
         calibre_book_id = book_info.get("book_id") if book_info else None
-        category_clean = handle_categories.get(handle_key)
         created = False
         order_obj: Optional[MozelloOrder]
         try:
@@ -485,7 +467,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                 handle,
                 calibre_user_id=calibre_user_id,
                 calibre_book_id=calibre_book_id,
-                mz_category_handle=category_clean,
                 created_at=moz_created_at,
                 imported_at=imported_at,
             )
@@ -499,7 +480,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                 imported_at,
                 calibre_user_id=calibre_user_id,
                 calibre_book_id=calibre_book_id,
-                mz_category_handle=category_clean,
             )
             if not order_obj:
                 order_obj = users_books_repo.get_order_by_email_handle(email_norm, handle)
@@ -572,32 +552,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             "user_status": user_status,
         })
 
-    return summary
-
-
-def update_product_category_handle(mz_handle: str, mz_category_handle: Optional[str]) -> int:
-    cleaned_handle = (mz_handle or "").strip()
-    if not cleaned_handle:
-        return 0
-    cleaned_category = (mz_category_handle or "").strip() or None
-    updated = users_books_repo.update_category_handle_for_handle(cleaned_handle, cleaned_category)
-    if updated:
-        LOG.info(
-            "Updated Mozello category handle mz_handle=%s mz_category_handle=%s updated=%s",
-            cleaned_handle,
-            cleaned_category,
-            updated,
-        )
-    return updated
-
-
-def get_product_category_handle(mz_handle: str) -> Optional[str]:
-    cleaned_handle = (mz_handle or "").strip()
-    if not cleaned_handle:
-        return None
-    return users_books_repo.get_category_handle_for_handle(cleaned_handle)
-
-
 __all__ = [
     "list_orders",
     "create_order",
@@ -606,8 +560,6 @@ __all__ = [
     "delete_order",
     "import_paid_orders",
     "process_webhook_order",
-    "update_product_category_handle",
-    "get_product_category_handle",
     "OrderValidationError",
     "OrderAlreadyExistsError",
     "OrderNotFoundError",

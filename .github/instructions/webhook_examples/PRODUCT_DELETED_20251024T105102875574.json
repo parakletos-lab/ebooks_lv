@@ -1,0 +1,30 @@
+{
+  "event": "PRODUCT_DELETED",
+  "payload": {
+    "event": "PRODUCT_DELETED",
+    "product": {
+      "category": {
+        "path": []
+      },
+      "category_handle": null,
+      "created_at": "2025-10-09 07:49:53",
+      "description": null,
+      "featured": false,
+      "handle": "uid-4900329",
+      "model": "",
+      "modified_at": "2025-10-09 07:49:53",
+      "price": "11",
+      "sale_price": null,
+      "sku": "0002",
+      "stock": null,
+      "tax": null,
+      "title": null,
+      "url": null,
+      "vendor": "",
+      "visible": true,
+      "weight": null
+    }
+  },
+  "raw_body": "{\"event\":\"PRODUCT_DELETED\",\"product\":{\"handle\":\"uid-4900329\",\"created_at\":\"2025-10-09 07:49:53\",\"modified_at\":\"2025-10-09 07:49:53\",\"category\":{\"path\":[]},\"category_handle\":null,\"title\":null,\"description\":null,\"url\":null,\"price\":\"11\",\"sale_price\":null,\"sku\":\"0002\",\"stock\":null,\"visible\":true,\"featured\":false,\"tax\":null,\"vendor\":\"\",\"model\":\"\",\"weight\":null}}",
+  "received_at": "2025-10-24T10:51:02.875614Z"
+}

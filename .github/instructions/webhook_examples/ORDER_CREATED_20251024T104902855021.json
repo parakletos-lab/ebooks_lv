@@ -1,0 +1,63 @@
+{
+  "event": "ORDER_CREATED",
+  "payload": {
+    "event": "ORDER_CREATED",
+    "order": {
+      "address": "Siguldas, 37",
+      "archived": false,
+      "cart": [
+        {
+          "product_handle": "book-5",
+          "product_name": "The house with the silver door",
+          "product_price": 123,
+          "product_price_original": 123,
+          "product_quantity": 1,
+          "product_sku": "",
+          "product_variant": null,
+          "product_variant_handle": null,
+          "tax_exclusive_percent": 0,
+          "tax_inclusive_percent": 0,
+          "weight": 0
+        }
+      ],
+      "city": "Daugavpils",
+      "company": "Sia \"Simulacra\"",
+      "company_id": "",
+      "country_code": "lv",
+      "country_name": "Latvia",
+      "created_at": "2025-10-24 10:48:35",
+      "currency": "EUR",
+      "discount_amount": 0,
+      "discount_code": null,
+      "dispatched": false,
+      "email": "deniss.muhla@gmail.com",
+      "name": "Test 1212",
+      "notes": "",
+      "order_id": "M-2475405-25",
+      "origin_url": "https://druidegrey.mozello.shop/store/",
+      "payment_method": "gateway",
+      "payment_method_details": "",
+      "payment_status": "pending",
+      "phone": "+37129966072",
+      "print_url": "https://druidegrey.mozello.com/m/invoice/28e7e96fa7a20b18b31bc2dfef08dac4/",
+      "province_code": "",
+      "shipping": null,
+      "shipping_method": "",
+      "shipping_method_details": "",
+      "shipping_price": 0,
+      "shipping_price_original": 0,
+      "shipping_tax_exclusive_percent": null,
+      "shipping_tax_inclusive_percent": null,
+      "shipping_tracking_code": "",
+      "shipping_tracking_url": "",
+      "subtotal": 123,
+      "taxes": 0,
+      "total": 123,
+      "vat_id": "",
+      "weight": 0,
+      "zip": "LV5417"
+    }
+  },
+  "raw_body": "{\"event\":\"ORDER_CREATED\",\"order\":{\"order_id\":\"M-2475405-25\",\"created_at\":\"2025-10-24 10:48:35\",\"payment_status\":\"pending\",\"dispatched\":false,\"archived\":false,\"name\":\"Test 1212\",\"company\":\"Sia \\\"Simulacra\\\"\",\"vat_id\":\"\",\"company_id\":\"\",\"email\":\"deniss.muhla@gmail.com\",\"phone\":\"+37129966072\",\"country_name\":\"Latvia\",\"country_code\":\"lv\",\"address\":\"Siguldas, 37\",\"city\":\"Daugavpils\",\"province_code\":\"\",\"zip\":\"LV5417\",\"shipping\":null,\"notes\":\"\",\"payment_method\":\"gateway\",\"payment_method_details\":\"\",\"shipping_method\":\"\",\"shipping_method_details\":\"\",\"shipping_tracking_code\":\"\",\"shipping_tracking_url\":\"\",\"shipping_price\":0,\"shipping_price_original\":0,\"shipping_tax_inclusive_percent\":null,\"shipping_tax_exclusive_percent\":null,\"currency\":\"EUR\",\"subtotal\":123,\"taxes\":0,\"total\":123,\"weight\":0,\"discount_code\":null,\"discount_amount\":0,\"origin_url\":\"https:\\/\\/druidegrey.mozello.shop\\/store\\/\",\"cart\":[{\"product_handle\":\"book-5\",\"product_name\":\"The house with the silver door\",\"product_variant\":null,\"product_variant_handle\":null,\"product_price\":123,\"product_price_original\":123,\"product_sku\":\"\",\"product_quantity\":1,\"weight\":0,\"tax_inclusive_percent\":0,\"tax_exclusive_percent\":0}],\"print_url\":\"https:\\/\\/druidegrey.mozello.com\\/m\\/invoice\\/28e7e96fa7a20b18b31bc2dfef08dac4\\/\"}}",
+  "received_at": "2025-10-24T10:49:02.855092Z"
+}

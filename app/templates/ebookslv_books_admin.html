@@ -78,16 +78,16 @@
 
   function renderSyncCell(r){
     if(r.mz_handle){
-      const catBadge = r.mz_category_handle ? `<span class="mz-cat-badge" title="Mozello category">${escapeHtml(r.mz_category_handle)}</span>` : '';
+      const urlBadge = r.mz_relative_url ? `<span class="mz-cat-badge" title="Mozello relative URL">${escapeHtml(r.mz_relative_url)}</span>` : '';
       const handlePath = encodeURIComponent(r.mz_handle);
       const handleLabel = escapeHtml(r.mz_handle);
       const link = `<a class="btn btn-default btn-xs mz-handle-btn" href="/mozello/books/${handlePath}" target="_blank" rel="noopener">${handleLabel}</a>`;
       if(r.orphan){
         const orphanLabel = `<span class="label label-danger">ORPHAN</span>`;
-        const extras = [link, catBadge].filter(Boolean).join(' ');
+        const extras = [link, urlBadge].filter(Boolean).join(' ');
         return `${orphanLabel}<div class="mz-handle-actions">${extras}</div>`;
       }
-      const extras = catBadge ? `<div class="mz-handle-actions">${catBadge}</div>` : '';
+      const extras = urlBadge ? `<div class="mz-handle-actions">${urlBadge}</div>` : '';
       return `${link}${extras}`;
     }
     return `<button class="btn btn-primary btn-xs" data-export="${r.book_id}">Export</button>`;
@@ -174,7 +174,7 @@
     try {
       const data = await fetchJSON('/admin/ebookslv/books/api/delete/'+handle, {method:'DELETE'});
       // Clear handle in any matching row
-  rows.forEach(r=>{ if(r.mz_handle===handle){ r.mz_handle=null; r.mozello_title=null; r.mozello_price=null; r.mz_category_handle=null; }});
+  rows.forEach(r=>{ if(r.mz_handle===handle){ r.mz_handle=null; r.mozello_title=null; r.mozello_price=null; r.mz_relative_url=null; }});
       // Remove orphan row if any
       rows = rows.filter(r=> !(r.orphan && r.mz_handle===handle));
       render();
