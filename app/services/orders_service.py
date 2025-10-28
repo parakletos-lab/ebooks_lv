@@ -12,10 +12,13 @@ from app.db.repositories.users_books_repo import OrderExistsError as RepoOrderEx
 from app.services import books_sync, mozello_service
 from app.services.calibre_users_service import (
     CalibreUnavailableError,
+    MailConfigMissingError,
+    PasswordResetError,
     UserAlreadyExistsError,
     create_user_for_email,
     lookup_user_by_email,
     lookup_users_by_emails,
+    trigger_password_reset_email,
 )
 from app.utils.identity import normalize_email
 from app.utils.logging import get_logger
@@ -450,6 +453,8 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
         "orders_existing": 0,
         "user_created": 0,
         "user_linked": 0,
+        "password_email_sent": 0,
+        "password_email_failed": 0,
         "orders": [],
         "errors": [],
     }
@@ -496,6 +501,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             continue
 
         user_status = "already_linked" if order_obj.calibre_user_id else None
+        password_email_status: Optional[str] = None
 
         if not order_obj.calibre_user_id:
             try:
@@ -511,6 +517,51 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                         existing_user = refreshed
                 if ensure_status == "created":
                     summary["user_created"] += 1
+                    user_id = user_obj.get("id") if isinstance(user_obj, dict) else None
+                    if user_id:
+                        try:
+                            trigger_password_reset_email(user_id)
+                            summary["password_email_sent"] += 1
+                            password_email_status = "sent"
+                        except MailConfigMissingError:
+                            summary["password_email_failed"] += 1
+                            password_email_status = "mail_not_configured"
+                            LOG.warning(
+                                "Password email skipped (mail config missing) email=%s handle=%s user_id=%s",
+                                email_norm,
+                                handle,
+                                user_id,
+                            )
+                            summary["errors"].append({
+                                "handle": handle,
+                                "error": "password_email_mail_not_configured",
+                            })
+                        except PasswordResetError as exc:
+                            summary["password_email_failed"] += 1
+                            password_email_status = "reset_failed"
+                            LOG.warning(
+                                "Password email failed email=%s handle=%s user_id=%s error=%s",
+                                email_norm,
+                                handle,
+                                user_id,
+                                exc,
+                            )
+                            summary["errors"].append({
+                                "handle": handle,
+                                "error": "password_email_failed",
+                            })
+                    else:
+                        summary["password_email_failed"] += 1
+                        password_email_status = "user_missing"
+                        LOG.warning(
+                            "Password email skipped user missing email=%s handle=%s",
+                            email_norm,
+                            handle,
+                        )
+                        summary["errors"].append({
+                            "handle": handle,
+                            "error": "password_email_user_missing",
+                        })
                 else:
                     summary["user_linked"] += 1
             except UserAlreadyExistsError:
@@ -550,6 +601,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             "mz_handle": handle,
             "status": "created" if created else "existing",
             "user_status": user_status,
+            "password_email": password_email_status,
         })
 
 __all__ = [
@@ -565,5 +617,7 @@ __all__ = [
     "OrderNotFoundError",
     "OrderImportError",
     "CalibreUnavailableError",
+    "MailConfigMissingError",
+    "PasswordResetError",
     "UserAlreadyExistsError",
 ]

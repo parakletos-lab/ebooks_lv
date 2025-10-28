@@ -32,6 +32,14 @@ class UserCreationError(RuntimeError):
     """Raised when user creation fails unexpectedly."""
 
 
+class MailConfigMissingError(RuntimeError):
+    """Raised when SMTP settings are missing for password reset emails."""
+
+
+class PasswordResetError(RuntimeError):
+    """Raised when password reset workflow fails unexpectedly."""
+
+
 def _ensure_runtime() -> None:
     if ub is None or getattr(ub, "session", None) is None:
         raise CalibreUnavailableError("Calibre-Web session not available")
@@ -138,3 +146,28 @@ def create_user_for_email(email: str, preferred_username: Optional[str] = None) 
 
     info = {"id": user.id, "email": user.email, "name": user.name}
     return info, password_plain
+
+
+def trigger_password_reset_email(user_id: int) -> str:
+    """Trigger Calibre's password reset to email credentials to the user.
+
+    Returns the Calibre user name when reset succeeds.
+    """
+    _ensure_runtime()
+    if not helper or not hasattr(helper, "reset_password"):
+        raise CalibreUnavailableError("password_reset_unavailable")
+
+    reset_callable = getattr(helper, "reset_password", None)
+    if not callable(reset_callable):  # pragma: no cover - defensive guard
+        raise CalibreUnavailableError("password_reset_unavailable")
+
+    result, user_name = reset_callable(user_id)
+    if result == 1:
+        LOG.info("Triggered Calibre password reset user_id=%s", user_id)
+        return user_name or ""
+    if result == 2:
+        LOG.warning("Password reset skipped user_id=%s reason=mail_not_configured", user_id)
+        raise MailConfigMissingError("mail_not_configured")
+
+    LOG.error("Password reset failed user_id=%s status=%s", user_id, result)
+    raise PasswordResetError("password_reset_failed")
