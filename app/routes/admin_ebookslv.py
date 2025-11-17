@@ -85,8 +85,11 @@ def books_page():  # pragma: no cover - thin render wrapper
 
 
 # ------------------- Books API (JSON) --------------------
-def _json_error(msg: str, status: int = 400):
-    return jsonify({"error": msg}), status
+def _json_error(msg: str, status: int = 400, details: Optional[Dict[str, Any]] = None):
+    payload: Dict[str, Any] = {"error": msg}
+    if details is not None:
+        payload["details"] = details
+    return jsonify(payload), status
 
 
 def _require_admin_json():
@@ -330,9 +333,30 @@ def api_books_export_one(book_id: int):
         return _json_error("book_not_found", 404)
     handle = target.get("mz_handle") or f"book-{book_id}"
     description = books_sync.get_book_description(book_id)
-    ok, resp = mozello_service.upsert_product_basic(handle, target.get("title") or f"Book {book_id}", target.get("mz_price"), description)
+    language_code = target.get("language_code") if isinstance(target, dict) else None
+    ok, resp = mozello_service.upsert_product_basic(
+        handle,
+        target.get("title") or f"Book {book_id}",
+        target.get("mz_price"),
+        description,
+        language_code,
+    )
     if not ok:
-        return _json_error(resp.get("error", "export_failed"), 502)
+        LOG.error(
+            "Export book failed book_id=%s handle=%s details=%s",
+            book_id,
+            handle,
+            resp,
+        )
+        msg = "export_failed"
+        status_hint = None
+        if isinstance(resp, dict):
+            msg = resp.get("error") or msg
+            status_hint = resp.get("status") or resp.get("update_status") or resp.get("create_status")
+        if status_hint:
+            msg = f"{msg} (status {status_hint})"
+        details_payload = resp if isinstance(resp, dict) else {"raw": resp}
+        return _json_error(msg, 502, details_payload)
     # Persist handle if new
     if not target.get("mz_handle"):
         books_sync.set_mz_handle(book_id, handle)
@@ -379,7 +403,14 @@ def api_books_export_all():
     for r in to_export:
         handle = f"book-{r['book_id']}"
         description = books_sync.get_book_description(r["book_id"])  # type: ignore
-        ok, resp = mozello_service.upsert_product_basic(handle, r.get("title") or f"Book {r['book_id']}", r.get("mz_price"), description)
+        language_code = r.get("language_code")
+        ok, resp = mozello_service.upsert_product_basic(
+            handle,
+            r.get("title") or f"Book {r['book_id']}",
+            r.get("mz_price"),
+            description,
+            language_code,
+        )
         if ok:
             books_sync.set_mz_handle(r["book_id"], handle)
             r["mz_handle"] = handle

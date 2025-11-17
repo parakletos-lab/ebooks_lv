@@ -104,9 +104,27 @@
   }
 
   async function fetchJSON(url, opts){
-    const r = await fetch(url, Object.assign({credentials:'same-origin'}, opts||{}));
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
+    const response = await fetch(url, Object.assign({credentials:'same-origin'}, opts||{}));
+    const text = await response.text();
+    let payload = null;
+    if(text){
+      try {
+        payload = JSON.parse(text);
+      } catch(parseErr){
+        payload = null;
+      }
+    }
+    if(!response.ok){
+      const err = new Error('HTTP '+response.status + (response.statusText ? ' '+response.statusText : ''));
+      err.httpStatus = response.status;
+      err.httpPayload = payload;
+      err.httpRaw = text;
+      throw err;
+    }
+    if(payload === null){
+      throw new Error('Invalid JSON response');
+    }
+    return payload;
   }
 
   async function loadCalibre(){
@@ -137,6 +155,49 @@
       log('Exported book '+bookId);
     } catch(e){
       log('ERROR export book '+bookId+': '+e.message, 'error');
+      if(e && typeof e === 'object'){
+        const payload = e.httpPayload;
+        if(payload){
+          try{
+            log('Export failure payload: '+JSON.stringify(payload), 'error');
+          } catch(jsonErr){
+            log('Export failure payload (stringified failed): '+String(payload), 'error');
+          }
+          const details = payload.details || {};
+          if(details.language){
+            log('Mozello language: '+details.language, 'error');
+          }
+          const mozelloMsg = details.error_message || details.error_description || details.error;
+          if(mozelloMsg){
+            log('Mozello error: '+mozelloMsg, 'error');
+          }
+          const logJson = (label, obj) => {
+            if(!obj) return;
+            try {
+              log(label+JSON.stringify(obj), 'error');
+            } catch(err) {
+              log(label+String(obj), 'error');
+            }
+          };
+          logJson('Mozello update request: ', details.update_request);
+          logJson('Mozello create request: ', details.create_request);
+          logJson('Mozello update response: ', details.update_details);
+          if(details.details && details.details !== details.update_details){
+            logJson('Mozello response: ', details.details);
+          }
+          if(details.create_details){
+            logJson('Mozello create response: ', details.create_details);
+          }
+          if(details.fetch_error){
+            logJson('Mozello fetch error: ', details.fetch_error);
+          }
+        } else if(e.httpRaw){
+          log('Export failure raw body: '+e.httpRaw, 'error');
+        }
+        if(e.stack){
+          log('Export failure stack: '+e.stack.split('\n')[0], 'error');
+        }
+      }
     }
   }
 

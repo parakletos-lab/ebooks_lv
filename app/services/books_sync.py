@@ -40,6 +40,48 @@ def _identifier_map(conn: sqlite3.Connection, type_name: str) -> Dict[int, str]:
     return mapping
 
 
+def _language_map(conn: sqlite3.Connection) -> Dict[int, str]:
+    """Return mapping of book_id -> normalized language code (first language only)."""
+    mapping: Dict[int, str] = {}
+    try:
+        query = (
+            "SELECT bll.book, l.lang_code "
+            "FROM books_languages_link bll "
+            "JOIN languages l ON l.id = bll.lang_code "
+            "ORDER BY bll.book ASC, bll.item_order ASC"
+        )
+        for row in conn.execute(query):
+            book_id = int(row[0])
+            if book_id in mapping:
+                continue
+            raw = row[1]
+            if isinstance(raw, str):
+                mapped = _normalize_language_code(raw)
+                if mapped:
+                    mapping[book_id] = mapped
+    except Exception:  # pragma: no cover - defensive
+        pass
+    return mapping
+
+
+def _normalize_language_code(raw: str) -> Optional[str]:
+    if not raw:
+        return None
+    value = raw.strip().lower()
+    if not value:
+        return None
+    mapping = {
+        "eng": "en",
+        "en": "en",
+        "lav": "lv",
+        "lvs": "lv",
+        "lv": "lv",
+        "rus": "ru",
+        "ru": "ru",
+    }
+    return mapping.get(value)
+
+
 def _get_identifier(conn: sqlite3.Connection, book_id: int, type_name: str) -> Optional[str]:
     try:
         cur = conn.execute(
@@ -115,6 +157,7 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             pass
     handles = _identifier_map(conn, "mz")
     relative_urls = _identifier_map(conn, "mz_relative_url")
+    languages = _language_map(conn)
     out: List[Dict[str, Optional[str]]] = []
     for r in rows:
         bid = int(r[0])
@@ -124,6 +167,7 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             "mz_price": prices.get(bid),
             "mz_handle": handles.get(bid),
             "mz_relative_url": relative_urls.get(bid),
+            "language_code": languages.get(bid),
         })
     return out
 
@@ -287,6 +331,7 @@ def lookup_books_by_handles(handles: Iterable[str]) -> Dict[str, Dict[str, Optio
     )
     rows = conn.execute(sql, tuple(normalized)).fetchall()
     relative_map = _identifier_map(conn, "mz_relative_url")
+    lang_map = _language_map(conn)
     result: Dict[str, Dict[str, Optional[str]]] = {}
     for handle, book_id, title in rows:
         key = (handle or "").strip().lower()
@@ -297,6 +342,7 @@ def lookup_books_by_handles(handles: Iterable[str]) -> Dict[str, Dict[str, Optio
             "book_id": int(book_id),
             "title": title,
             "relative_url": relative_map.get(int(book_id)),
+            "language_code": lang_map.get(int(book_id)),
         }
     return result
 

@@ -220,6 +220,24 @@ def derive_relative_url_from_product(product_payload: Dict[str, Any], *, force_r
     return build_relative_product_path(handle, category_handle, slug, force_refresh=force_refresh)
 
 
+def _normalize_product_language(code: Optional[str]) -> str:
+    mapping = {
+        "en": "en",
+        "eng": "en",
+        "lv": "lv",
+        "lav": "lv",
+        "lvs": "lv",
+        "ru": "ru",
+        "rus": "ru",
+    }
+    if not code:
+        return "en"
+    normalized = code.strip().lower()
+    if not normalized:
+        return "en"
+    return mapping.get(normalized, "en")
+
+
 def _resolve_api_key() -> Optional[str]:
     cfg = _get_singleton(create=False)
     if cfg and cfg.api_key:
@@ -687,37 +705,167 @@ def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tupl
         return False, {"error": str(exc)}
 
 
-def upsert_product_basic(handle: str, title: str, price: float | None, description_html: Optional[str]) -> Tuple[bool, Dict[str, Any]]:
+def upsert_product_basic(
+    handle: str,
+    title: str,
+    price: float | None,
+    description_html: Optional[str],
+    language_code: Optional[str],
+) -> Tuple[bool, Dict[str, Any]]:
     """Create or update product including optional description.
 
     If description_html provided it maps to Mozello `description` (multilanguage single-language shortcut).
-    Fallback to minimal logic otherwise.
+    Fallback to create when update indicates the product is missing.
     """
     headers = _api_headers()
     if not headers:
         return False, {"error": "api_key_missing"}
-    product_obj: Dict[str, Any] = {"title": {"en": title}, "price": price or 0.0, "visible": True}
-    if handle:
-        product_obj["url"] = {"en": handle}
-    if description_html:
-        product_obj["description"] = {"en": description_html}
-    # Attempt update
+
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+
+    title_clean = (title or "").strip()
+    if not title_clean:
+        return False, {"error": "title_required"}
+
+    selected_language = _normalize_product_language(language_code)
+
+    price_value = 0.0
+    if price is not None:
+        try:
+            price_value = float(price)
+        except Exception:
+            price_value = 0.0
+
+    product_obj: Dict[str, Any] = {
+        "title": {selected_language: title_clean},
+        "price": price_value,
+        "visible": True,
+    }
+    description_clean = (description_html or "").strip()
+    if description_clean:
+        product_obj["description"] = {selected_language: description_clean}
+
+    update_payload: Dict[str, Any] = {"product": product_obj}
+    create_payload: Optional[Dict[str, Any]] = None
+
+    def _parse_response(resp: requests.Response) -> Dict[str, Any]:
+        try:
+            return resp.json()
+        except Exception:
+            return {"raw": resp.text}
+
+    update_status: Optional[int] = None
+    update_details: Optional[Dict[str, Any]] = None
+
     try:
         _throttle_wait()
-        r = requests.put(_api_url(f"/store/product/{handle}/"), json={"product": product_obj}, headers=headers, timeout=20)
-        if r.status_code == 404:
-            create_body = {"product": {"handle": handle, **product_obj}}
-            _throttle_wait()
-            r = requests.post(_api_url("/store/product/"), json=create_body, headers=headers, timeout=20)
-        try:
-            data = r.json()
-        except Exception:
-            data = {"raw": r.text}
-        if r.status_code != 200 or data.get("error") is True:
-            return False, {"error": "http_error", "status": r.status_code, "details": data}
-        return True, data
-    except Exception as exc:  # pragma: no cover
-        return False, {"error": str(exc)}
+        update_resp = requests.put(
+            _api_url(f"/store/product/{clean_handle}/"),
+            json=update_payload,
+            headers=headers,
+            timeout=20,
+        )
+        update_status = update_resp.status_code
+        update_details = _parse_response(update_resp)
+        if update_status == 200 and not (isinstance(update_details, dict) and update_details.get("error") is True):
+            return True, update_details or {}
+        LOG.warning(
+            "Mozello product update failed handle=%s status=%s lang=%s body=%s payload=%s",
+            clean_handle,
+            update_status,
+            selected_language,
+            update_details,
+            update_payload,
+        )
+    except Exception as exc:  # pragma: no cover - network defensive
+        LOG.error("Mozello product update exception handle=%s error=%s", clean_handle, exc)
+        return False, {"error": str(exc), "update_request": update_payload, "language": selected_language}
+
+    if update_status in (401, 403):
+        return False, {
+            "error": "http_error",
+            "status": update_status,
+            "details": update_details,
+            "update_request": update_payload,
+            "update_status": update_status,
+            "update_details": update_details,
+            "language": selected_language,
+        }
+
+    should_create = False
+    if update_status == 404:
+        should_create = True
+    else:
+        fetch_ok, fetch_payload = fetch_product(clean_handle)
+        if not fetch_ok and fetch_payload.get("error") == "not_found":
+            should_create = True
+        else:
+            if not fetch_ok:
+                LOG.warning(
+                    "Mozello product fetch after update failure handle=%s error=%s",
+                    clean_handle,
+                    fetch_payload,
+                )
+            error_payload: Dict[str, Any] = {
+                "error": "http_error",
+                "status": update_status,
+                "details": update_details,
+                "update_request": update_payload,
+                "update_status": update_status,
+                "update_details": update_details,
+                "language": selected_language,
+            }
+            if not fetch_ok:
+                error_payload["fetch_error"] = fetch_payload
+            return False, error_payload
+
+    create_body = {"product": {"handle": clean_handle, **product_obj}}
+    create_payload = create_body
+    try:
+        _throttle_wait()
+        create_resp = requests.post(
+            _api_url("/store/product/"),
+            json=create_body,
+            headers=headers,
+            timeout=20,
+        )
+        create_status = create_resp.status_code
+        create_details = _parse_response(create_resp)
+        if create_status != 200 or (isinstance(create_details, dict) and create_details.get("error") is True):
+            LOG.error(
+                "Mozello product create failed handle=%s status=%s lang=%s body=%s update_status=%s payload=%s",
+                clean_handle,
+                create_status,
+                selected_language,
+                create_details,
+                update_status,
+                create_payload,
+            )
+            return False, {
+                "error": "http_error",
+                "status": create_status,
+                "details": create_details,
+                "update_status": update_status,
+                "update_details": update_details,
+                "update_request": update_payload,
+                "create_request": create_payload,
+                "create_details": create_details,
+                "language": selected_language,
+            }
+        return True, create_details
+    except Exception as exc:  # pragma: no cover - network defensive
+        LOG.error("Mozello product create exception handle=%s error=%s", clean_handle, exc)
+        error_payload: Dict[str, Any] = {
+            "error": str(exc),
+            "context": "create_attempt",
+            "update_request": update_payload,
+            "language": selected_language,
+        }
+        if create_payload is not None:
+            error_payload["create_request"] = create_payload
+        return False, error_payload
 
 __all__.append("upsert_product_basic")
 
