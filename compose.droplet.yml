@@ -15,6 +15,9 @@ services:
     environment:
       TZ: ${TZ:-Europe/Riga}
       MOZELLO_WEBHOOK_DUMP_PATH: /app/config/webhook_dumps
+    ports: []
+    expose:
+      - "8083"
     volumes:
       - /opt/calibre/config:/app/config
       - /opt/calibre/library:/app/library
@@ -24,3 +27,30 @@ services:
       timeout: 5s
       retries: 3
       start_period: 25s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: calibre-web-caddy
+    restart: unless-stopped
+    depends_on:
+      calibre-web:
+        condition: service_healthy
+    environment:
+      EBOOKSLV_DOMAIN: ${EBOOKSLV_DOMAIN:?Set EBOOKSLV_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  caddy_data:
+  caddy_config:

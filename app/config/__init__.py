@@ -88,6 +88,18 @@ __all__ = [
 ]
 
 
+def public_domain() -> str | None:
+    """Public hostname configured for droplet HTTPS (EBOOKSLV_DOMAIN)."""
+    value = os.getenv("EBOOKSLV_DOMAIN")
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
+__all__.append("public_domain")
+
+
 def mozello_api_key() -> str | None:
     """Return MOZELLO_API_KEY from environment (no default)."""
     value = os.getenv("MOZELLO_API_KEY")

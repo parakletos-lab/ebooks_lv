@@ -4,7 +4,7 @@ This folder contains operational helper scripts for deploying and maintaining th
 
 Scripts:
 - ebooks_lv_init.sh: One-time (idempotent) initializer. Creates /opt/calibre/{config,library}, migrates existing repo library (metadata.db) to /opt/calibre/library (Option A), fixes ownership (UID 1000), ensures .env exists. Safe to re-run if it failed partway.
-- ebooks_lv_setup.sh: Re-runnable update/start script. Pulls latest code, prompts/updates env vars, pulls images, (re)starts stack. Use this for regular updates after init.
+- ebooks_lv_setup.sh: Re-runnable update/start script. Pulls latest code, prompts/updates env vars, pulls images, (re)starts stack. Use this for regular updates after init. The droplet compose overlay now includes an HTTPS-enabled Caddy proxy, so make sure DNS for `EBOOKSLV_DOMAIN` points at the droplet before running.
 
 Future scripts (ideas):
 - upgrade.sh to pull latest git changes & re-run setup.
@@ -85,6 +85,8 @@ If you had an existing library under /opt/ebooks_lv/library with metadata.db, it
 sudo bash /opt/ebooks_lv/scripts/ebooks_lv_setup.sh
 ```
 
+Before running setup, confirm the DNS A record for your `EBOOKSLV_DOMAIN` resolves to the droplet public IP and that inbound TCP ports 80/443 are open. The droplet compose overlay starts a Caddy proxy that terminates HTTPS, provisions/renews certificates via Let's Encrypt automatically, and forwards traffic to the internal `calibre-web` container on port 8083.
+
 If you see "command not found" or interpreter errors for either script:
 - Ensure it’s executable and not CRLF:
 	```bash
@@ -111,6 +113,7 @@ Init (ebooks_lv_init.sh) does:
 - Migrates legacy /opt/ebooks_lv/library (if metadata.db present and destination empty)
 - Fixes ownership to UID:GID 1000:1000
 - Creates .env if missing
+- Prompts for timezone (TZ) and `EBOOKSLV_DOMAIN` so HTTPS can be configured automatically
 
 Setup (ebooks_lv_setup.sh) does each run:
 - Ensures docker + compose + git available

@@ -94,6 +94,14 @@ summary_env() {
   grep -E '^[A-Z0-9_]+=' "$ENV_FILE" | sed 's/=.*/=***hidden***/'
 }
 
+require_env_var() {
+  local key="$1"
+  if ! grep -qE "^${key}=" "$ENV_FILE" 2>/dev/null; then
+    err "$key is missing from $ENV_FILE. Run ebooks_lv_init.sh or edit the file to set it before continuing."
+    exit 1
+  fi
+}
+
 pull_images() {
   if $COMPOSE_CMD $COMPOSE_FILES pull; then
     log "Images pulled (if already present)."
@@ -138,6 +146,8 @@ main() {
   fi
   ensure_env_file
   log "Ensuring required environment variables are present (interactive prompts run during init)."
+  require_env_var "TZ"
+  require_env_var "EBOOKSLV_DOMAIN"
   # Future vars can be added here safely; script is re-runnable.
 
   summary_env
