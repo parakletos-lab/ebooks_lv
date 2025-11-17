@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
     depends_on:
       calibre-web:
-        condition: service_healthy
+        condition: service_started
     environment:
       EBOOKSLV_DOMAIN: ${EBOOKSLV_DOMAIN:?Set EBOOKSLV_DOMAIN in .env}
     ports:
