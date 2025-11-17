@@ -15,7 +15,8 @@ services:
     environment:
       TZ: ${TZ:-Europe/Riga}
       MOZELLO_WEBHOOK_DUMP_PATH: /app/config/webhook_dumps
-    ports: []
+    ports:
+      - "127.0.0.1:18083:8083"
     expose:
       - "8083"
     volumes:
