@@ -13,8 +13,6 @@ services:
       APP_TITLE: e-books.lv
       TZ: Europe/Riga
       # CALIBRE_WEB_DEBUG intentionally omitted in prod
-    ports:
-      - "80:8083"
     command: ["gunicorn", "-b", "0.0.0.0:8083", "entrypoint.entrypoint_mainwrap:application", "--workers", "1", "--timeout", "90"]
     volumes:
       - calibre_config:/app/config
