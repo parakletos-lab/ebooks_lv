@@ -1,6 +1,6 @@
 # HTTPS Frontend (Caddy) Integration Guide
 
-This document captures how to enable HTTPS for the ebooks_lv stack using a lightweight Caddy reverse proxy. It terminates TLS, serves on ports 80/443, and proxies internally to the existing Gunicorn service listening on 8083.
+This document captures how to enable HTTPS for the ebooks_lv stack using a lightweight Caddy reverse proxy. It terminates TLS, serves on ports 80/443, and proxies internally to the existing Gunicorn service listening on 8083. The droplet deployment overlay (`compose.droplet.yml`) now ships with this configuration out of the box; customize the root `Caddyfile` and set `EBOOKSLV_DOMAIN` in `.env` to activate it.
 
 ## Goals
 

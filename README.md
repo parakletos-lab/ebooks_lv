@@ -73,6 +73,10 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 - Dev override: `compose.dev.yml` (layer with `-f` flag)
 - Droplet override example: `compose.droplet.yml`
 
+## HTTPS (Droplet deployments)
+
+DigitalOcean droplet deployments use `compose.droplet.yml`, which now layers a lightweight [Caddy](https://caddyserver.com/) reverse proxy in front of `calibre-web`. Caddy listens on ports 80/443, automatically provisions and renews Let's Encrypt certificates for the hostname stored in `EBOOKSLV_DOMAIN`, and forwards all traffic to the internal Gunicorn service on port 8083. Update `.env` via `scripts/ebooks_lv_init.sh`, ensure DNS points to the droplet, and run `scripts/ebooks_lv_setup.sh` to apply the HTTPS stack. Customize headers or proxy rules in the root-level `Caddyfile` if needed.
+
 
 # calibre-web-server
 

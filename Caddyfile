@@ -1,0 +1,25 @@
+# HTTPS reverse proxy for droplet deployments.
+# Set EBOOKSLV_DOMAIN in .env (host name only) so Caddy can obtain certificates.
+
+{
+    # Disable admin API endpoint; we manage Caddy via compose only.
+    admin off
+}
+
+{$EBOOKSLV_DOMAIN} {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        Referrer-Policy "no-referrer"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+
+    reverse_proxy calibre-web:8083
+
+    log {
+        output stdout
+        format json
+    }
+}

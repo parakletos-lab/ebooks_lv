@@ -144,6 +144,7 @@ main(){
   ensure_env
   log "Collecting required environment variables..."
   prompt_env_var TZ "System timezone (IANA)" "Europe/Riga"
+  prompt_env_var EBOOKSLV_DOMAIN "Public HTTPS domain (e.g. ebooks.example.com)"
   summary_env
   summary
 }
