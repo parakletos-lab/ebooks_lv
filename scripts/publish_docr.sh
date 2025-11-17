@@ -31,6 +31,8 @@ set -euo pipefail
 #   PLATFORMS        (default: linux/amd64) override for buildx multi-arch (comma list)
 #   PRUNE_OTHERS     (default: 1) delete all remote tags except latest & backup
 #   DRY_RUN          (default: 0) if 1, show actions without mutating registry
+#   RUN_REGISTRY_GC  (default: 1) start a DigitalOcean registry GC after pruning
+#   GC_INCLUDE_UNTAGGED (default: 1) GC removes untagged manifests to free space
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -44,6 +46,36 @@ SKIP_BACKUP=${SKIP_BACKUP:-0}
 PLATFORMS=${PLATFORMS:-linux/amd64}
 PRUNE_OTHERS=${PRUNE_OTHERS:-1}
 DRY_RUN=${DRY_RUN:-0}
+RUN_REGISTRY_GC=${RUN_REGISTRY_GC:-1}
+GC_INCLUDE_UNTAGGED=${GC_INCLUDE_UNTAGGED:-1}
+REGISTRY_NAME_ONLY=${REGISTRY_NAME_ONLY:-${REGISTRY##*/}}
+
+start_registry_gc(){
+  local registry_name="$1"
+  local include_untagged="$2"
+  local dry_run="$3"
+  if [[ -z "$registry_name" ]]; then
+    echo "Cannot start registry garbage collection: registry name missing" >&2
+    return 1
+  fi
+  local args=("$registry_name")
+  local include_flag="--force"
+  if [[ "$include_untagged" == "1" ]]; then
+    args+=("--include-untagged-manifests")
+  fi
+  if [[ "$dry_run" == "1" ]]; then
+    echo "[DRY_RUN] Would run: doctl registry garbage-collection start ${args[*]} ${include_flag}"
+    return 0
+  fi
+  echo "Starting registry garbage collection for ${registry_name} (include_untagged=${include_untagged})"
+  if ! doctl registry garbage-collection start "${args[@]}" "${include_flag}"; then
+    echo "Primary GC invocation failed; retrying with legacy --disable-confirmation flag" >&2
+    if ! doctl registry garbage-collection start "${args[@]}" "--disable-confirmation"; then
+      echo "Warning: failed to start registry garbage collection" >&2
+      return 1
+    fi
+  fi
+}
 
 SHOULD_UPDATE_VERSION_FILE=0
 
@@ -232,6 +264,16 @@ if [[ "${DRY_RUN}" == "0" && "${VERSION}" != "latest" && "${VERSION}" != "${BACK
     echo "Removing intermediate version tag ${VERSION} (keeping only latest & backup)"
     doctl registry repository delete-tag -f "${IMAGE_NAME}" "${VERSION}" || echo "Warning: failed to delete version tag ${VERSION}" >&2
   fi
+fi
+
+if [[ "${RUN_REGISTRY_GC}" == "1" ]]; then
+  if command -v doctl >/dev/null 2>&1; then
+    start_registry_gc "${REGISTRY_NAME_ONLY}" "${GC_INCLUDE_UNTAGGED}" "${DRY_RUN}" || true
+  else
+    echo "doctl not found; skipping registry garbage collection" >&2
+  fi
+else
+  echo "Skipping registry garbage collection (RUN_REGISTRY_GC=${RUN_REGISTRY_GC})"
 fi
 
 if [[ "${SHOULD_UPDATE_VERSION_FILE}" == "1" ]]; then

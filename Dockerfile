@@ -35,7 +35,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # System dependencies (adjust as needed for Calibre-Web optional features)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libjpeg62-turbo libpng16-16 libmagic1 ghostscript \
+    libjpeg62-turbo libpng16-16 libmagic1 ghostscript curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

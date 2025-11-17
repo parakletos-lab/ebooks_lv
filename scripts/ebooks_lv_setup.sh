@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Interactive (idempotent) setup script for ebooks_lv deployment on a droplet.
 # Safe to re-run when new env vars are introduced or configuration changes.
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  echo "[setup][error] This script must be run with bash (e.g. 'bash ./scripts/ebooks_lv_setup.sh')." >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 # App root: if running from a cloned repo, prefer its parent as runtime dir; else fallback

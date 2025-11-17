@@ -27,6 +27,8 @@ chmod +x scripts/publish_docr.sh
 ./scripts/publish_docr.sh v0.1.0
 ```
 
+The script prunes every remote tag except `latest` and `backup`, then starts a DigitalOcean registry garbage collection run (including untagged manifests) so only those two tags remain. It prefers the modern `doctl registry garbage-collection start --force` invocation and falls back to the legacy `--disable-confirmation` flag if needed. Set `RUN_REGISTRY_GC=0` to skip the GC step or `GC_INCLUDE_UNTAGGED=0` to leave dangling manifests for later cleanup.
+
 Tag with git commit:
 ```
 ./scripts/publish_docr.sh $(git rev-parse --short HEAD)

@@ -1,6 +1,6 @@
 # scripts directory
 
-This folder contains operational helper scripts for deploying and maintaining the ebooks_lv droplet installation.
+This folder contains operational helper scripts for deploying and maintaining the ebooks_lv droplet installation. All scripts require Bash; invoke them with `bash script_name` (or `sudo bash ...` when running as root) because `/bin/sh` on Ubuntu/Debian lacks the features they rely on.
 
 Scripts:
 - ebooks_lv_init.sh: One-time (idempotent) initializer. Creates /opt/calibre/{config,library}, migrates existing repo library (metadata.db) to /opt/calibre/library (Option A), fixes ownership (UID 1000), ensures .env exists. Safe to re-run if it failed partway.

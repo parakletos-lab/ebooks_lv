@@ -2,6 +2,12 @@
 # One-time (idempotent) initialization script for ebooks_lv.
 # Safe to re-run; it only creates/fixes directories, copies initial metadata.db
 # if a library migration (Option A) is detected, and prepares environment file.
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  echo "[init][error] This script must be run with bash (e.g. 'bash ./scripts/ebooks_lv_init.sh')." >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
