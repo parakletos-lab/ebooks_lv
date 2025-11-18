@@ -18,6 +18,7 @@ from app.routes.overrides.nav_injection import (
     register_response_injection,
 )
 from app.routes.overrides.catalog_access import register_catalog_access
+from app.routes.overrides.calibre_overrides import register_calibre_overrides
 from app.routes.overrides.stats_notice import register_stats_notice
 
 def _ensure_nav_injection(app: Any) -> None:
@@ -39,6 +40,7 @@ def register_all(app: Any) -> None:
     register_health(app)
     register_catalog_access(app)
     register_stats_notice(app)
+    register_calibre_overrides(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]
