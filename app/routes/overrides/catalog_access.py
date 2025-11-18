@@ -2,9 +2,18 @@
 from __future__ import annotations
 
 import json
+from enum import Enum
 from typing import Any, Optional
 
-from flask import Response, g, redirect, request, url_for
+from flask import (
+    Blueprint,
+    Response,
+    g,
+    redirect,
+    request,
+    session,
+    url_for,
+)
 
 from app.services.catalog_access import UserCatalogState, build_catalog_state
 from app.utils.identity import (
@@ -20,9 +29,39 @@ CATALOG_STATE_SCRIPT_ID = "mozello-catalog-state"
 CSS_INJECT_MARKER = "data-eblv-catalog-css"
 JS_INJECT_MARKER = "data-eblv-catalog-js"
 MAX_RESPONSE_SIZE = 2_000_000  # bytes
+CATALOG_SCOPE_SESSION_KEY = "catalog_scope"
 
 
-def _build_payload(state: UserCatalogState) -> Optional[dict[str, Any]]:
+class CatalogScope(str, Enum):
+    ALL = "all"
+    PURCHASED = "purchased"
+
+
+scope_bp = Blueprint("catalog_scope", __name__)
+
+
+def _safe_redirect_target(default: str) -> str:
+    candidate = request.args.get("next")
+    if candidate and candidate.startswith("/"):
+        return candidate
+    return default
+
+
+@scope_bp.route("/catalog/my-books", methods=["GET"])
+def catalog_scope_purchased():
+    session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.PURCHASED.value
+    target = _safe_redirect_target(url_for("web.index"))
+    return redirect(target)
+
+
+@scope_bp.route("/catalog/all-books", methods=["GET"])
+def catalog_scope_all():
+    session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
+    target = _safe_redirect_target(url_for("web.index"))
+    return redirect(target)
+
+
+def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dict[str, Any]]:
     if state.is_admin:
         return None
     try:
@@ -34,6 +73,11 @@ def _build_payload(state: UserCatalogState) -> Optional[dict[str, Any]]:
     payload["mozello_base"] = mozello_base
     payload["buy_label"] = "Buy Online"
     payload["cart_icon_class"] = "glyphicon-shopping-cart"
+    payload["views"] = {
+        "current": scope.value,
+        "purchased_url": url_for("catalog_scope.catalog_scope_purchased"),
+        "all_url": url_for("catalog_scope.catalog_scope_all"),
+    }
     return payload
 
 
@@ -81,6 +125,20 @@ def _insert_assets(response: Response, payload: dict[str, Any]) -> None:
     response.set_data(body_text)
 
 
+def _resolve_scope(state: UserCatalogState) -> CatalogScope:
+    if state.is_admin:
+        session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
+        return CatalogScope.ALL
+    stored = session.get(CATALOG_SCOPE_SESSION_KEY)
+    if isinstance(stored, str):
+        try:
+            return CatalogScope(stored)
+        except ValueError:
+            pass
+    session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
+    return CatalogScope.ALL
+
+
 def register_catalog_access(app: Any) -> None:
     if getattr(app, "_users_books_catalog_hooks", False):  # type: ignore[attr-defined]
         return
@@ -99,8 +157,11 @@ def register_catalog_access(app: Any) -> None:
         g.catalog_state = state
         if state.is_admin:
             g.catalog_payload = None
+            g.catalog_scope = CatalogScope.ALL
             return None
-        payload = _build_payload(state)
+        scope = _resolve_scope(state)
+        g.catalog_scope = scope
+        payload = _build_payload(state, scope)
         g.catalog_payload = payload
         if request.endpoint == "web.read_book":
             book_id = None
@@ -122,8 +183,17 @@ def register_catalog_access(app: Any) -> None:
         _insert_assets(response, payload)
         return response
 
+    if not getattr(app, "_catalog_scope_bp", False):  # type: ignore[attr-defined]
+        app.register_blueprint(scope_bp)
+        setattr(app, "_catalog_scope_bp", True)
+        LOG.debug("Catalog scope blueprint registered")
+
     setattr(app, "_users_books_catalog_hooks", True)
     LOG.debug("Catalog access hooks registered")
 
 
-__all__ = ["register_catalog_access", "UserCatalogState"]
+__all__ = [
+    "register_catalog_access",
+    "UserCatalogState",
+    "CatalogScope",
+]

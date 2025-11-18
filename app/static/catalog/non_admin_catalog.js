@@ -17,10 +17,41 @@
     }
 
     const purchased = new Set(Array.isArray(payload.purchased) ? payload.purchased.map(Number) : []);
+    const views = payload.views || {};
+    const catalogScope = typeof views.current === 'string' ? views.current : 'all';
+    const myBooksHref = typeof views.purchased_url === 'string' ? views.purchased_url : '/catalog/my-books';
+    const allBooksHref = typeof views.all_url === 'string' ? views.all_url : '/catalog/all-books';
     const mozelloBase = String(payload.mozello_base || '/mozello/books/');
     const buyLabel = String(payload.buy_label || 'Buy Online');
     const iconClass = String(payload.cart_icon_class || 'glyphicon-shopping-cart');
     let lastSelectedBookId = null;
+    const ensureScopeNav = () => {
+        const booksNav = document.getElementById('nav_new');
+        if (!booksNav) {
+            return;
+        }
+        const booksLink = booksNav.querySelector('a');
+        if (booksLink && allBooksHref) {
+            booksLink.setAttribute('href', allBooksHref);
+        }
+        let myNav = document.getElementById('nav_mybooks');
+        if (!myNav) {
+            myNav = document.createElement('li');
+            myNav.id = 'nav_mybooks';
+            const anchor = document.createElement('a');
+            anchor.href = myBooksHref;
+            anchor.innerHTML = '<span class="glyphicon glyphicon-heart"></span> My Books';
+            myNav.appendChild(anchor);
+            booksNav.insertAdjacentElement('afterend', myNav);
+        }
+        if (catalogScope === 'purchased') {
+            booksNav.classList.remove('active');
+            myNav.classList.add('active');
+        } else {
+            myNav.classList.remove('active');
+        }
+    };
+
 
     document.body.classList.add('catalog-non-admin');
     document.body.dataset.catalogMode = payload.mode;
@@ -237,4 +268,5 @@
     decorateGrid();
     decorateDetailPage();
     decorateDetailModal();
+    ensureScopeNav();
 })();
