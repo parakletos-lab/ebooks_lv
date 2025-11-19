@@ -256,10 +256,19 @@ def api_books_data():
 _PRODUCT_CACHE = {"loaded": False, "products": []}
 
 
-def _extract_relative_url(payload: Any, *, force_refresh: bool = False) -> Optional[str]:
+def _extract_relative_url(
+    payload: Any,
+    *,
+    preferred_language: Optional[str] = None,
+    force_refresh: bool = False,
+) -> Optional[str]:
     if payload is None:
         return None
-    return mozello_service.derive_relative_url_from_product(payload, force_refresh=force_refresh)
+    return mozello_service.derive_relative_url_from_product(
+        payload,
+        preferred_language=preferred_language,
+        force_refresh=force_refresh,
+    )
 
 
 def _merge_products(calibre_rows, products):
@@ -365,13 +374,17 @@ def api_books_export_one(book_id: int):
     target["mozello_title"] = (resp.get("product") or {}).get("title") if isinstance(resp.get("product"), dict) else target.get("title")
     target["mozello_price"] = target.get("mz_price")
     relative_url = target.get("mz_relative_url")
-    candidate = _extract_relative_url(resp, force_refresh=True)
+    candidate = _extract_relative_url(resp, preferred_language=language_code, force_refresh=True)
     if candidate:
         relative_url = candidate
     elif not relative_url:
         ok_product, product_payload = mozello_service.fetch_product(handle)
         if ok_product:
-            relative_url = _extract_relative_url(product_payload, force_refresh=True)
+            relative_url = _extract_relative_url(
+                product_payload,
+                preferred_language=language_code,
+                force_refresh=True,
+            )
     if relative_url:
         target["mz_relative_url"] = relative_url
         books_sync.set_mz_relative_url_for_handle(handle, relative_url)
@@ -416,11 +429,19 @@ def api_books_export_all():
             r["mz_handle"] = handle
             r["mozello_title"] = r.get("title")
             r["mozello_price"] = r.get("mz_price")
-            relative_url = _extract_relative_url(resp, force_refresh=True)
+            relative_url = _extract_relative_url(
+                resp,
+                preferred_language=language_code,
+                force_refresh=True,
+            )
             if not relative_url:
                 ok_product, product_payload = mozello_service.fetch_product(handle)
                 if ok_product:
-                    relative_url = _extract_relative_url(product_payload, force_refresh=True)
+                    relative_url = _extract_relative_url(
+                        product_payload,
+                        preferred_language=language_code,
+                        force_refresh=True,
+                    )
             if relative_url:
                 r["mz_relative_url"] = relative_url
                 books_sync.set_mz_relative_url_for_handle(handle, relative_url)

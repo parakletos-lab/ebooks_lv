@@ -202,7 +202,13 @@ def mozello_webhook():
         if not product_handle:
             LOG.warning("Mozello webhook PRODUCT_CHANGED missing product handle")
             return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
-        relative_url = mozello_service.derive_relative_url_from_product(product_data, force_refresh=True)
+        book_info = books_sync.lookup_book_by_handle(product_handle)
+        preferred_language = book_info.get("language_code") if isinstance(book_info, dict) else None
+        relative_url = mozello_service.derive_relative_url_from_product(
+            product_data,
+            preferred_language=preferred_language,
+            force_refresh=True,
+        )
         stored_relative = False
         if relative_url:
             stored_relative = books_sync.set_mz_relative_url_for_handle(product_handle, relative_url)

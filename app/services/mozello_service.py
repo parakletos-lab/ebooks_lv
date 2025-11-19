@@ -208,12 +208,64 @@ def build_relative_product_path(
     return f"/{relative.strip('/')}/"
 
 
-def derive_relative_url_from_product(product_payload: Dict[str, Any], *, force_refresh: bool = False) -> Optional[str]:
+def _normalize_full_url_value(raw: Any) -> Optional[str]:
+    if not isinstance(raw, str):
+        return None
+    cleaned = raw.strip()
+    if not cleaned:
+        return None
+    if cleaned.startswith("http://") or cleaned.startswith("https://"):
+        return cleaned
+    return cleaned if cleaned.startswith("/") else f"/{cleaned.lstrip('/')}"
+
+
+def _resolve_full_url_from_field(full_url_field: Any, preferred_language: Optional[str]) -> Optional[str]:
+    if full_url_field is None:
+        return None
+    if isinstance(full_url_field, dict):
+        priority: List[str] = []
+        if preferred_language:
+            priority.append(preferred_language)
+        # try a few known store languages before falling back to whatever Mozello sent
+        priority.extend(["en", "lv", "ru", "de", "fr", "es", "lt", "et"])
+        seen: Set[str] = set()
+        ordered: List[str] = []
+        for code in priority:
+            if code and code not in seen:
+                ordered.append(code)
+                seen.add(code)
+        for code in ordered:
+            normalized = _normalize_full_url_value(full_url_field.get(code))  # type: ignore[arg-type]
+            if normalized:
+                return normalized
+        for value in full_url_field.values():
+            normalized = _normalize_full_url_value(value)
+            if normalized:
+                return normalized
+        return None
+    return _normalize_full_url_value(full_url_field)
+
+
+def derive_relative_url_from_product(
+    product_payload: Dict[str, Any],
+    preferred_language: Optional[str] = None,
+    *,
+    force_refresh: bool = False,
+) -> Optional[str]:
     if not isinstance(product_payload, dict):
         return None
     product = product_payload.get("product") if isinstance(product_payload.get("product"), dict) else product_payload
     if not isinstance(product, dict):
         return None
+    normalized_pref: Optional[str] = None
+    if isinstance(preferred_language, str):
+        cleaned_pref = preferred_language.strip()
+        if cleaned_pref:
+            normalized_pref = _normalize_product_language(cleaned_pref)
+    full_url_field = product.get("full_url") or product.get("fullUrl")
+    from_full = _resolve_full_url_from_field(full_url_field, normalized_pref)
+    if from_full:
+        return from_full
     handle = product.get("handle")
     category_handle = product.get("category_handle") if isinstance(product.get("category_handle"), str) else None
     slug = extract_product_slug(product)
