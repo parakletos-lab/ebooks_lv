@@ -64,13 +64,17 @@ def _require_admin():
 def _computed_webhook_url() -> Optional[str]:
     """Compute candidate webhook URL using current request host.
 
-    If no explicit port in host, append :80 (per user preference) even if
-    default for http/https. No local persistence.
+    Historical behavior forced :80 so Mozello web UI could copy/paste the
+    value during early HTTP-only deployments. After HTTPS migration we must
+    *not* add an explicit port because Mozello will attempt a TLS handshake on
+    the provided port and fail if it remains :80. Allow the upstream proxy to
+    advertise whatever port it already includes; only append :80 when the
+    request is plain HTTP and no port was specified.
     """
     try:
         proto = request.headers.get("X-Forwarded-Proto", request.scheme)
         host = request.headers.get("X-Forwarded-Host") or request.host
-        if ":" not in host:
+        if ":" not in host and proto == "http":
             host = f"{host}:80"
         return f"{proto}://{host}/mozello/webhook"
     except Exception:  # pragma: no cover
