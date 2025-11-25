@@ -59,3 +59,20 @@
 .ub-margin-b-8 { margin-bottom:8px; }
 .ub-help-margin { margin:0 0 4px; }
 .ub-mappings-note { font-size:11px; margin-top:-4px; }
+
+/* Email templates */
+.email-template-card { border:1px solid #ddd; border-radius:6px; padding:14px 16px; margin-bottom:18px; background:#fff; box-shadow:inset 0 0 0 rgba(0,0,0,0); }
+.email-template-card-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.email-template-label { font-weight:600; font-size:15px; }
+.email-template-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+.email-template-tab { border:1px solid #ccc; background:#f7f7f7; padding:4px 10px; border-radius:4px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; }
+.email-template-tab.is-active { background:#fff; border-color:#428bca; color:#1a4d80; font-weight:600; }
+.email-template-description { font-size:12px; margin:4px 0 0; }
+.email-template-editor-panes { margin-top:10px; }
+.email-template-pane { display:none; }
+.email-template-pane.is-active { display:block; }
+.email-template-updated { font-size:11px; margin-top:4px; }
+.email-template-token-bar { margin-top:12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:12px; }
+.email-template-token-bar span { font-weight:600; }
+.email-template-actions { margin-top:12px; display:flex; align-items:center; gap:10px; }
+.email-template-status { font-size:12px; }

@@ -15,6 +15,11 @@ from .orders_service import (
     CalibreUnavailableError,
     UserAlreadyExistsError,
 )
+from .email_templates_service import (
+    fetch_templates_context,
+    save_template as save_email_template,
+    TemplateValidationError,
+)
 from . import books_sync
 
 __all__ = [
@@ -32,4 +37,7 @@ __all__ = [
     "CalibreUnavailableError",
     "UserAlreadyExistsError",
     "books_sync",
+    "fetch_templates_context",
+    "save_email_template",
+    "TemplateValidationError",
 ]

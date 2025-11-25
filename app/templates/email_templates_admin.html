@@ -1,0 +1,291 @@
+{% extends "layout.html" %}
+{% set title = 'Email Templates' %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+  <script src="{{ url_for('static', filename='js/libs/tinymce/tinymce.min.js') }}"></script>
+{% endblock %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Email Templates</h3>
+    <input type="hidden" id="email-templates-csrf" value="{{ ub_csrf_token|default('') }}" />
+  </div>
+  <div class="panel-body" id="email-templates-root" data-context="{{ templates_context|tojson|forceescape }}">
+    <p class="text-muted ub-panel-note">
+      Maintain Mozello purchase notification templates with TinyMCE. Use the token buttons below each editor to
+      inject placeholders such as <code>{{'{{user_name}}'}}</code>.
+    </p>
+    {% for tmpl in templates_context.templates %}
+    <div class="email-template-card" data-template-key="{{ tmpl.key }}" data-active-lang="{{ templates_context.languages[0] if templates_context.languages else '' }}">
+      <div class="email-template-card-header">
+        <div class="email-template-label">{{ tmpl.label }}</div>
+        <div class="email-template-tabs">
+          {% for lang in templates_context.languages %}
+          <button type="button" class="email-template-tab{% if loop.first %} is-active{% endif %}" data-lang="{{ lang }}">
+            {{ lang.upper() }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      {% if tmpl.description %}
+      <p class="text-muted email-template-description">{{ tmpl.description }}</p>
+      {% endif %}
+      <div class="email-template-editor-panes">
+        {% for lang in templates_context.languages %}
+        {% set details = tmpl.languages.get(lang) %}
+        <div class="email-template-pane{% if loop.first %} is-active{% endif %}" data-lang="{{ lang }}">
+          <textarea
+            id="email-template-{{ tmpl.key }}-{{ lang }}"
+            class="form-control email-template-textarea"
+            rows="14"
+            data-template-key="{{ tmpl.key }}"
+            data-language="{{ lang }}"
+            aria-label="{{ tmpl.label }} ({{ lang.upper() }})"
+          >{{ (details.html if details else '')|e }}</textarea>
+          <div class="email-template-updated text-muted">
+            {% if details and details.updated_at %}
+            Last saved: {{ details.updated_at }}
+            {% else %}
+            Not saved yet
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="email-template-token-bar">
+        <span>Tokens:</span>
+        {% for token in templates_context.tokens %}
+        <button type="button" class="btn btn-default btn-xs email-token-btn" data-token="{{ token.value }}">
+          {{ token.label }}
+        </button>
+        {% endfor %}
+      </div>
+      <div class="email-template-actions">
+        <button type="button" class="btn btn-primary btn-sm email-template-save">Save</button>
+        <span class="email-template-status text-muted"></span>
+      </div>
+    </div>
+    {% endfor %}
+    {% if not templates_context.templates %}
+    <p class="text-muted">No templates configured yet.</p>
+    {% endif %}
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var root = document.getElementById("email-templates-root");
+  if(!root){
+    return;
+  }
+  var context;
+  try {
+    context = JSON.parse(root.getAttribute("data-context") || "{}");
+  } catch(err) {
+    context = {};
+  }
+  var langOrder = (context && context.languages) || [];
+  var csrfInput = document.getElementById("email-templates-csrf");
+
+  function getEditorValue(textarea){
+    var editor = textarea && window.tinymce ? tinymce.get(textarea.id) : null;
+    if(editor){
+      return editor.getContent();
+    }
+    return textarea ? textarea.value : "";
+  }
+
+  function updatePaneTimestamp(card, language, updatedAt){
+    var el = card.querySelector('.email-template-pane[data-lang="' + language + '"] .email-template-updated');
+    if(!el){
+      return;
+    }
+    if(updatedAt){
+      el.textContent = "Last saved: " + updatedAt;
+    } else {
+      el.textContent = "Not saved yet";
+    }
+  }
+
+  function setEditorFocus(textarea){
+    if(!textarea || !window.tinymce){
+      return;
+    }
+    var editor = tinymce.get(textarea.id);
+    if(editor){
+      editor.focus();
+    }
+  }
+
+  function initEditors(){
+    if(typeof tinymce === "undefined"){
+      return;
+    }
+    tinymce.init({
+      selector: ".email-template-textarea",
+      plugins: "code",
+      menubar: "edit view format",
+      branding: false,
+      height: 320,
+      language: window.language || "en",
+      setup: function(editor){
+        editor.on("change keyup", function(){
+          editor.save();
+        });
+      }
+    });
+  }
+
+  function insertToken(card, tokenValue){
+    var activePane = card.querySelector(".email-template-pane.is-active textarea");
+    if(!activePane){
+      return;
+    }
+    if(window.tinymce){
+      var editor = tinymce.get(activePane.id);
+      if(editor){
+        editor.focus();
+        editor.selection.setContent(tokenValue);
+        editor.save();
+        return;
+      }
+    }
+    var start = activePane.selectionStart || 0;
+    var end = activePane.selectionEnd || 0;
+    var value = activePane.value || "";
+    activePane.value = value.slice(0, start) + tokenValue + value.slice(end);
+  }
+
+  function switchLanguage(card, lang){
+    var tabs = card.querySelectorAll(".email-template-tab");
+    var panes = card.querySelectorAll(".email-template-pane");
+    tabs.forEach(function(btn){
+      btn.classList.toggle("is-active", btn.getAttribute("data-lang") === lang);
+    });
+    panes.forEach(function(pane){
+      var isMatch = pane.getAttribute("data-lang") === lang;
+      pane.classList.toggle("is-active", isMatch);
+      if(isMatch){
+        var textarea = pane.querySelector("textarea");
+        setEditorFocus(textarea);
+      }
+    });
+    card.setAttribute("data-active-lang", lang);
+  }
+
+  function saveTemplate(card){
+    var textareas = card.querySelectorAll(".email-template-pane textarea");
+    var statusEl = card.querySelector(".email-template-status");
+    var saveBtn = card.querySelector(".email-template-save");
+    if(!textareas.length || !saveBtn){
+      return;
+    }
+    if(window.tinymce && typeof tinymce.triggerSave === "function"){
+      tinymce.triggerSave();
+    }
+    var headers = {"Content-Type": "application/json"};
+    if(csrfInput && csrfInput.value){
+      headers["X-CSRFToken"] = csrfInput.value;
+    }
+    var payloads = Array.prototype.map.call(textareas, function(area){
+      return {
+        template_key: area.getAttribute("data-template-key"),
+        language: area.getAttribute("data-language"),
+        html: getEditorValue(area),
+      };
+    });
+    saveBtn.disabled = true;
+    if(statusEl){
+      statusEl.textContent = "Saving all languages...";
+      statusEl.className = "email-template-status text-muted";
+    }
+    var successes = 0;
+    var failures = [];
+
+    function postPayload(payload){
+      return fetch("/admin/ebookslv/email-templates/api/save", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload)
+      })
+        .then(function(resp){
+          return resp.json().then(function(data){
+            if(!resp.ok){
+              var message = (data && data.error) || (resp.status + " error");
+              throw new Error(message);
+            }
+            return data;
+          });
+        });
+    }
+
+    var chain = Promise.resolve();
+    payloads.forEach(function(payload){
+      chain = chain.then(function(){
+        return postPayload(payload)
+          .then(function(data){
+            successes += 1;
+            var ts = data && data.template ? data.template.updated_at : null;
+            updatePaneTimestamp(card, payload.language, ts);
+          })
+          .catch(function(err){
+            failures.push({ language: payload.language, error: err.message || String(err) });
+          });
+      });
+    });
+
+    chain.finally(function(){
+      saveBtn.disabled = false;
+      if(statusEl){
+        if(failures.length){
+          var failedLangs = failures.map(function(item){ return (item.language || "?").toUpperCase(); }).join(", ");
+          statusEl.textContent = "Saved " + successes + " / " + payloads.length + " languages. Failed: " + failedLangs;
+          statusEl.className = "email-template-status text-danger";
+        } else {
+          statusEl.textContent = "Saved " + successes + " language" + (successes === 1 ? "" : "s") + ".";
+          statusEl.className = "email-template-status text-success";
+        }
+      }
+    });
+  }
+
+  function wireCard(card){
+    var tabs = card.querySelectorAll(".email-template-tab");
+    var initialLang = null;
+    if(langOrder.length){
+      initialLang = langOrder[0];
+    } else if(tabs.length){
+      initialLang = tabs[0].getAttribute("data-lang");
+    }
+    if(initialLang){
+      card.setAttribute("data-active-lang", initialLang);
+      switchLanguage(card, initialLang);
+    }
+    tabs.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var lang = btn.getAttribute("data-lang");
+        switchLanguage(card, lang);
+      });
+    });
+    card.querySelectorAll(".email-token-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        insertToken(card, btn.getAttribute("data-token"));
+      });
+    });
+    var saveBtn = card.querySelector(".email-template-save");
+    if(saveBtn){
+      saveBtn.addEventListener("click", function(){
+        saveTemplate(card);
+      });
+    }
+  }
+
+  document.querySelectorAll(".email-template-card").forEach(function(card){
+    wireCard(card);
+  });
+
+  initEditors();
+})();
+</script>
+{% endblock %}

@@ -126,3 +126,41 @@ class MozelloConfig(Base):
         }
 
 __all__.append("MozelloConfig")
+
+
+class EmailTemplate(Base):
+    """Stored HTML email templates scoped by template key + language."""
+
+    __tablename__ = "email_templates"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    template_key = Column(String(64), nullable=False, index=True)
+    language = Column(String(8), nullable=False, index=True)
+    html_body = Column(Text, nullable=False, default="")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+        nullable=False,
+    )
+
+    __table_args__ = (
+        UniqueConstraint("template_key", "language", name="uq_email_template_lang"),
+    )
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "template_key": self.template_key,
+            "language": self.language,
+            "html_body": self.html_body or "",
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<EmailTemplate key={self.template_key} lang={self.language}>"
+
+
+__all__.append("EmailTemplate")

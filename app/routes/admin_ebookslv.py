@@ -29,7 +29,14 @@ except Exception:  # pragma: no cover
 from app.config import app_title
 from app.utils import ensure_admin, PermissionError
 from app.utils.logging import get_logger
-from app.services import books_sync, mozello_service, orders_service
+from app.services import (
+    books_sync,
+    mozello_service,
+    orders_service,
+    fetch_templates_context,
+    save_email_template,
+    TemplateValidationError,
+)
 from flask import jsonify, request  # type: ignore
 from typing import List, Dict, Any, Optional
 
@@ -82,6 +89,19 @@ def books_page():  # pragma: no cover - thin render wrapper
     if auth is not True:
         return auth
     return render_template("ebookslv_books_admin.html")
+
+
+@bp.route("/email-templates/", methods=["GET"])
+def email_templates_page():  # pragma: no cover - render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    context = fetch_templates_context()
+    return render_template(
+        "email_templates_admin.html",
+        ub_csrf_token=generate_csrf(),
+        templates_context=context,
+    )
 
 
 # ------------------- Books API (JSON) --------------------
@@ -473,6 +493,41 @@ def api_books_delete(handle: str):
     removed_handle = books_sync.clear_mz_handle(handle)
     books_sync.clear_mz_relative_url_for_handle(handle)
     return jsonify({"status": resp.get("status", "deleted"), "removed_local": removed_handle})
+
+
+@bp.route("/email-templates/api/list", methods=["GET"])
+def api_email_templates_list():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    data = fetch_templates_context()
+    return jsonify(data)
+
+
+@bp.route("/email-templates/api/save", methods=["POST"])
+@_maybe_exempt
+def api_email_templates_save():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    payload = request.get_json(silent=True) or {}
+    try:
+        view = save_email_template(
+            payload.get("template_key"),
+            payload.get("language"),
+            payload.get("html"),
+        )
+    except TemplateValidationError as exc:
+        return _json_error(str(exc), 400)
+    return jsonify({
+        "status": "saved",
+        "template": {
+            "key": view.key,
+            "language": view.language,
+            "html": view.html_body,
+            "updated_at": view.updated_at,
+        },
+    })
 
 
 def register_ebookslv_blueprint(app):
