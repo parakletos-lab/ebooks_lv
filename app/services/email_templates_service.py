@@ -8,18 +8,31 @@ from app.db.repositories import email_templates_repo
 
 
 LANGUAGES = ("lv", "ru", "en")
-TEMPLATE_DEFINITIONS = {
-    "book_purchase": {
-        "label": "Book purchase e-mail",
-        "description": "Sent after successful Mozello purchase to share download details.",
-    }
-}
-TOKEN_DEFINITIONS = [
+
+BOOK_PURCHASE_TOKENS = [
     {"value": "{{user_name}}", "label": "User name"},
     {"value": "{{book_title}}", "label": "Book title"},
     {"value": "{{book_shop_url}}", "label": "Shop URL"},
     {"value": "{{book_reader_url}}", "label": "Reader URL"},
 ]
+
+PASSWORD_RESET_TOKENS = [
+    {"value": "{{user_name}}", "label": "User name"},
+    {"value": "{{new_password_url}}", "label": "New password link"},
+]
+
+TEMPLATE_DEFINITIONS = {
+    "book_purchase": {
+        "label": "Book purchase e-mail",
+        "description": "Sent after successful Mozello purchase to share download details.",
+        "tokens": BOOK_PURCHASE_TOKENS,
+    },
+    "password_reset": {
+        "label": "Password reset",
+        "description": "Delivered when triggering Calibre-Web password reset instructions.",
+        "tokens": PASSWORD_RESET_TOKENS,
+    },
+}
 
 
 class TemplateValidationError(ValueError):
@@ -39,7 +52,8 @@ def allowed_languages() -> List[str]:
 
 
 def token_definitions() -> List[Dict[str, str]]:
-    return TOKEN_DEFINITIONS.copy()
+    # Retained for backward compatibility; returns purchase template tokens by default.
+    return list(BOOK_PURCHASE_TOKENS)
 
 
 def template_definitions() -> Dict[str, Dict[str, str]]:
@@ -80,11 +94,13 @@ def fetch_templates_context() -> Dict[str, List[Dict[str, object]]]:
                 "html": view.html_body if view else "",
                 "updated_at": view.updated_at if view else None,
             }
+        tokens = meta.get("tokens") or token_definitions()
         templates_payload.append({
             "key": template_key,
             "label": meta.get("label", template_key),
             "languages": languages_payload,
             "description": meta.get("description"),
+            "tokens": tokens,
         })
     return {"templates": templates_payload, "tokens": token_definitions(), "languages": allowed_languages()}
 

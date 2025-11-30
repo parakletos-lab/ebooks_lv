@@ -74,5 +74,5 @@
 .email-template-updated { font-size:11px; margin-top:4px; }
 .email-template-token-bar { margin-top:12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:12px; }
 .email-template-token-bar span { font-weight:600; }
-.email-template-actions { margin-top:12px; display:flex; align-items:center; gap:10px; }
-.email-template-status { font-size:12px; }
+.email-templates-footer { margin-top:18px; display:flex; align-items:center; gap:10px; }
+#email-templates-save-status { font-size:12px; }

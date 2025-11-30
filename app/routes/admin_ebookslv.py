@@ -13,7 +13,7 @@ All routes enforce admin access via ensure_admin.
 from __future__ import annotations
 
 try:  # runtime dependency, editor may not resolve
-    from flask import Blueprint, render_template
+    from flask import Blueprint, render_template, redirect, url_for
     try:
         from flask_wtf.csrf import generate_csrf  # type: ignore
     except Exception:  # pragma: no cover
@@ -23,6 +23,10 @@ except Exception:  # pragma: no cover
     Blueprint = object  # type: ignore
     def render_template(*a, **k):  # type: ignore
         raise RuntimeError("Flask not available")
+    def redirect(*a, **k):  # type: ignore
+        raise RuntimeError("Flask not available")
+    def url_for(*a, **k):  # type: ignore
+        return "/"
     def generate_csrf():  # type: ignore
         return ""
 
@@ -39,6 +43,7 @@ from app.services import (
 )
 from flask import jsonify, request  # type: ignore
 from typing import List, Dict, Any, Optional
+from urllib.parse import urlencode
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
 LOG = get_logger("ebookslv.admin")
@@ -58,13 +63,32 @@ def _maybe_exempt(func):  # type: ignore
     return func
 
 
-def _require_admin():
+def _login_redirect():
+    try:
+        login_url = url_for("web.login")
+    except Exception:
+        login_url = "/login"
+    target = request.full_path or request.path or "/"
+    if target.endswith("?"):
+        target = target[:-1]
+    payload = urlencode({"next": target})
+    separator = "&" if "?" in login_url else "?"
+    destination = f"{login_url}{separator}{payload}"
+    return redirect(destination)
+
+
+def _ensure_admin(prefer_redirect: bool = False):
     try:
         ensure_admin()
     except PermissionError as exc:  # type: ignore
-        # Minimal JSON-ish fallback (landing is HTML; framework error handler may wrap)
+        if prefer_redirect:
+            return _login_redirect()
         return {"error": str(exc)}, 403
     return True
+
+
+def _require_admin():
+    return _ensure_admin(prefer_redirect=True)
 
 
 @bp.route("/", methods=["GET"])  # /admin/ebookslv/
@@ -113,7 +137,7 @@ def _json_error(msg: str, status: int = 400, details: Optional[Dict[str, Any]] =
 
 
 def _require_admin_json():
-    auth = _require_admin()
+    auth = _ensure_admin(prefer_redirect=False)
     if auth is not True:
         return auth
     return True
