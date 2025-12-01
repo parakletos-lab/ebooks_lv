@@ -47,10 +47,12 @@
           <input id="login-email" name="email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" required>
         </div>
 
+        {% if not token_context %}
         <div class="form-group">
           <label for="login-password">Password</label>
           <input id="login-password" name="password" type="password" class="form-control" autocomplete="current-password">
         </div>
+        {% endif %}
 
         {% if token_context %}
         <div class="form-group">
