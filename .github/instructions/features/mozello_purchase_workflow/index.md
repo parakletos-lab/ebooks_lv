@@ -3,6 +3,7 @@
 Update the status column as each sub-task is finished. When all rows reach **Completed**, close the feature.
 Work only on one sub-task at a time in order.
 Make sure all implemented previous sub-task aligned at current working task.
+After tests do review and cleanup, mark sub-task as completed. (will commit manually after)
 
 | Task ID | Description | Status | Details |
 | --- | --- | --- | --- |
