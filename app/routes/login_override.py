@@ -254,7 +254,10 @@ def login_page():  # pragma: no cover - integration tested via Flask client
     next_url = _sanitize_next(next_raw)
     auth_token = request.values.get("auth")
     token_ctx, token_error = _build_token_context(auth_token)
-    email_value = request.values.get("email", "")
+    if token_ctx and token_ctx.email:
+        email_value = token_ctx.email
+    else:
+        email_value = request.values.get("email") or ""
     remember_me = _remember_me_enabled(request.form.get("remember_me")) if request.method == "POST" else True
     form_errors: List[str] = []
 

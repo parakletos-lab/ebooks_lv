@@ -44,7 +44,12 @@
 
         <div class="form-group">
           <label for="login-email">Email</label>
+          {% if token_context %}
+          <input type="hidden" name="email" value="{{ email_value }}">
+          <input id="login-email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" disabled>
+          {% else %}
           <input id="login-email" name="email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" required>
+          {% endif %}
         </div>
 
         {% if not token_context %}
