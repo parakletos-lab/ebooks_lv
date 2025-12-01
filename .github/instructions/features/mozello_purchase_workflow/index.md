@@ -1,14 +1,15 @@
 # Mozello Purchase Workflow – Implementation Index
 
-Update the status column as each sub-task is finished. When all rows reach **Completed**, close the feature.
-Work only on one sub-task at a time in order.
-Make sure all implemented previous sub-task aligned at current working task.
-After tests do review and cleanup, mark sub-task as completed. (will commit manually after)
+- Update the status column as each sub-task is finished. When all rows reach **Completed**, close the feature.
+- Work only on one sub-task at a time in order.
+- Make sure all implemented previous sub-task aligned at current working task.
+- After tests do review and cleanup, mark sub-task as completed. (will commit manually after)
+
 For tests:
-    - Use scripts/dev_rebuild.sh
-    - Check docker logs if needed
-    - Check page content in Playwright MCP
-    - Use admin user credentials: admin/admin123
+- Use scripts/dev_rebuild.sh
+- Check docker logs if needed
+- Use Playwright MCP for in browser functionality tests
+- Use admin user credentials: admin/admin123
 
 | Task ID | Description | Status | Details |
 | --- | --- | --- | --- |
