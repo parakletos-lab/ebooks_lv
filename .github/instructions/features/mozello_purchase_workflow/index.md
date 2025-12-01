@@ -18,7 +18,7 @@ For tests:
 | T2 | Auth link & password-reset services | Completed | Local changes + tests ready; add commit hash after manual publish |
 | T3 | Email template & subject editor upgrades | Completed | Local changes + tests ready; add commit hash after manual publish |
 | T4 | Mozello webhook + email dispatch workflow | Completed | Local changes + tests ready; add commit hash after manual publish (see `sub_tasks.md#t4-mozello-webhook-and-email-dispatch-workflow`) |
-| T5 | Login override UX & session handling | Not Started | See `sub_tasks.md#t5-login-override-ux-and-session-handling` |
+| T5 | Login override UX & session handling | Completed | Local changes + tests ready; Playwright smoke run (add commit hash after publish). See `sub_tasks.md#t5-login-override-ux-and-session-handling` |
 | T6 | Documentation & automated tests | Not Started | See `sub_tasks.md#t6-documentation-and-automated-tests` |
 
 **Reminder:** Mark a task as Completed only after its code, tests, and docs have landed on the feature branch.

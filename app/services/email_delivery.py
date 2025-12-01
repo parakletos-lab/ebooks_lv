@@ -33,7 +33,8 @@ except Exception:  # pragma: no cover - unit tests without Calibre runtime
 
 
 LOG = get_logger("email_delivery")
-_TEMPLATE_KEY = "book_purchase"
+_BOOK_PURCHASE_KEY = "book_purchase"
+_PASSWORD_RESET_KEY = "password_reset"
 _LANG_ORDER = tuple(allowed_languages()) or ("en",)
 _JINJA_ENV = Environment(loader=BaseLoader(), autoescape=False, trim_blocks=True, lstrip_blocks=True)
 _HTML_BREAK_PATTERN = re.compile(r"</p>|<br\s*/?>", re.IGNORECASE)
@@ -153,17 +154,17 @@ def _mail_settings() -> Dict[str, object]:
     return settings
 
 
-def _load_template(language: str):
-    record = email_templates_repo.get_template(_TEMPLATE_KEY, language)
+def _load_template(template_key: str, language: str):
+    record = email_templates_repo.get_template(template_key, language)
     if record:
         return record
     for fallback in _LANG_ORDER:
         if fallback == language:
             continue
-        record = email_templates_repo.get_template(_TEMPLATE_KEY, fallback)
+        record = email_templates_repo.get_template(template_key, fallback)
         if record:
             return record
-    raise TemplateMissingError("book_purchase_template_missing")
+    raise TemplateMissingError(f"{template_key}_template_missing")
 
 
 def _resolve_language(preferred: Optional[str], books: Sequence[BookDeliveryItem]) -> str:
@@ -242,7 +243,7 @@ def send_book_purchase_email(
         raise EmailDeliveryError("recipient_required")
     book_items = list(books)
     language = _resolve_language(preferred_language, book_items)
-    template = _load_template(language)
+    template = _load_template(_BOOK_PURCHASE_KEY, language)
     links = _build_book_links(book_items, auth_token)
     book_tokens = _render_books_tokens(links)
     context = {
@@ -281,8 +282,53 @@ def send_book_purchase_email(
     }
 
 
+def send_password_reset_email(
+    *,
+    recipient_email: str,
+    user_name: Optional[str],
+    reset_url: str,
+    preferred_language: Optional[str] = None,
+) -> Dict[str, object]:
+    """Render and queue emailed password reset instructions."""
+
+    if not recipient_email:
+        raise EmailDeliveryError("recipient_required")
+    if not reset_url:
+        raise EmailDeliveryError("reset_url_required")
+
+    language = _resolve_language(preferred_language, [])
+    template = _load_template(_PASSWORD_RESET_KEY, language)
+    context = {
+        "user_name": (user_name or recipient_email).strip() or recipient_email,
+        "new_password_url": reset_url,
+    }
+
+    subject_rendered = _render_template(template.subject or "Reset your password", context).strip()
+    html_body = _render_template(template.html_body or "", context)
+    text_body = _html_to_text(html_body).strip()
+    if reset_url not in text_body:
+        text_body = f"{text_body}\n{reset_url}".strip()
+
+    task = HtmlTaskEmail(
+        html_body=html_body,
+        subject=subject_rendered or "Reset your password",
+        settings=_mail_settings(),
+        recipient=recipient_email,
+        text_body=text_body,
+        task_message=f"Password reset → {recipient_email}",
+    )
+    _queue_email_task(user_name or recipient_email, task)
+    LOG.info(
+        "Queued password reset email email=%s language=%s",
+        recipient_email,
+        language,
+    )
+    return {"language": language, "queued": True}
+
+
 __all__ = [
     "send_book_purchase_email",
+    "send_password_reset_email",
     "BookDeliveryItem",
     "EmailDeliveryError",
     "TemplateMissingError",
