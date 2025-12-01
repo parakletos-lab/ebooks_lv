@@ -22,6 +22,7 @@ class UserCatalogState:
     """Book access metadata resolved for the active request."""
 
     is_admin: bool
+    is_authenticated: bool = False
     purchased_book_ids: Set[int] = field(default_factory=set)
 
     def is_purchased(self, book_id: Optional[int]) -> bool:
@@ -39,6 +40,7 @@ class UserCatalogState:
     def to_payload(self) -> Dict[str, Any]:
         return {
             "mode": "admin" if self.is_admin else "non_admin",
+            "authenticated": self.is_authenticated,
             "purchased": sorted(self.purchased_book_ids),
         }
 
@@ -50,9 +52,10 @@ def build_catalog_state(
     is_admin: bool,
 ) -> UserCatalogState:
     if is_admin:
-        return UserCatalogState(is_admin=True)
+        return UserCatalogState(is_admin=True, is_authenticated=True)
 
     normalized_email = normalize_email(email)
+    is_authenticated = calibre_user_id is not None or normalized_email is not None
     orders = users_books_repo.list_orders_for_user(
         calibre_user_id=calibre_user_id,
         email=normalized_email,
@@ -84,6 +87,7 @@ def build_catalog_state(
 
     state = UserCatalogState(
         is_admin=False,
+        is_authenticated=is_authenticated,
         purchased_book_ids=purchased_ids,
     )
 

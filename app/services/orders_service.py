@@ -602,7 +602,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                 user_name=existing_user.get("name") or existing_user.get("email") or email_norm,
                 books=books_for_email,
                 shop_url=mozello_service.get_store_url(),
-                my_books_url=email_delivery.absolute_site_url("/catalog/my-books"),
                 auth_token=auth_token,
             )
             summary["email_queued"] = True

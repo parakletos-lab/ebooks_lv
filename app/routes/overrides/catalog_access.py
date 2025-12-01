@@ -14,6 +14,7 @@ from flask import (
     session,
     url_for,
 )
+from urllib.parse import urlencode
 
 from app.services.catalog_access import UserCatalogState, build_catalog_state
 from app.utils.identity import (
@@ -47,8 +48,19 @@ def _safe_redirect_target(default: str) -> str:
     return default
 
 
+def _login_redirect(next_target: str) -> Response:
+    try:
+        login_path = url_for("login_override.login_page", next=next_target)
+    except Exception:
+        login_path = "/login?" + urlencode({"next": next_target})
+    return redirect(login_path)
+
+
 @scope_bp.route("/catalog/my-books", methods=["GET"])
 def catalog_scope_purchased():
+    state = getattr(g, "catalog_state", None)
+    if not isinstance(state, UserCatalogState) or (not state.is_admin and not state.is_authenticated):
+        return _login_redirect(url_for("catalog_scope.catalog_scope_purchased"))
     session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.PURCHASED.value
     target = _safe_redirect_target(url_for("web.index"))
     return redirect(target)
@@ -73,6 +85,7 @@ def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dic
     payload["mozello_base"] = mozello_base
     payload["buy_label"] = "Buy Online"
     payload["cart_icon_class"] = "glyphicon-shopping-cart"
+    payload["allow_my_books"] = state.is_authenticated
     payload["views"] = {
         "current": scope.value,
         "purchased_url": url_for("catalog_scope.catalog_scope_purchased"),
@@ -126,7 +139,7 @@ def _insert_assets(response: Response, payload: dict[str, Any]) -> None:
 
 
 def _resolve_scope(state: UserCatalogState) -> CatalogScope:
-    if state.is_admin:
+    if state.is_admin or not state.is_authenticated:
         session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
         return CatalogScope.ALL
     stored = session.get(CATALOG_SCOPE_SESSION_KEY)

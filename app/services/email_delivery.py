@@ -193,17 +193,22 @@ def _build_book_links(
             continue
         display = item.title or f"Book {book_id}"
         detail_path = f"/book/{book_id}"
-        login_base = absolute_site_url("/login")
-        params = {"next": detail_path}
-        if auth_token:
-            params["auth"] = auth_token
-        reader_url = f"{login_base}?{urlencode(params)}"
+        reader_url = _login_redirect(detail_path, auth_token)
         links.append({
             "title": display,
             "reader_url": reader_url,
             "detail_url": absolute_site_url(detail_path),
         })
     return links
+
+
+def _login_redirect(next_path: str, auth_token: Optional[str]) -> str:
+    login_base = absolute_site_url("/login")
+    candidate = next_path if next_path.startswith("/") else f"/{next_path}"
+    params = {"next": candidate}
+    if auth_token:
+        params["auth"] = auth_token
+    return f"{login_base}?{urlencode(params)}"
 
 
 def _render_books_tokens(links: List[Dict[str, str]]) -> Dict[str, str]:
@@ -246,10 +251,11 @@ def send_book_purchase_email(
     template = _load_template(_BOOK_PURCHASE_KEY, language)
     links = _build_book_links(book_items, auth_token)
     book_tokens = _render_books_tokens(links)
+    my_books_link = my_books_url or _login_redirect("/catalog/my-books", auth_token)
     context = {
         "user_name": (user_name or recipient_email).strip() or recipient_email,
         "shop_url": (shop_url or "").strip(),
-        "my_books": (my_books_url or absolute_site_url("/catalog/my-books")),
+        "my_books": my_books_link,
         "books": book_tokens["html"],
     }
     subject_context = context.copy()
