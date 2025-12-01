@@ -11,9 +11,9 @@ LANGUAGES = ("lv", "ru", "en")
 
 BOOK_PURCHASE_TOKENS = [
     {"value": "{{user_name}}", "label": "User name"},
-    {"value": "{{book_title}}", "label": "Book title"},
-    {"value": "{{book_shop_url}}", "label": "Shop URL"},
-    {"value": "{{book_reader_url}}", "label": "Reader URL"},
+    {"value": "{{shop_url}}", "label": "Shop URL"},
+    {"value": "{{my_books}}", "label": "My books link"},
+    {"value": "{{books}}", "label": "Books list (HTML)"},
 ]
 
 PASSWORD_RESET_TOKENS = [
@@ -23,7 +23,7 @@ PASSWORD_RESET_TOKENS = [
 
 TEMPLATE_DEFINITIONS = {
     "book_purchase": {
-        "label": "Book purchase e-mail",
+        "label": "Book purchase",
         "description": "Sent after successful Mozello purchase to share download details.",
         "tokens": BOOK_PURCHASE_TOKENS,
     },
@@ -43,6 +43,7 @@ class TemplateValidationError(ValueError):
 class TemplateLanguageView:
     key: str
     language: str
+    subject: str
     html_body: str
     updated_at: Optional[str]
 
@@ -74,6 +75,15 @@ def _validate_template_key(template_key: str) -> str:
     return key
 
 
+def _normalize_subject(subject: Optional[str]) -> str:
+    value = (subject or "").strip()
+    if "\n" in value or "\r" in value:
+        raise TemplateValidationError("subject_multiline")
+    if len(value) > 255:
+        raise TemplateValidationError("subject_too_long")
+    return value
+
+
 def fetch_templates_context() -> Dict[str, List[Dict[str, object]]]:
     records = email_templates_repo.list_templates()
     lookup: Dict[tuple[str, str], TemplateLanguageView] = {}
@@ -81,6 +91,7 @@ def fetch_templates_context() -> Dict[str, List[Dict[str, object]]]:
         lookup[(record.template_key, record.language)] = TemplateLanguageView(
             key=record.template_key,
             language=record.language,
+            subject=record.subject or "",
             html_body=record.html_body or "",
             updated_at=record.updated_at.isoformat() if record.updated_at else None,
         )
@@ -91,6 +102,7 @@ def fetch_templates_context() -> Dict[str, List[Dict[str, object]]]:
             view = lookup.get((template_key, lang))
             languages_payload[lang] = {
                 "language": lang,
+                "subject": view.subject if view else "",
                 "html": view.html_body if view else "",
                 "updated_at": view.updated_at if view else None,
             }
@@ -105,14 +117,26 @@ def fetch_templates_context() -> Dict[str, List[Dict[str, object]]]:
     return {"templates": templates_payload, "tokens": token_definitions(), "languages": allowed_languages()}
 
 
-def save_template(template_key: str, language: str, html_body: str) -> TemplateLanguageView:
+def save_template(
+    template_key: str,
+    language: str,
+    html_body: str,
+    subject: Optional[str] = None,
+) -> TemplateLanguageView:
     normalized_key = _validate_template_key(template_key)
     normalized_language = _normalize_language(language)
     content = html_body or ""
-    record = email_templates_repo.upsert_template(normalized_key, normalized_language, content)
+    normalized_subject = _normalize_subject(subject)
+    record = email_templates_repo.upsert_template(
+        normalized_key,
+        normalized_language,
+        content,
+        normalized_subject,
+    )
     return TemplateLanguageView(
         key=record.template_key,
         language=record.language,
+        subject=record.subject or "",
         html_body=record.html_body or "",
         updated_at=record.updated_at.isoformat() if record.updated_at else None,
     )

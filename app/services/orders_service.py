@@ -9,16 +9,13 @@ import json
 from app.db.models import MozelloOrder
 from app.db.repositories import users_books_repo
 from app.db.repositories.users_books_repo import OrderExistsError as RepoOrderExistsError
-from app.services import books_sync, mozello_service
+from app.services import books_sync, mozello_service, password_reset_service, email_delivery
 from app.services.calibre_users_service import (
     CalibreUnavailableError,
-    MailConfigMissingError,
-    PasswordResetError,
     UserAlreadyExistsError,
     create_user_for_email,
     lookup_user_by_email,
     lookup_users_by_emails,
-    trigger_password_reset_email,
 )
 from app.utils.identity import normalize_email
 from app.utils.logging import get_logger
@@ -453,17 +450,42 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
         "orders_existing": 0,
         "user_created": 0,
         "user_linked": 0,
-        "password_email_sent": 0,
-        "password_email_failed": 0,
+        "books_included": 0,
+        "email_queued": False,
+        "email_error": None,
+        "email_language": None,
+        "initial_token_issued": False,
+        "initial_token_error": None,
         "orders": [],
         "errors": [],
     }
+    books_for_email: List[email_delivery.BookDeliveryItem] = []
+    book_ids_for_token: List[int] = []
+    book_ids_seen: Set[int] = set()
+    initial_password: Optional[str] = None
 
     for handle in handles:
         handle_key = handle.lower()
         book_info = book_map.get(handle_key)
         calibre_user_id = existing_user.get("id") if existing_user else None
         calibre_book_id = book_info.get("book_id") if book_info else None
+        book_id_int: Optional[int] = None
+        if calibre_book_id is not None:
+            try:
+                book_id_int = int(calibre_book_id)
+            except (TypeError, ValueError):
+                book_id_int = None
+        if book_id_int:
+            books_for_email.append(
+                email_delivery.BookDeliveryItem(
+                    book_id=book_id_int,
+                    title=book_info.get("title") if book_info and book_info.get("title") else handle,
+                    language_code=book_info.get("language_code") if book_info else None,
+                )
+            )
+            if book_id_int not in book_ids_seen:
+                book_ids_seen.add(book_id_int)
+                book_ids_for_token.append(book_id_int)
         created = False
         order_obj: Optional[MozelloOrder]
         try:
@@ -501,7 +523,6 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             continue
 
         user_status = "already_linked" if order_obj.calibre_user_id else None
-        password_email_status: Optional[str] = None
 
         if not order_obj.calibre_user_id:
             try:
@@ -517,51 +538,8 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                         existing_user = refreshed
                 if ensure_status == "created":
                     summary["user_created"] += 1
-                    user_id = user_obj.get("id") if isinstance(user_obj, dict) else None
-                    if user_id:
-                        try:
-                            trigger_password_reset_email(user_id)
-                            summary["password_email_sent"] += 1
-                            password_email_status = "sent"
-                        except MailConfigMissingError:
-                            summary["password_email_failed"] += 1
-                            password_email_status = "mail_not_configured"
-                            LOG.warning(
-                                "Password email skipped (mail config missing) email=%s handle=%s user_id=%s",
-                                email_norm,
-                                handle,
-                                user_id,
-                            )
-                            summary["errors"].append({
-                                "handle": handle,
-                                "error": "password_email_mail_not_configured",
-                            })
-                        except PasswordResetError as exc:
-                            summary["password_email_failed"] += 1
-                            password_email_status = "reset_failed"
-                            LOG.warning(
-                                "Password email failed email=%s handle=%s user_id=%s error=%s",
-                                email_norm,
-                                handle,
-                                user_id,
-                                exc,
-                            )
-                            summary["errors"].append({
-                                "handle": handle,
-                                "error": "password_email_failed",
-                            })
-                    else:
-                        summary["password_email_failed"] += 1
-                        password_email_status = "user_missing"
-                        LOG.warning(
-                            "Password email skipped user missing email=%s handle=%s",
-                            email_norm,
-                            handle,
-                        )
-                        summary["errors"].append({
-                            "handle": handle,
-                            "error": "password_email_user_missing",
-                        })
+                    if not initial_password:
+                        initial_password = ensure_resp.get("password")
                 else:
                     summary["user_linked"] += 1
             except UserAlreadyExistsError:
@@ -601,8 +579,43 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
             "mz_handle": handle,
             "status": "created" if created else "existing",
             "user_status": user_status,
-            "password_email": password_email_status,
         })
+
+    summary["books_included"] = len(books_for_email)
+    auth_token: Optional[str] = None
+    if initial_password:
+        try:
+            auth_token = password_reset_service.issue_initial_token(
+                email=email_norm,
+                temp_password=initial_password,
+                book_ids=book_ids_for_token,
+            )
+            summary["initial_token_issued"] = True
+        except password_reset_service.PasswordResetError as exc:
+            summary["initial_token_error"] = str(exc)
+            summary["errors"].append({"handle": None, "error": f"initial_token_failed:{exc}"})
+
+    if existing_user and books_for_email:
+        try:
+            email_result = email_delivery.send_book_purchase_email(
+                recipient_email=email_norm,
+                user_name=existing_user.get("name") or existing_user.get("email") or email_norm,
+                books=books_for_email,
+                shop_url=mozello_service.get_store_url(),
+                my_books_url=email_delivery.absolute_site_url("/catalog/my-books"),
+                auth_token=auth_token,
+            )
+            summary["email_queued"] = True
+            summary["email_language"] = email_result.get("language")
+        except email_delivery.EmailDeliveryError as exc:
+            summary["email_error"] = str(exc)
+            summary["errors"].append({"handle": None, "error": f"email_delivery:{exc}"})
+    elif not books_for_email:
+        LOG.debug("Mozello purchase email skipped email=%s reason=no_books", email_norm)
+    else:
+        LOG.debug("Mozello purchase email skipped email=%s reason=user_missing", email_norm)
+
+    return {"status": "ok", "summary": summary}
 
 __all__ = [
     "list_orders",
@@ -617,7 +630,5 @@ __all__ = [
     "OrderNotFoundError",
     "OrderImportError",
     "CalibreUnavailableError",
-    "MailConfigMissingError",
-    "PasswordResetError",
     "UserAlreadyExistsError",
 ]

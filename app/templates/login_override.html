@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container login-override">
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+      <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">ebooks.lv sign in</h3>
+    </div>
+    <div class="panel-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% if token_error %}
+        <div class="alert alert-warning">{{ token_error }}</div>
+      {% endif %}
+
+      {% if token_context %}
+        <div class="alert alert-info">
+          Secure link for {{ token_context.email or 'your account' }}.
+          {% if token_context.has_temp_password %}
+            Set a new password to continue.
+          {% else %}
+            Use the fields below to update your password.
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if form_errors %}
+        <div class="alert alert-danger">
+          <ul class="list-unstyled">{%- for error in form_errors %}<li>{{ error }}</li>{%- endfor %}</ul>
+        </div>
+      {% endif %}
+
+      <form method="POST" role="form" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <input type="hidden" name="auth" value="{{ auth_token or '' }}">
+
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          {% if token_context %}
+          <input type="hidden" name="email" value="{{ email_value }}">
+          <input id="login-email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" disabled>
+          {% else %}
+          <input id="login-email" name="email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" required>
+          {% endif %}
+        </div>
+
+        {% if not token_context %}
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input id="login-password" name="password" type="password" class="form-control" autocomplete="current-password">
+        </div>
+        {% endif %}
+
+        {% if token_context %}
+        <div class="form-group">
+          <label for="new-password">New password</label>
+          <input id="new-password" name="new_password" type="password" class="form-control" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm new password</label>
+          <input id="confirm-password" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
+        </div>
+        {% endif %}
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="remember_me" value="1" {% if remember_me %}checked{% endif %}>
+            Remember me on this device
+          </label>
+        </div>
+
+        <div class="btn-toolbar login-actions">
+          {% if token_context %}
+            <button type="submit" name="action" value="complete_reset" class="btn btn-success">Save password</button>
+            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn btn-link pull-right">Cancel</a>
+          {% else %}
+            <button type="submit" name="action" value="login" class="btn btn-primary">Sign in</button>
+            <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>Forgot password?</button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

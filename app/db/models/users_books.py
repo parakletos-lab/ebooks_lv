@@ -136,6 +136,7 @@ class EmailTemplate(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     template_key = Column(String(64), nullable=False, index=True)
     language = Column(String(8), nullable=False, index=True)
+    subject = Column(String(255), nullable=False, default="")
     html_body = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     updated_at = Column(
@@ -154,6 +155,7 @@ class EmailTemplate(Base):
             "id": self.id,
             "template_key": self.template_key,
             "language": self.language,
+            "subject": self.subject or "",
             "html_body": self.html_body or "",
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
@@ -164,3 +166,39 @@ class EmailTemplate(Base):
 
 
 __all__.append("EmailTemplate")
+
+
+class ResetPasswordToken(Base):
+    """Temporary credential storage for initial and reset flows."""
+
+    __tablename__ = "reset_password_tokens"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), nullable=False, index=True)
+    password_hash = Column(String(255), nullable=True)
+    token_type = Column(String(16), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    last_sent_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("email", "token_type", name="uq_reset_token_email_type"),
+        Index("ix_reset_token_email_type", "email", "token_type"),
+    )
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "email": self.email,
+            "token_type": self.token_type,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_sent_at": self.last_sent_at.isoformat() if self.last_sent_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return (
+            f"<ResetPasswordToken email={self.email} type={self.token_type} "
+            f"created_at={self.created_at}>"
+        )
+
+
+__all__.append("ResetPasswordToken")
