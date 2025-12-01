@@ -6,7 +6,7 @@ Make sure all implemented previous sub-task aligned at current working task.
 
 | Task ID | Description | Status | Details |
 | --- | --- | --- | --- |
-| T1 | Data & credential storage foundations | Completed | See `sub_tasks.md#t1-data-credential-storage-foundations` (commit `ee982c1`) |
+| T1 | Data & credential storage foundations | Completed | See `sub_tasks.md#t1-data-credential-storage-foundations` (commit `aa8f5db`) |
 | T2 | Auth link & password-reset services | Not Started | See `sub_tasks.md#t2-auth-link-and-password-reset-services` |
 | T3 | Email template & subject editor upgrades | Not Started | See `sub_tasks.md#t3-email-template-and-subject-editor-upgrades` |
 | T4 | Mozello webhook + email dispatch workflow | Not Started | See `sub_tasks.md#t4-mozello-webhook-and-email-dispatch-workflow` |
