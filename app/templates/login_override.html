@@ -71,10 +71,12 @@
         </div>
 
         <div class="btn-toolbar login-actions">
-          <button type="submit" name="action" value="login" class="btn btn-primary">Sign in</button>
-          <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>Forgot password?</button>
           {% if token_context %}
-          <button type="submit" name="action" value="complete_reset" class="btn btn-success">Save new password</button>
+            <button type="submit" name="action" value="complete_reset" class="btn btn-success">Save password</button>
+            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn btn-link pull-right">Cancel</a>
+          {% else %}
+            <button type="submit" name="action" value="login" class="btn btn-primary">Sign in</button>
+            <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>Forgot password?</button>
           {% endif %}
         </div>
       </form>
