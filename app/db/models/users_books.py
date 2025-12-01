@@ -164,3 +164,39 @@ class EmailTemplate(Base):
 
 
 __all__.append("EmailTemplate")
+
+
+class ResetPasswordToken(Base):
+    """Temporary credential storage for initial and reset flows."""
+
+    __tablename__ = "reset_password_tokens"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), nullable=False, index=True)
+    password_hash = Column(String(255), nullable=True)
+    token_type = Column(String(16), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    last_sent_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("email", "token_type", name="uq_reset_token_email_type"),
+        Index("ix_reset_token_email_type", "email", "token_type"),
+    )
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "email": self.email,
+            "token_type": self.token_type,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_sent_at": self.last_sent_at.isoformat() if self.last_sent_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return (
+            f"<ResetPasswordToken email={self.email} type={self.token_type} "
+            f"created_at={self.created_at}>"
+        )
+
+
+__all__.append("ResetPasswordToken")

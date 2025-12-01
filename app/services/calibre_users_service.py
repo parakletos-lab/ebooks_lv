@@ -40,6 +40,10 @@ class PasswordResetError(RuntimeError):
     """Raised when password reset workflow fails unexpectedly."""
 
 
+class UserNotFoundError(RuntimeError):
+    """Raised when Calibre cannot locate the requested user."""
+
+
 def _ensure_runtime() -> None:
     if ub is None or getattr(ub, "session", None) is None:
         raise CalibreUnavailableError("Calibre-Web session not available")
@@ -146,6 +150,29 @@ def create_user_for_email(email: str, preferred_username: Optional[str] = None) 
 
     info = {"id": user.id, "email": user.email, "name": user.name}
     return info, password_plain
+
+
+def update_user_password(user_id: int, plaintext_password: str) -> Dict[str, Optional[str]]:
+    """Hash and store a new password for an existing Calibre user."""
+    _ensure_runtime()
+    if not plaintext_password:
+        raise ValueError("password_required")
+    if helper and hasattr(helper, "valid_password"):
+        helper.valid_password(plaintext_password)
+    sess = _session()
+    if not sess:
+        raise CalibreUnavailableError("Calibre session unavailable")
+    user = sess.query(ub.User).filter(ub.User.id == user_id).one_or_none()
+    if not user:
+        raise UserNotFoundError("user_not_found")
+    user.password = generate_password_hash(plaintext_password)
+    try:
+        sess.commit()
+    except Exception as exc:  # pragma: no cover - SQL error path
+        sess.rollback()
+        LOG.error("Failed updating Calibre password user_id=%s: %s", user_id, exc)
+        raise PasswordResetError("update_password_failed") from exc
+    return {"id": user.id, "email": user.email, "name": user.name}
 
 
 def trigger_password_reset_email(user_id: int) -> str:
