@@ -20,6 +20,10 @@ from .email_templates_service import (
     save_template as save_email_template,
     TemplateValidationError,
 )
+from .email_delivery import (
+    send_book_purchase_email,
+    BookDeliveryItem,
+)
 from . import books_sync, auth_link_service, password_reset_service
 
 __all__ = [
@@ -42,4 +46,6 @@ __all__ = [
     "fetch_templates_context",
     "save_email_template",
     "TemplateValidationError",
+    "send_book_purchase_email",
+    "BookDeliveryItem",
 ]
