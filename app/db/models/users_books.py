@@ -136,6 +136,7 @@ class EmailTemplate(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     template_key = Column(String(64), nullable=False, index=True)
     language = Column(String(8), nullable=False, index=True)
+    subject = Column(String(255), nullable=False, default="")
     html_body = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     updated_at = Column(
@@ -154,6 +155,7 @@ class EmailTemplate(Base):
             "id": self.id,
             "template_key": self.template_key,
             "language": self.language,
+            "subject": self.subject or "",
             "html_body": self.html_body or "",
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

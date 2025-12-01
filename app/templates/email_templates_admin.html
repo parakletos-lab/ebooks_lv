@@ -35,6 +35,19 @@
         {% for lang in templates_context.languages %}
         {% set details = tmpl.languages.get(lang) %}
         <div class="email-template-pane{% if loop.first %} is-active{% endif %}" data-lang="{{ lang }}">
+          <div class="form-group email-template-subject-group">
+            <label for="email-template-subject-{{ tmpl.key }}-{{ lang }}">Subject</label>
+            <input
+              type="text"
+              id="email-template-subject-{{ tmpl.key }}-{{ lang }}"
+              class="form-control input-sm email-template-subject-input"
+              data-template-key="{{ tmpl.key }}"
+              data-language="{{ lang }}"
+              maxlength="255"
+              value="{{ (details.subject if details else '')|e }}"
+              aria-label="{{ tmpl.label }} subject ({{ lang.upper() }})"
+            />
+          </div>
           <textarea
             id="email-template-{{ tmpl.key }}-{{ lang }}"
             class="form-control email-template-textarea"
@@ -178,10 +191,10 @@
   }
 
   function saveAllTemplates(){
-    var textareas = document.querySelectorAll(".email-template-textarea");
+    var panes = document.querySelectorAll(".email-template-pane");
     var statusEl = document.getElementById("email-templates-save-status");
     var saveBtn = document.getElementById("email-templates-save-all");
-    if(!textareas.length || !saveBtn){
+    if(!panes.length || !saveBtn){
       return;
     }
     if(window.tinymce && typeof tinymce.triggerSave === "function"){
@@ -191,12 +204,17 @@
     if(csrfInput && csrfInput.value){
       headers["X-CSRFToken"] = csrfInput.value;
     }
-    var payloads = Array.prototype.map.call(textareas, function(area){
+    var payloads = Array.prototype.map.call(panes, function(pane){
+      var area = pane.querySelector(".email-template-textarea");
+      var subjectInput = pane.querySelector(".email-template-subject-input");
       return {
-        template_key: area.getAttribute("data-template-key"),
-        language: area.getAttribute("data-language"),
+        template_key: area ? area.getAttribute("data-template-key") : (subjectInput ? subjectInput.getAttribute("data-template-key") : null),
+        language: area ? area.getAttribute("data-language") : (subjectInput ? subjectInput.getAttribute("data-language") : null),
+        subject: subjectInput ? subjectInput.value : "",
         html: getEditorValue(area),
       };
+    }).filter(function(payload){
+      return payload.template_key && payload.language;
     });
     if(!payloads.length){
       return;

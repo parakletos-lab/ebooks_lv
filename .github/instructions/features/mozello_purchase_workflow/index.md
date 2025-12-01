@@ -16,7 +16,7 @@ For tests:
 | --- | --- | --- | --- |
 | T1 | Data & credential storage foundations | Completed | See `sub_tasks.md#t1-data-credential-storage-foundations` (commit `aa8f5db`) |
 | T2 | Auth link & password-reset services | Completed | Local changes + tests ready; add commit hash after manual publish |
-| T3 | Email template & subject editor upgrades | Not Started | See `sub_tasks.md#t3-email-template-and-subject-editor-upgrades` |
+| T3 | Email template & subject editor upgrades | Completed | Local changes + tests ready; add commit hash after manual publish |
 | T4 | Mozello webhook + email dispatch workflow | Not Started | See `sub_tasks.md#t4-mozello-webhook-and-email-dispatch-workflow` |
 | T5 | Login override UX & session handling | Not Started | See `sub_tasks.md#t5-login-override-ux-and-session-handling` |
 | T6 | Documentation & automated tests | Not Started | See `sub_tasks.md#t6-documentation-and-automated-tests` |

@@ -540,6 +540,7 @@ def api_email_templates_save():
             payload.get("template_key"),
             payload.get("language"),
             payload.get("html"),
+            payload.get("subject"),
         )
     except TemplateValidationError as exc:
         return _json_error(str(exc), 400)
@@ -548,6 +549,7 @@ def api_email_templates_save():
         "template": {
             "key": view.key,
             "language": view.language,
+            "subject": view.subject,
             "html": view.html_body,
             "updated_at": view.updated_at,
         },
