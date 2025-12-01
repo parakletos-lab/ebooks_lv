@@ -314,8 +314,23 @@ def register_login_override(app: Any) -> None:  # pragma: no cover - glue code
     if getattr(app, "_users_books_login_override", False):  # type: ignore[attr-defined]
         return
     app.register_blueprint(bp)
+    _map_calibre_login_endpoints(app)
     setattr(app, "_users_books_login_override", True)
     LOG.debug("Login override blueprint registered")
+
+
+def _map_calibre_login_endpoints(app: Any) -> None:
+    """Remap core Calibre-Web /login endpoints to our override view."""
+
+    override_endpoint = "login_override.login_page"
+    override_view = app.view_functions.get(override_endpoint)
+    if not override_view:
+        LOG.warning("Login override view missing; Calibre endpoints not updated")
+        return
+    for endpoint in ("web.login", "web.login_post"):
+        if endpoint in app.view_functions:
+            app.view_functions[endpoint] = override_view
+            LOG.debug("Login override mapped endpoint %s", endpoint)
 
 
 __all__ = ["register_login_override", "bp"]
