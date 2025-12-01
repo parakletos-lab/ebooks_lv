@@ -22,11 +22,11 @@
 
       {% if token_context %}
         <div class="alert alert-info">
-          Secure link detected for {{ token_context.email or 'your account' }}.
+          Secure link for {{ token_context.email or 'your account' }}.
           {% if token_context.has_temp_password %}
-            Set a new password below before continuing.
+            Set a new password to continue.
           {% else %}
-            You can update your password with the fields provided.
+            Use the fields below to update your password.
           {% endif %}
         </div>
       {% endif %}
@@ -43,7 +43,7 @@
         <input type="hidden" name="auth" value="{{ auth_token or '' }}">
 
         <div class="form-group">
-          <label for="login-email">Email address</label>
+          <label for="login-email">Email</label>
           <input id="login-email" name="email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" required>
         </div>
 

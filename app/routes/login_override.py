@@ -162,7 +162,7 @@ def _send_reset_email(normalized_email: str, next_url: str) -> Optional[str]:
         token = password_reset_service.issue_reset_token(email=normalized_email)
     except password_reset_service.PasswordResetError as exc:
         LOG.warning("reset token issuance failed email=%s error=%s", normalized_email, exc)
-        return "Unable to send reset link right now. Please try again later."
+        return "Reset email failed. Try again."
     reset_url = _build_reset_url(token, next_url, normalized_email)
     display_name = user.get("name") or user.get("email") or normalized_email
     preferred_language = user.get("locale") if isinstance(user, dict) else None
@@ -175,7 +175,7 @@ def _send_reset_email(normalized_email: str, next_url: str) -> Optional[str]:
         )
     except email_delivery.EmailDeliveryError as exc:
         LOG.warning("password reset email failed email=%s error=%s", normalized_email, exc)
-        return "Unable to send reset link; mail server is unavailable."
+        return "Email service is unavailable. Try again."
     LOG.info("password reset email queued email=%s", normalized_email)
     return None
 
@@ -190,11 +190,11 @@ def _handle_standard_login(
 ) -> Response | str:
     normalized = normalize_email(email_value)
     if not normalized:
-        return "Enter the email address linked to your account."
+        return "Enter your email address."
     if not password_value:
-        return "Enter your password to continue."
+        return "Enter your password."
     if token_ctx and token_ctx.has_temp_password:
-        return "Finish setting your password with the fields below before signing in."
+        return "Set your new password first."
     user = _authenticate_credentials(normalized, password_value)
     if not user:
         return "Wrong email or password."
@@ -223,26 +223,26 @@ def _handle_password_update(
 ) -> Response | str:
     normalized = normalize_email(email_value)
     if not normalized:
-        return "Enter the email address linked to your account."
+        return "Enter your email address."
     if not new_password or not confirm_password:
-        return "Enter and confirm your new password."
+        return "Type and confirm your new password."
     if new_password != confirm_password:
-        return "New passwords do not match."
+        return "Passwords do not match."
     try:
         _resolve_pending_reset(normalized, token)
     except ValueError as exc:
         LOG.warning("pending reset validation failed email=%s error=%s", normalized, exc)
-        return "The reset link is invalid or has already been used."
+        return "Reset link is no longer valid."
     try:
         password_reset_service.complete_password_change(email=normalized, new_password=new_password)
     except password_reset_service.PendingResetNotFoundError:
-        return "We couldn't update that account. Request a new reset link."
+        return "Couldn't update this account. Request a new link."
     except password_reset_service.PasswordResetError as exc:
         LOG.warning("password change failed email=%s error=%s", normalized, exc)
-        return "Unable to update password right now."
+        return "Password update failed. Try again."
     user = _fetch_user_by_email(normalized)
     if not user:
-        return "Password updated but account lookup failed. Try signing in again."
+        return "Password updated. Please sign in again."
     _perform_login(user, remember_me, normalized)
     flash("Password updated. You're signed in.", "success")
     return redirect(next_url)
@@ -263,13 +263,13 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         if action == "forgot":
             normalized = normalize_email(email_value)
             if not normalized:
-                form_errors.append("Enter the email address linked to your account.")
+                form_errors.append("Enter your email address.")
             else:
                 error = _send_reset_email(normalized, next_url)
                 if error:
                     form_errors.append(error)
                 else:
-                    flash("If an account exists, you'll receive reset instructions shortly.", "info")
+                    flash("Reset instructions sent to your email.", "info")
                     return redirect(url_for("login_override.login_page", next=next_url))
         elif auth_token and (action == "complete_reset" or (token_ctx and token_ctx.has_temp_password)):
             new_password = request.form.get("new_password", "")

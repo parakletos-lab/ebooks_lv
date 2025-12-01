@@ -172,4 +172,4 @@ def test_token_requires_password_update_before_login(monkeypatch, client):
     )
 
     assert resp.status_code == 200
-    assert b"Enter and confirm your new password" in resp.data
+    assert b"Type and confirm your new password" in resp.data
