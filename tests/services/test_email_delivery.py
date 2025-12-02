@@ -111,7 +111,7 @@ def test_send_purchase_email_renders_tokens_and_queues_task(monkeypatch, request
     assert task.subject == "Hello Reader"
     assert "test-token" in task._html_body  # type: ignore[attr-defined]
     assert "https://ebooks.test/login?next=%2Fbook%2F101&auth=test-token" in task.text
-    assert "https://ebooks.test/login?next=%2Fcatalog%2Fmy-books&auth=test-token" in task._html_body  # type: ignore[attr-defined]
+    assert "https://ebooks.test/catalog/my-books" in task._html_body  # type: ignore[attr-defined]
 
 
 def test_send_purchase_email_requires_mail_settings(monkeypatch, request_context):

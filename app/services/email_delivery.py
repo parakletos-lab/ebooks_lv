@@ -251,7 +251,7 @@ def send_book_purchase_email(
     template = _load_template(_BOOK_PURCHASE_KEY, language)
     links = _build_book_links(book_items, auth_token)
     book_tokens = _render_books_tokens(links)
-    my_books_link = my_books_url or _login_redirect("/catalog/my-books", auth_token)
+    my_books_link = my_books_url or absolute_site_url("/catalog/my-books")
     context = {
         "user_name": (user_name or recipient_email).strip() or recipient_email,
         "shop_url": (shop_url or "").strip(),

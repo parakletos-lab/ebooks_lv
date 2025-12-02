@@ -19,7 +19,7 @@
     const purchased = new Set(Array.isArray(payload.purchased) ? payload.purchased.map(Number) : []);
     const views = payload.views || {};
     const catalogScope = typeof views.current === 'string' ? views.current : 'all';
-    const allowMyBooks = payload.allow_my_books !== false;
+    const allowMyBooks = payload.allow_my_books === true;
     const myBooksHref = typeof views.purchased_url === 'string' ? views.purchased_url : '/catalog/my-books';
     const allBooksHref = typeof views.all_url === 'string' ? views.all_url : '/catalog/all-books';
     const mozelloBase = String(payload.mozello_base || '/mozello/books/');

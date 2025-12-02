@@ -55,7 +55,7 @@ def build_catalog_state(
         return UserCatalogState(is_admin=True, is_authenticated=True)
 
     normalized_email = normalize_email(email)
-    is_authenticated = calibre_user_id is not None or normalized_email is not None
+    is_authenticated = calibre_user_id is not None
     orders = users_books_repo.list_orders_for_user(
         calibre_user_id=calibre_user_id,
         email=normalized_email,
