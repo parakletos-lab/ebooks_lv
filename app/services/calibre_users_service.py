@@ -75,6 +75,8 @@ def lookup_users_by_emails(emails: Iterable[str]) -> Dict[str, Dict[str, Optiona
             "id": user.id,
             "email": user.email,
             "name": user.name,
+            "locale": getattr(user, "locale", None),
+            "default_language": getattr(user, "default_language", None),
         }
     return out
 
@@ -109,7 +111,54 @@ def _apply_defaults(user) -> None:  # pragma: no cover - simple assignments
     user.denied_column_value = getattr(cw_config, "config_denied_column_value", "")
 
 
-def create_user_for_email(email: str, preferred_username: Optional[str] = None) -> Tuple[Dict[str, Optional[str]], str]:
+_LANGUAGE_ALIAS = {
+    "en": "en",
+    "eng": "en",
+    "english": "en",
+    "lv": "lv",
+    "lav": "lv",
+    "lvs": "lv",
+    "lv-lv": "lv",
+    "ru": "ru",
+    "rus": "ru",
+    "ru-ru": "ru",
+}
+
+_LANGUAGE_PREFS = {
+    "en": {"locale": "en", "default_language": "eng"},
+    "lv": {"locale": "lv", "default_language": "lav"},
+    "ru": {"locale": "ru", "default_language": "rus"},
+}
+
+
+def _normalize_language_preference(value: Optional[str]) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip().lower()
+    if not cleaned:
+        return None
+    sanitized = cleaned.replace("_", "-")
+    primary = sanitized.split("-")[0]
+    return _LANGUAGE_ALIAS.get(primary)
+
+
+def _apply_language_preference(user, preferred_language: Optional[str]) -> Optional[str]:
+    normalized = _normalize_language_preference(preferred_language)
+    if not normalized:
+        return None
+    prefs = _LANGUAGE_PREFS.get(normalized)
+    if not prefs:
+        return None
+    user.locale = prefs["locale"]
+    user.default_language = prefs["default_language"]
+    return normalized
+
+
+def create_user_for_email(
+    email: str,
+    preferred_username: Optional[str] = None,
+    preferred_language: Optional[str] = None,
+) -> Tuple[Dict[str, Optional[str]], str]:
     """Create a Calibre user for the given email.
 
     Returns a tuple of (user_info_dict, plaintext_password).
@@ -126,16 +175,15 @@ def create_user_for_email(email: str, preferred_username: Optional[str] = None) 
         helper.valid_password(password_plain)
     password_hash = generate_password_hash(password_plain)
 
-    # Use the full normalized email as the Calibre user name to ensure
-    # predictable mapping between Mozello order emails and Calibre accounts.
-    # This avoids username collisions and simplifies lookups.
-    username = normalized
+    display_name = (preferred_username or "").strip()
+    username = display_name or normalized
 
     user = ub.User()
     user.email = normalized
     user.name = username
     user.password = password_hash
     _apply_defaults(user)
+    _apply_language_preference(user, preferred_language)
 
     sess = _session()
     if not sess:
@@ -148,7 +196,13 @@ def create_user_for_email(email: str, preferred_username: Optional[str] = None) 
         LOG.error("Failed creating Calibre user for email=%s: %s", normalized, exc)
         raise UserCreationError("Failed to create Calibre user") from exc
 
-    info = {"id": user.id, "email": user.email, "name": user.name}
+    info = {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "locale": getattr(user, "locale", None),
+        "default_language": getattr(user, "default_language", None),
+    }
     return info, password_plain
 
 

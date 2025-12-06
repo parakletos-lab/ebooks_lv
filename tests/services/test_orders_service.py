@@ -50,9 +50,16 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
     def fake_lookup_user(_email: str):
         return existing_user
 
-    def fake_create_user(order_id: int):
+    def fake_create_user(order_id: int, **kwargs):
         nonlocal existing_user
-        existing_user = {"id": 77, "email": email_address, "name": "reader@example.com"}
+        assert kwargs.get("preferred_username") == "Customer Example"
+        assert kwargs.get("preferred_language") == "lv"
+        existing_user = {
+            "id": 77,
+            "email": email_address,
+            "name": "reader@example.com",
+            "locale": "lv",
+        }
         users_books_repo.update_links(order_id, calibre_user_id=existing_user["id"])
         return {"status": "created", "user": existing_user, "password": "Temp123!Pass"}
 
@@ -81,6 +88,7 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
         "payment_status": "paid",
         "email": email_address,
         "order_id": "moz-001",
+        "name": "Customer Example",
         "cart": [
             {"product_handle": "alpha"},
             {"product_handle": "beta"},
@@ -101,6 +109,7 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
     assert call["recipient_email"] == email_address
     assert len(call["books"]) == 2
     assert call["auth_token"] == issued_token["value"]
+    assert call["preferred_language"] == "lv"
 
     token_record = reset_passwords_repo.get_token(email=email_address, token_type="initial")
     assert token_record is not None

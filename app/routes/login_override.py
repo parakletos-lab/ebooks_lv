@@ -22,10 +22,13 @@ except Exception:  # pragma: no cover - fallback when flask-wtf missing
         return ""
 
 try:  # runtime dependency on Calibre-Web
-    from cps.cw_login import login_user  # type: ignore
+    from cps.cw_login import login_user, logout_user  # type: ignore
 except Exception:  # pragma: no cover - allow unit tests without Calibre runtime
     def login_user(user, remember=False):  # type: ignore
         raise RuntimeError("calibre_login_unavailable")
+
+    def logout_user():  # type: ignore
+        return None
 
 try:  # runtime dependency needed for SQL lookups
     from cps import ub  # type: ignore
@@ -43,7 +46,7 @@ from urllib.parse import urlencode
 
 from app.services import auth_link_service, password_reset_service, email_delivery, calibre_users_service
 from app.services.password_reset_service import PendingReset
-from app.utils.identity import get_session_email_key, normalize_email
+from app.utils.identity import get_current_user_email, get_session_email_key, normalize_email
 from app.utils.logging import get_logger
 
 LOG = get_logger("login_override")
@@ -93,6 +96,27 @@ def _build_token_context(token: Optional[str]) -> Tuple[Optional[TokenDisplay], 
     ), None
 
 
+def _maybe_short_circuit_login(token_ctx: Optional[TokenDisplay], next_url: str) -> Optional[Response]:
+    if not token_ctx or not token_ctx.email or not next_url:
+        return None
+    token_email = normalize_email(token_ctx.email)
+    if not token_email:
+        return None
+    current_email = get_current_user_email()
+    if not current_email:
+        return None
+    if current_email == token_email:
+        LOG.info("Auth token matches current session email=%s", current_email)
+        return redirect(next_url)
+    LOG.info(
+        "Auth token email mismatch current=%s token=%s; forcing logout",
+        current_email,
+        token_email,
+    )
+    _logout_current_user()
+    return None
+
+
 def _fetch_user_by_email(email: str) -> Any:
     normalized = normalize_email(email)
     if not normalized or ub is None:
@@ -136,6 +160,19 @@ def _set_identity_session(user: Any, normalized_email: str) -> None:
 def _perform_login(user: Any, remember: bool, normalized_email: str) -> None:
     login_user(user, remember=remember)
     _set_identity_session(user, normalized_email)
+
+
+def _clear_identity_session() -> None:
+    session.pop("user_id", None)
+    session.pop(get_session_email_key(), None)
+
+
+def _logout_current_user() -> None:
+    try:
+        logout_user()
+    except Exception:
+        LOG.debug("logout_user not available in current runtime")
+    _clear_identity_session()
 
 
 def _build_reset_url(token: str, next_url: Optional[str], email: str) -> str:
@@ -260,6 +297,11 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         email_value = request.values.get("email") or ""
     remember_me = _remember_me_enabled(request.form.get("remember_me")) if request.method == "POST" else True
     form_errors: List[str] = []
+
+    if request.method == "GET":
+        auto_redirect = _maybe_short_circuit_login(token_ctx, next_url)
+        if auto_redirect is not None:
+            return auto_redirect
 
     if request.method == "POST":
         action = request.form.get("action") or "login"

@@ -44,6 +44,17 @@ def stub_login_user(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def stub_logout_user(monkeypatch):
+    calls = {"count": 0}
+
+    def fake_logout():
+        calls["count"] += 1
+
+    monkeypatch.setattr(login_override, "logout_user", fake_logout)
+    return calls
+
+
+@pytest.fixture(autouse=True)
 def stub_templates(monkeypatch):
     def _render(_template_name, **context):
         body = context.get("form_errors") or []
@@ -173,3 +184,38 @@ def test_token_requires_password_update_before_login(monkeypatch, client):
 
     assert resp.status_code == 200
     assert b"Type and confirm your new password" in resp.data
+
+
+def test_auth_token_redirects_when_session_matches(monkeypatch, client):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    with client.session_transaction() as sess:
+        sess["user_id"] = 9
+        sess["email"] = "reader@example.com"
+
+    resp = client.get("/login?auth=token-abc&next=/book/10", follow_redirects=False)
+
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/book/10")
+
+
+def test_auth_token_mismatch_logs_out(monkeypatch, client, stub_logout_user):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    with client.session_transaction() as sess:
+        sess["user_id"] = 11
+        sess["email"] = "other@example.com"
+
+    resp = client.get("/login?auth=token-abc&next=/book/10", follow_redirects=False)
+
+    assert resp.status_code == 200
+    assert stub_logout_user["count"] == 1
+    with client.session_transaction() as sess:
+        assert "email" not in sess
+        assert "user_id" not in sess

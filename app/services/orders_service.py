@@ -151,13 +151,19 @@ def create_order(email: str, mz_handle: str) -> Dict[str, Any]:
     return {"order": view.__dict__, "status": "created"}
 
 
-def create_user_for_order(order_id: int) -> Dict[str, Any]:
+def create_user_for_order(
+    order_id: int,
+    *,
+    preferred_username: Optional[str] = None,
+    preferred_language: Optional[str] = None,
+) -> Dict[str, Any]:
     order = users_books_repo.get_order(order_id)
     if not order:
         raise OrderNotFoundError("order_missing")
 
     book_map = books_sync.lookup_books_by_handles({order.mz_handle.lower()}) if order.mz_handle else {}
     book_info = book_map.get(order.mz_handle.lower()) if order.mz_handle else None
+    language_hint = preferred_language or (book_info.get("language_code") if book_info else None)
 
     existing_user = lookup_user_by_email(order.email)
     if existing_user:
@@ -173,7 +179,11 @@ def create_user_for_order(order_id: int) -> Dict[str, Any]:
         }
 
     try:
-        user_info, password = create_user_for_email(order.email)
+        user_info, password = create_user_for_email(
+            order.email,
+            preferred_username=preferred_username,
+            preferred_language=language_hint,
+        )
     except UserAlreadyExistsError as exc:
         refreshed = lookup_user_by_email(order.email)
         if refreshed:
@@ -441,6 +451,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
 
     book_map = books_sync.lookup_books_by_handles(seen_handles) if seen_handles else {}
     existing_user = lookup_user_by_email(email_norm)
+    moz_customer_name = (order_payload.get("name") or "").strip() or None
 
     summary: Dict[str, Any] = {
         "email": email_norm,
@@ -469,6 +480,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
         book_info = book_map.get(handle_key)
         calibre_user_id = existing_user.get("id") if existing_user else None
         calibre_book_id = book_info.get("book_id") if book_info else None
+        language_hint = book_info.get("language_code") if book_info else None
         book_id_int: Optional[int] = None
         if calibre_book_id is not None:
             try:
@@ -526,7 +538,11 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
 
         if not order_obj.calibre_user_id:
             try:
-                ensure_resp = create_user_for_order(order_obj.id)
+                ensure_resp = create_user_for_order(
+                    order_obj.id,
+                    preferred_username=moz_customer_name,
+                    preferred_language=language_hint,
+                )
                 ensure_status = ensure_resp.get("status") or "linked_existing"
                 user_status = ensure_status
                 user_obj = ensure_resp.get("user")
@@ -603,6 +619,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                 books=books_for_email,
                 shop_url=mozello_service.get_store_url(),
                 auth_token=auth_token,
+                preferred_language=existing_user.get("locale") if isinstance(existing_user, dict) else None,
             )
             summary["email_queued"] = True
             summary["email_language"] = email_result.get("language")
