@@ -192,6 +192,7 @@ def test_auth_token_redirects_when_session_matches(monkeypatch, client):
         "decode_payload",
         lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
     )
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
     with client.session_transaction() as sess:
         sess["user_id"] = 9
         sess["email"] = "reader@example.com"
@@ -208,6 +209,7 @@ def test_auth_token_mismatch_logs_out(monkeypatch, client, stub_logout_user):
         "decode_payload",
         lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
     )
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
     with client.session_transaction() as sess:
         sess["user_id"] = 11
         sess["email"] = "other@example.com"

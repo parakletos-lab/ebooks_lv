@@ -22,13 +22,17 @@ except Exception:  # pragma: no cover - fallback when flask-wtf missing
         return ""
 
 try:  # runtime dependency on Calibre-Web
-    from cps.cw_login import login_user, logout_user  # type: ignore
+    from cps.cw_login import login_user, logout_user, current_user as cw_current_user  # type: ignore
+    _HAS_CW_CURRENT_USER = True
 except Exception:  # pragma: no cover - allow unit tests without Calibre runtime
     def login_user(user, remember=False):  # type: ignore
         raise RuntimeError("calibre_login_unavailable")
 
     def logout_user():  # type: ignore
         return None
+
+    cw_current_user = None  # type: ignore
+    _HAS_CW_CURRENT_USER = False
 
 try:  # runtime dependency needed for SQL lookups
     from cps import ub  # type: ignore
@@ -96,23 +100,39 @@ def _build_token_context(token: Optional[str]) -> Tuple[Optional[TokenDisplay], 
     ), None
 
 
+def _is_authenticated_session_email(email: Optional[str]) -> bool:
+    normalized = normalize_email(email)
+    if not normalized:
+        return False
+    if _HAS_CW_CURRENT_USER and cw_current_user is not None:
+        try:
+            if not getattr(cw_current_user, "is_authenticated", False):
+                return False
+            current_mail = normalize_email(getattr(cw_current_user, "email", None))
+            return current_mail == normalized
+        except Exception:
+            return False
+    session_email = normalize_email(session.get(get_session_email_key()))
+    if session_email != normalized:
+        return False
+    return session.get("user_id") is not None
+
+
 def _maybe_short_circuit_login(token_ctx: Optional[TokenDisplay], next_url: str) -> Optional[Response]:
     if not token_ctx or not token_ctx.email or not next_url:
         return None
     token_email = normalize_email(token_ctx.email)
     if not token_email:
         return None
-    current_email = get_current_user_email()
-    if not current_email:
+    linked_user = _fetch_user_by_email(token_email)
+    if not linked_user:
+        LOG.info("Auth token user missing email=%s; forcing login flow", token_email)
+        _logout_current_user()
         return None
-    if current_email == token_email:
-        LOG.info("Auth token matches current session email=%s", current_email)
+    if _is_authenticated_session_email(token_email):
+        LOG.info("Auth token matches active session email=%s", token_email)
         return redirect(next_url)
-    LOG.info(
-        "Auth token email mismatch current=%s token=%s; forcing logout",
-        current_email,
-        token_email,
-    )
+    LOG.info("Auth token requires login email=%s; clearing stale session", token_email)
     _logout_current_user()
     return None
 
