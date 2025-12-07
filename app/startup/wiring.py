@@ -26,6 +26,7 @@ def _prepend_template_path(app):
     """
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     override_dir = os.path.join(base_dir, "templates")
+    repo_root = os.path.abspath(os.path.join(base_dir, ".."))
     static_dir = os.path.join(base_dir, "static")
     if not os.path.isdir(override_dir):
         return
@@ -45,6 +46,16 @@ def _prepend_template_path(app):
             override_dir,
             static_dir,
         )
+    # Ensure override path is first in the Jinja search path
+    loader = getattr(app, 'jinja_loader', None)
+    searchpath = getattr(loader, 'searchpath', None)
+    if isinstance(searchpath, list):
+        if override_dir not in searchpath:
+            searchpath.insert(0, override_dir)
+            log.debug("Prepended override dir to jinja searchpath: %s", override_dir)
+        if repo_root not in searchpath:
+            searchpath.append(repo_root)
+            log.debug("Appended repo root to jinja searchpath: %s", repo_root)
 
 
 def init_app(app: Any) -> None:

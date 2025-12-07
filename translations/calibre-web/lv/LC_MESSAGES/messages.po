@@ -1375,7 +1375,7 @@ msgstr "Nav pieejama informācija par izlaidi"
 
 #: cps/templates/index.html:6 cps/web.py:451
 msgid "Discover (Random Books)"
-msgstr "Atklāj (Randoma grāmatas)"
+msgstr "Atklāj (nejaušas grāmatas)"
 
 #: cps/web.py:487
 msgid "Hot Books (Most Downloaded)"
@@ -1995,7 +1995,7 @@ msgstr "Meklēt bibliotēku"
 #: cps/templates/basic_layout.html:29 cps/templates/layout.html:73
 #: cps/templates/layout.html:99
 msgid "Logout"
-msgstr "Atteikties"
+msgstr "Izrakstīties"
 
 #: cps/templates/basic_layout.html:35
 msgid "Normal Theme"
@@ -2920,7 +2920,7 @@ msgstr "Atgriešanās mājās"
 
 #: cps/templates/http_error.html:57
 msgid "Logout User"
-msgstr "Atteikties lietotājs"
+msgstr "Lietotājs ir izrakstīts"
 
 #: cps/templates/index.html:71
 msgid "Sort ascending according to download count"

@@ -65,6 +65,7 @@ from app.services import auth_link_service, password_reset_service, email_delive
 from app.services.password_reset_service import PendingReset
 from app.utils.identity import clear_identity_session, get_current_user_email, get_session_email_key, normalize_email
 from app.utils.logging import get_logger
+from app.i18n.preferences import SESSION_LOCALE_KEY, normalize_language_choice
 
 LOG = get_logger("login_override")
 bp = Blueprint("login_override", __name__)
@@ -233,6 +234,10 @@ def _set_identity_session(user: Any, normalized_email: str) -> None:
         session["user_id"] = getattr(user, "id", 0)
     email_key = get_session_email_key()
     session[email_key] = normalized_email
+
+    locale = normalize_language_choice(getattr(user, "locale", None))
+    if locale:
+        session[SESSION_LOCALE_KEY] = locale
 
 
 def _perform_login(user: Any, remember: bool, normalized_email: str) -> None:

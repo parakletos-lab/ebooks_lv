@@ -23,6 +23,7 @@ from app.routes.overrides.catalog_access import register_catalog_access
 from app.routes.overrides.calibre_overrides import register_calibre_overrides
 from app.routes.overrides.stats_notice import register_stats_notice
 from app.routes.overrides.locale_override import register_locale_override
+from app.routes.overrides.language_switch_injection import register_language_switch_injection
 from app.routes.overrides.profile_guard import register_profile_guard
 
 def _ensure_nav_injection(app: Any) -> None:
@@ -49,6 +50,7 @@ def register_all(app: Any) -> None:
     register_calibre_overrides(app)
     register_profile_guard(app)
     register_locale_override(app)
+    register_language_switch_injection(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

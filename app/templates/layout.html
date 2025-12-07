@@ -1,130 +1,25 @@
-{#
-  layout.html override shim adding ebooks.lv nav link after Admin.
-  This file shadows upstream template via updated template search path (ensure
-  app/templates precedes calibre-web templates). It copies only the nav bar
-  fragment by extending upstream and injecting a block after admin link.
-  If upstream layout defines blocks differently, fallback to after_request injection.
-#}
-{% extends "../calibre-web/cps/templates/layout.html" %}
-{% block navigation %}
+{% extends "calibre-web/cps/templates/layout.html" %}
+
+{% block header %}
   {{ super() }}
-  {% set session_lang = session.get('ub_preferred_locale') %}
-  {% set active_lang = session_lang or (current_user.locale if current_user else None) or 'en' %}
-  <style>
-    .ub-lang-switch { display: flex; align-items: center; gap: 18px; padding-left: 10px; }
-    .ub-lang-option { background: none; border: none; padding: 4px 0; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; color: #0f6958; text-transform: uppercase; }
-    .ub-lang-option.active { color: #0c8f6f; border-bottom: 2px solid #0c8f6f; }
-    .ub-lang-option:focus { outline: none; }
+  <style id="ub-lang-style">
+    .ub-lang-switch { display: flex; align-items: center; height: 50px; gap: 12px; padding: 0 6px; }
+    .ub-lang-option { background: transparent; border: none; padding: 0 6px 6px; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; line-height: 20px; color: inherit; text-transform: uppercase; }
+    .ub-lang-option.active { color: var(--cw-primary, #0f6958); border-bottom: 2px solid currentColor; }
+    .ub-lang-option:focus { outline: none; box-shadow: none; }
     .ub-profile-disabled { pointer-events: none; cursor: default; color: #777; }
   </style>
-  <script>
-  (function(){
-    var config = {
-      isAdmin: {{ 'true' if current_user and current_user.role_admin() else 'false' }},
-      switchUrl: "{{ url_for('language_switch.switch_language') }}",
-      activeLang: "{{ active_lang|lower }}"
-    };
+{% endblock %}
 
-    function disableProfileLink(){
-      if (config.isAdmin) return;
-      var profileLink = document.getElementById('top_user');
-      if (profileLink){
-        profileLink.removeAttribute('href');
-        profileLink.classList.add('ub-profile-disabled');
-        profileLink.setAttribute('aria-disabled', 'true');
-      }
-      var profileToggle = document.querySelector('.profileDrop');
-      if (profileToggle){
-        profileToggle.removeAttribute('data-toggle');
-        profileToggle.style.cursor = 'default';
-      }
-    }
-
-    function hideTasksLink(){
-      if (config.isAdmin) return;
-      var tasks = document.getElementById('top_tasks');
-      if (tasks && tasks.parentNode){
-        tasks.parentNode.remove();
-      }
-    }
-
-    function renderLanguageSwitch(){
-      var nav = document.getElementById('main-nav');
-      if (!nav || document.getElementById('ub-lang-switch')) return;
-      var li = document.createElement('li');
-      li.id = 'ub-lang-switch';
-      li.className = 'ub-lang-switch';
-      var options = [
-        { code: 'lv', label: 'LAT' },
-        { code: 'ru', label: 'RUS' },
-        { code: 'en', label: 'ENG' }
-      ];
-      var active = (config.activeLang || '').toLowerCase();
-      li.innerHTML = options.map(function(opt){
-        var cls = 'ub-lang-option' + (opt.code === active ? ' active' : '');
-        return '<button type="button" class="' + cls + '" data-lang="' + opt.code + '">' + opt.label + '</button>';
-      }).join('');
-      nav.insertBefore(li, nav.firstChild);
-
-      li.addEventListener('click', function(event){
-        var target = event.target;
-        if (!target || !target.dataset || !target.dataset.lang) return;
-        event.preventDefault();
-        var lang = target.dataset.lang;
-        if (!lang || lang === active) return;
-        fetch(config.switchUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language: lang })
-        }).then(function(resp){
-          if (!resp.ok) throw new Error('switch_failed');
-          return resp.json();
-        }).then(function(){
-          window.location.reload();
-        }).catch(function(){
-          window.location.reload();
-        });
-      });
-    }
-
-    function init(){
-      disableProfileLink();
-      hideTasksLink();
-      renderLanguageSwitch();
-    }
-
-    if (document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-  </script>
-  {# Fallback: if our element not already present and user is admin, inject via script #}
-  {% if current_user and current_user.role_admin() %}
-  {% set nav_labels = {
-    'ebooks': _('ebooks.lv'),
-    'orders': _('Orders'),
-    'mozello': _('Mozello')
-  } %}
-  <script>
-  (function(){
-    var labels = {{ nav_labels | tojson }};
-    function createLinkHtml(id, href, icon, text){
-      return '<a id="'+id+'" data-text="'+text+'" href="'+href+'">' +
-        '<span class="glyphicon '+icon+'"></span> <span class="hidden-sm">'+text+'</span></a>';
-    }
-    try {
-      if(!document.getElementById('top_users_books')){
-        var admin=document.getElementById('top_admin');
-        if(admin){
-          var li=document.createElement('li');
-          li.innerHTML=createLinkHtml('top_users_books', '/admin/ebookslv/', 'glyphicon-book', labels.ebooks);
-          admin.parentNode.insertAdjacentElement('afterend', li);
-        }
-      }
-    } catch(e) { if(window.console && console.debug){ console.debug('users_books nav js inject fail', e); } }
-  })();
-  </script>
-  {% endif %}
+{% block js %}
+  {{ super() }}
+  <div id="ub-config"
+       data-is-admin="{{ 1 if current_user and current_user.role_admin() else 0 }}"
+      data-is-anon="{{ 1 if current_user.is_anonymous else 0 }}"
+       data-switch-url="{{ url_for('language_switch.switch_language') }}"
+      data-active-lang="{{ session.get('ub_preferred_locale') or (current_user.locale if current_user and (not current_user.is_anonymous) else None) or 'lv' }}"
+      data-login-url="{{ url_for('web.login', next=(request.path + '?' + request.query_string.decode('utf-8')).rstrip('?')) }}"
+      data-login-label="{{ _('Login') }}"
+       hidden></div>
+  <script src="{{ url_for('_app_templates.static', filename='js/ub_lang_switch.js') }}"></script>
 {% endblock %}

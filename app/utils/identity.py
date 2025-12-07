@@ -83,13 +83,14 @@ def get_current_user_id() -> Optional[int]:
     auth_state = _calibre_auth_state()
     if auth_state is False:
         clear_identity_session()
-    uid = session.get("user_id")
-    if uid is None:
         return None
-    try:
-        return int(uid)
-    except (TypeError, ValueError):
-        pass
+
+    uid = session.get("user_id")
+    if uid is not None:
+        try:
+            return int(uid)
+        except (TypeError, ValueError):
+            pass
 
     current = _cw_current_user()
     try:
