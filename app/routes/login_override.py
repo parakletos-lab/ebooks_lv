@@ -50,7 +50,7 @@ from urllib.parse import urlencode
 
 from app.services import auth_link_service, password_reset_service, email_delivery, calibre_users_service
 from app.services.password_reset_service import PendingReset
-from app.utils.identity import get_current_user_email, get_session_email_key, normalize_email
+from app.utils.identity import clear_identity_session, get_current_user_email, get_session_email_key, normalize_email
 from app.utils.logging import get_logger
 
 LOG = get_logger("login_override")
@@ -182,17 +182,12 @@ def _perform_login(user: Any, remember: bool, normalized_email: str) -> None:
     _set_identity_session(user, normalized_email)
 
 
-def _clear_identity_session() -> None:
-    session.pop("user_id", None)
-    session.pop(get_session_email_key(), None)
-
-
 def _logout_current_user() -> None:
     try:
         logout_user()
     except Exception:
         LOG.debug("logout_user not available in current runtime")
-    _clear_identity_session()
+    clear_identity_session()
 
 
 def _build_reset_url(token: str, next_url: Optional[str], email: str) -> str:

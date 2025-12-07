@@ -34,7 +34,25 @@ def _ub_current_user():
         return None
 
 
+def _calibre_auth_state() -> Optional[bool]:
+    current = _cw_current_user()
+    if current is None:
+        return None
+    try:
+        return bool(getattr(current, "is_authenticated", False))
+    except Exception:
+        return None
+
+
+def clear_identity_session() -> None:
+    session.pop("user_id", None)
+    session.pop(get_session_email_key(), None)
+
+
 def get_current_user_email() -> Optional[str]:
+    auth_state = _calibre_auth_state()
+    if auth_state is False:
+        clear_identity_session()
     raw = session.get(get_session_email_key())
     email = normalize_email(raw)
     if email:
@@ -62,6 +80,9 @@ def get_current_user_email() -> Optional[str]:
 
 
 def get_current_user_id() -> Optional[int]:
+    auth_state = _calibre_auth_state()
+    if auth_state is False:
+        clear_identity_session()
     uid = session.get("user_id")
     if uid is None:
         return None
@@ -132,6 +153,7 @@ __all__ = [
     "get_session_email_key",
     "get_current_user_email",
     "get_current_user_id",
+    "clear_identity_session",
     "is_admin_user",
     "ensure_admin",
     "PermissionError",
