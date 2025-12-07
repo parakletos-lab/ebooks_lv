@@ -129,9 +129,9 @@ _LANGUAGE_ALIAS = {
 }
 
 _LANGUAGE_PREFS = {
-    "en": {"locale": "en", "default_language": "eng"},
-    "lv": {"locale": "lv", "default_language": "lav"},
-    "ru": {"locale": "ru", "default_language": "rus"},
+    "en": {"locale": "en"},
+    "lv": {"locale": "lv"},
+    "ru": {"locale": "ru"},
 }
 
 
@@ -154,7 +154,7 @@ def _apply_language_preference(user, preferred_language: Optional[str]) -> Optio
     if not prefs:
         return None
     user.locale = prefs["locale"]
-    user.default_language = prefs["default_language"]
+    user.default_language = "all"
     return normalized
 
 
