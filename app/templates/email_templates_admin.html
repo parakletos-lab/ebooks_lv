@@ -12,10 +12,6 @@
     <input type="hidden" id="email-templates-csrf" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body" id="email-templates-root" data-context="{{ templates_context|tojson|forceescape }}">
-    <p class="text-muted ub-panel-note">
-      Maintain ebooks.lv notification templates with TinyMCE. Use the token buttons below each editor to
-      inject placeholders such as <code>{{'{{user_name}}'}}</code>.
-    </p>
     {% for tmpl in templates_context.templates %}
     <div class="email-template-card" data-template-key="{{ tmpl.key }}" data-active-lang="{{ templates_context.languages[0] if templates_context.languages else '' }}">
       <div class="email-template-card-header">
