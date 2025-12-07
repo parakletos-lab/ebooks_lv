@@ -15,6 +15,19 @@ from flask import (
     url_for,
 )
 
+try:  # pragma: no cover - Flask-Babel optional in unit tests
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
+
 try:  # pragma: no cover - flask-wtf optional at runtime
     from flask_wtf.csrf import generate_csrf  # type: ignore
 except Exception:  # pragma: no cover - fallback when flask-wtf missing
@@ -65,6 +78,24 @@ class TokenDisplay:
     issued_at: Optional[str]
 
 
+_TOKEN_ERROR_MESSAGES = {
+    "email_missing": _("Secure link is missing the account email."),
+    "token_inactive": _("This secure link is no longer active."),
+    "token_required": _("A secure link is required to finish signing in."),
+    "invalid_token": _("This secure link is invalid. Request a new email."),
+    "invalid_payload": _("Secure link payload is invalid. Request a new email."),
+    "invalid_timestamp": _("Secure link timestamp is invalid."),
+    "reset_token_expired": _("This secure link expired. Request a new one."),
+    "email_token_mismatch": _("Secure link email does not match the requested account."),
+}
+
+
+def _token_error_message(code: Optional[str]) -> str:
+    if not code:
+        return _("Secure link cannot be used. Request a new email.")
+    return _TOKEN_ERROR_MESSAGES.get(code, _("Secure link cannot be used. Request a new email."))
+
+
 def _default_index() -> str:
     try:
         return url_for("web.index")
@@ -91,17 +122,17 @@ def _build_token_context(token: Optional[str]) -> Tuple[Optional[TokenDisplay], 
         payload = auth_link_service.decode_payload(token)
     except auth_link_service.AuthLinkError as exc:
         LOG.warning("login override token rejected: %s", exc)
-        return None, str(exc)
+        return None, _token_error_message(str(exc))
     normalized_email = normalize_email(payload.get("email"))
     if not normalized_email:
-        return None, "email_missing"
+        return None, _token_error_message("email_missing")
     has_temp = bool(payload.get("temp_password"))
     try:
         if not password_reset_service.has_pending_token(email=normalized_email, initial=has_temp):
             LOG.info("login token ignored email=%s reason=pending_missing", normalized_email)
             return None, None
     except password_reset_service.PasswordResetError:
-        return None, "token_inactive"
+        return None, _token_error_message("token_inactive")
     return TokenDisplay(
         token=token,
         email=payload.get("email"),
@@ -241,7 +272,7 @@ def _send_reset_email(normalized_email: str, next_url: str) -> Optional[str]:
         token = password_reset_service.issue_reset_token(email=normalized_email)
     except password_reset_service.PasswordResetError as exc:
         LOG.warning("reset token issuance failed email=%s error=%s", normalized_email, exc)
-        return "Reset email failed. Try again."
+        return _("Reset email failed. Try again.")
     reset_url = _build_reset_url(token, next_url, normalized_email)
     display_name = user.get("name") or user.get("email") or normalized_email
     preferred_language = user.get("locale") if isinstance(user, dict) else None
@@ -254,7 +285,7 @@ def _send_reset_email(normalized_email: str, next_url: str) -> Optional[str]:
         )
     except email_delivery.EmailDeliveryError as exc:
         LOG.warning("password reset email failed email=%s error=%s", normalized_email, exc)
-        return "Email service is unavailable. Try again."
+        return _("Email service is unavailable. Try again.")
     LOG.info("password reset email queued email=%s", normalized_email)
     return None
 
@@ -269,16 +300,16 @@ def _handle_standard_login(
 ) -> Response | str:
     normalized = normalize_email(email_value)
     if not normalized:
-        return "Enter your email address."
+        return _("Enter your email address.")
     if not password_value:
-        return "Enter your password."
+        return _("Enter your password.")
     if token_ctx and token_ctx.has_temp_password:
-        return "Set your new password first."
+        return _("Set your new password first.")
     user = _authenticate_credentials(normalized, password_value)
     if not user:
-        return "Wrong email or password."
+        return _("Wrong email or password.")
     _perform_login(user, remember_me, normalized)
-    flash("Signed in successfully.", "success")
+    flash(_("Signed in successfully."), "success")
     return redirect(next_url)
 
 
@@ -302,28 +333,28 @@ def _handle_password_update(
 ) -> Response | str:
     normalized = normalize_email(email_value)
     if not normalized:
-        return "Enter your email address."
+        return _("Enter your email address.")
     if not new_password or not confirm_password:
-        return "Type and confirm your new password."
+        return _("Type and confirm your new password.")
     if new_password != confirm_password:
-        return "Passwords do not match."
+        return _("Passwords do not match.")
     try:
         _resolve_pending_reset(normalized, token)
     except ValueError as exc:
         LOG.warning("pending reset validation failed email=%s error=%s", normalized, exc)
-        return "Reset link is no longer valid."
+        return _("Reset link is no longer valid.")
     try:
         password_reset_service.complete_password_change(email=normalized, new_password=new_password)
     except password_reset_service.PendingResetNotFoundError:
-        return "Couldn't update this account. Request a new link."
+        return _("Couldn't update this account. Request a new link.")
     except password_reset_service.PasswordResetError as exc:
         LOG.warning("password change failed email=%s error=%s", normalized, exc)
-        return "Password update failed. Try again."
+        return _("Password update failed. Try again.")
     user = _fetch_user_by_email(normalized)
     if not user:
-        return "Password updated. Please sign in again."
+        return _("Password updated. Please sign in again.")
     _perform_login(user, remember_me, normalized)
-    flash("Password updated. You're signed in.", "success")
+    flash(_("Password updated. You're signed in."), "success")
     return redirect(next_url)
 
 
@@ -350,13 +381,13 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         if action == "forgot":
             normalized = normalize_email(email_value)
             if not normalized:
-                form_errors.append("Enter your email address.")
+                form_errors.append(_("Enter your email address."))
             else:
                 error = _send_reset_email(normalized, next_url)
                 if error:
                     form_errors.append(error)
                 else:
-                    flash("Reset instructions sent to your email.", "info")
+                    flash(_("Reset instructions sent to your email."), "info")
                     return redirect(url_for("login_override.login_page", next=next_url))
         elif auth_token and (action == "complete_reset" or (token_ctx and token_ctx.has_temp_password)):
             new_password = request.form.get("new_password", "")

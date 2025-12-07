@@ -1,0 +1,1106 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-12-07 13:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/routes/admin_ebookslv.py:65
+msgid "Calibre runtime is unavailable. Try again later."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:66
+msgid "This Mozello order already exists."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:67
+msgid "Order could not be found."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:68
+msgid "Calibre is currently unavailable."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:69
+msgid "User already exists."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:70
+msgid "Email address is required."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:71 app/routes/admin_ebookslv.py:84
+msgid "Mozello handle is required."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:72
+msgid "Enter valid dates in YYYY-MM-DD format."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:73
+msgid "End date must be on or after the start date."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:74
+msgid "Server returned an invalid payload."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:75 app/routes/admin_ebookslv.py:82
+msgid "Mozello API request failed."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:76
+msgid "Book not found in the Calibre library."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:77
+msgid "Delete request failed."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:78
+msgid "Export failed."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:79
+msgid "Mozello import failed."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:80
+msgid "Mozello API key is missing."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:81
+msgid "Mozello API returned invalid JSON."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:83
+msgid "Product not found in Mozello store."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:85
+msgid "Selected language is not supported."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:86
+msgid "Template key is not supported."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:87
+msgid "Subject must be a single line."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:88
+msgid "Subject is too long."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:332
+#, python-format
+msgid "Mozello import failed: %(reason)s"
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:424 app/routes/admin_ebookslv.py:587
+#, python-format
+msgid "Mozello API request failed (HTTP %(status)s)."
+msgstr ""
+
+#: app/routes/admin_ebookslv.py:478
+#, python-format
+msgid "Export failed (status %(status)s)."
+msgstr ""
+
+#: app/routes/admin_mozello.py:58
+msgid "Administrator access required."
+msgstr ""
+
+#: app/routes/admin_mozello.py:59
+msgid "Unable to update Mozello settings."
+msgstr ""
+
+#: app/routes/admin_mozello.py:60
+msgid "Events payload must be a list."
+msgstr ""
+
+#: app/routes/login_override.py:82
+msgid "Secure link is missing the account email."
+msgstr ""
+
+#: app/routes/login_override.py:83
+msgid "This secure link is no longer active."
+msgstr ""
+
+#: app/routes/login_override.py:84
+msgid "A secure link is required to finish signing in."
+msgstr ""
+
+#: app/routes/login_override.py:85
+msgid "This secure link is invalid. Request a new email."
+msgstr ""
+
+#: app/routes/login_override.py:86
+msgid "Secure link payload is invalid. Request a new email."
+msgstr ""
+
+#: app/routes/login_override.py:87
+msgid "Secure link timestamp is invalid."
+msgstr ""
+
+#: app/routes/login_override.py:88
+msgid "This secure link expired. Request a new one."
+msgstr ""
+
+#: app/routes/login_override.py:89
+msgid "Secure link email does not match the requested account."
+msgstr ""
+
+#: app/routes/login_override.py:95 app/routes/login_override.py:96
+msgid "Secure link cannot be used. Request a new email."
+msgstr ""
+
+#: app/routes/login_override.py:275
+msgid "Reset email failed. Try again."
+msgstr ""
+
+#: app/routes/login_override.py:288
+msgid "Email service is unavailable. Try again."
+msgstr ""
+
+#: app/routes/login_override.py:303 app/routes/login_override.py:336
+#: app/routes/login_override.py:384
+msgid "Enter your email address."
+msgstr ""
+
+#: app/routes/login_override.py:305
+msgid "Enter your password."
+msgstr ""
+
+#: app/routes/login_override.py:307
+msgid "Set your new password first."
+msgstr ""
+
+#: app/routes/login_override.py:310
+msgid "Wrong email or password."
+msgstr ""
+
+#: app/routes/login_override.py:312
+msgid "Signed in successfully."
+msgstr ""
+
+#: app/routes/login_override.py:338
+msgid "Type and confirm your new password."
+msgstr ""
+
+#: app/routes/login_override.py:340
+msgid "Passwords do not match."
+msgstr ""
+
+#: app/routes/login_override.py:345
+msgid "Reset link is no longer valid."
+msgstr ""
+
+#: app/routes/login_override.py:349
+msgid "Couldn't update this account. Request a new link."
+msgstr ""
+
+#: app/routes/login_override.py:352
+msgid "Password update failed. Try again."
+msgstr ""
+
+#: app/routes/login_override.py:355
+msgid "Password updated. Please sign in again."
+msgstr ""
+
+#: app/routes/login_override.py:357
+msgid "Password updated. You're signed in."
+msgstr ""
+
+#: app/routes/login_override.py:390
+msgid "Reset instructions sent to your email."
+msgstr ""
+
+#: app/routes/overrides/catalog_access.py:129
+msgid "Buy Online"
+msgstr ""
+
+#: app/routes/overrides/catalog_access.py:133
+msgid "My Books"
+msgstr ""
+
+#: app/routes/overrides/catalog_access.py:134
+msgid "All Books"
+msgstr ""
+
+#: app/routes/overrides/nav_injection.py:47 app/templates/layout.html:14
+msgid "ebooks.lv"
+msgstr ""
+
+#: app/routes/overrides/nav_injection.py:48
+#: app/templates/ebookslv_admin.html:19 app/templates/layout.html:15
+msgid "Orders"
+msgstr ""
+
+#: app/routes/overrides/nav_injection.py:49 app/templates/layout.html:16
+msgid "Mozello"
+msgstr ""
+
+#: app/routes/overrides/stats_notice.py:75 app/templates/stats.html:27
+msgid ""
+"This application includes Calibre-web as an unmodified submodule, "
+"licensed under GPLv3."
+msgstr ""
+
+#: app/services/email_delivery.py:207
+#, python-format
+msgid "Book %(number)s"
+msgstr ""
+
+#: app/services/email_delivery.py:229
+msgid "Books will appear in your library shortly."
+msgstr ""
+
+#: app/services/email_delivery.py:237
+#, python-format
+msgid "- %(title)s: %(url)s"
+msgstr ""
+
+#: app/services/email_delivery.py:283
+msgid "Your ebooks are ready"
+msgstr ""
+
+#: app/services/email_delivery.py:332
+msgid "Reset your password"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:2
+msgid "ebooks.lv Admin"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:10
+msgid "ebooks.lv Administration"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:14
+msgid "Central hub for ebooks.lv custom admin tools."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:15
+msgid "Set default settings"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:20
+msgid "Review Mozello orders, link Calibre books and provision user accounts."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:21 app/templates/ebookslv_admin.html:26
+#: app/templates/ebookslv_admin.html:31
+msgid "Open"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:24 app/templates/users_books_admin.html:68
+msgid "Books"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:25
+msgid "Placeholder for upcoming ebooks.lv book management enhancements."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:29
+#: app/templates/email_templates_admin.html:2
+#: app/templates/email_templates_admin.html:11
+msgid "Email Templates"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:30
+msgid "Manage purchase notification templates across languages."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:40
+msgid "Applying defaults..."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:41
+msgid "Defaults applied."
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:42
+#, python-format
+msgid "Failed to apply defaults: %(reason)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:2
+msgid "ebooks.lv Books"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:9
+msgid "ebooks.lv Books Sync"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:12
+msgid "Reload Calibre Books"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:13
+msgid "Load Mozello Products"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:14
+msgid "Export All to Store"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:24
+#: app/templates/users_books_admin.html:155
+msgid "Book ID"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:25
+msgid "Title"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:26
+msgid "mz_price"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:27
+msgid "Sync / State"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:28
+msgid "Mozello Title"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:29
+#: app/templates/ebookslv_books_admin.html:47
+#: app/templates/orders_admin.html:77 app/templates/users_books_admin.html:156
+msgid "Delete"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:42
+#, python-format
+msgid "[%(timestamp)s] %(message)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:43
+msgid "(orphan)"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:44
+msgid "ORPHAN"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:45
+msgid "Mozello relative URL"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:46
+msgid "Export"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:48
+msgid "Invalid JSON response"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:49
+msgid "Loading Calibre books..."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:50
+#, python-format
+msgid "Calibre books loaded: %(count)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:51
+msgid "Loading Mozello products..."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:52
+#, python-format
+msgid "Mozello products loaded: %(products)s (orphans: %(orphans)s)"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:53
+#, python-format
+msgid "Exporting book %(book_id)s..."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:54
+#, python-format
+msgid "Exported book %(book_id)s."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:55
+#, python-format
+msgid "Failed to export book %(book_id)s: %(reason)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:56
+#, python-format
+msgid "Export failure payload: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:57
+#, python-format
+msgid "Mozello language: %(language)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:58
+#, python-format
+msgid "Mozello error: %(message)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:59
+#, python-format
+msgid "Mozello update request: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:60
+#, python-format
+msgid "Mozello create request: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:61
+#, python-format
+msgid "Mozello update response: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:62
+#, python-format
+msgid "Mozello response: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:63
+#, python-format
+msgid "Mozello create response: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:64
+#, python-format
+msgid "Mozello fetch error: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:65
+#, python-format
+msgid "Export failure raw body: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:66
+#, python-format
+msgid "Export failure stack: %(details)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:67
+#, python-format
+msgid "Export ALL started. Missing handles: %(total)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:68
+#, python-format
+msgid "Export ALL summary — success: %(success)s failed: %(failed)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:69
+#, python-format
+msgid "Export ALL failed: %(reason)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:70
+#, python-format
+msgid "Delete Mozello product %(handle)s?"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:71
+#, python-format
+msgid "Deleting Mozello product %(handle)s..."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:72
+#, python-format
+msgid "Deleted product %(handle)s (status %(status)s)."
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:73
+#, python-format
+msgid "Failed to delete product %(handle)s: %(reason)s"
+msgstr ""
+
+#: app/templates/ebookslv_books_admin.html:74
+#: app/templates/mozello_admin.html:72
+#, python-format
+msgid "HTTP %(status)s %(status_text)s"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:35
+msgid "Subject"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:57
+#: app/templates/email_templates_admin.html:90
+#, python-format
+msgid "Last saved: %(timestamp)s"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:59
+#: app/templates/email_templates_admin.html:91
+msgid "Not saved yet"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:66
+msgid "Tokens:"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:77
+msgid "No templates configured yet."
+msgstr ""
+
+#: app/templates/email_templates_admin.html:80
+msgid "Save all templates"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:92
+msgid "Saving all templates..."
+msgstr ""
+
+#: app/templates/email_templates_admin.html:93
+#, python-format
+msgid "Saved %(success)s / %(total)s templates. Failed: %(failed)s"
+msgstr ""
+
+#: app/templates/email_templates_admin.html:94
+#, python-format
+msgid "Saved %(count)s templates."
+msgstr ""
+
+#: app/templates/login_override.html:2 app/templates/login_override.html:9
+msgid "ebooks.lv sign in"
+msgstr ""
+
+#: app/templates/login_override.html:26
+#, python-format
+msgid "Secure link for %(target)s."
+msgstr ""
+
+#: app/templates/login_override.html:26
+msgid "your account"
+msgstr ""
+
+#: app/templates/login_override.html:28
+msgid "Set a new password to continue."
+msgstr ""
+
+#: app/templates/login_override.html:30
+msgid "Use the fields below to update your password."
+msgstr ""
+
+#: app/templates/login_override.html:51 app/templates/orders_admin.html:27
+#: app/templates/orders_admin.html:45
+msgid "Email"
+msgstr ""
+
+#: app/templates/login_override.html:62
+msgid "Password"
+msgstr ""
+
+#: app/templates/login_override.html:69
+msgid "New password"
+msgstr ""
+
+#: app/templates/login_override.html:73
+msgid "Confirm new password"
+msgstr ""
+
+#: app/templates/login_override.html:81
+msgid "Remember me on this device"
+msgstr ""
+
+#: app/templates/login_override.html:87
+msgid "Save password"
+msgstr ""
+
+#: app/templates/login_override.html:88
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/login_override.html:90
+msgid "Sign in"
+msgstr ""
+
+#: app/templates/login_override.html:91
+msgid "Forgot password?"
+msgstr ""
+
+#: app/templates/mozello_admin.html:2
+msgid "Mozello Notifications"
+msgstr ""
+
+#: app/templates/mozello_admin.html:6
+msgid "Mozello Settings"
+msgstr ""
+
+#: app/templates/mozello_admin.html:11
+msgid "Mozello Store URL"
+msgstr ""
+
+#: app/templates/mozello_admin.html:15
+msgid "Mozello API Key"
+msgstr ""
+
+#: app/templates/mozello_admin.html:19
+msgid "Save Settings"
+msgstr ""
+
+#: app/templates/mozello_admin.html:21 app/templates/orders_admin.html:35
+#: app/templates/users_books_admin.html:42
+#: app/templates/users_books_admin.html:82
+msgid "Reload"
+msgstr ""
+
+#: app/templates/mozello_admin.html:28
+msgid "Mozello Notification Settings"
+msgstr ""
+
+#: app/templates/mozello_admin.html:32
+msgid ""
+"Manage subscribed webhook events. API key and store URL are configured "
+"above."
+msgstr ""
+
+#: app/templates/mozello_admin.html:36
+msgid "Candidate Webhook URL (computed)"
+msgstr ""
+
+#: app/templates/mozello_admin.html:40
+msgid "Events"
+msgstr ""
+
+#: app/templates/mozello_admin.html:50
+msgid "Update Remote"
+msgstr ""
+
+#: app/templates/mozello_admin.html:52
+msgid "Load Remote"
+msgstr ""
+
+#: app/templates/mozello_admin.html:53
+msgid "Post Test (unsigned)"
+msgstr ""
+
+#: app/templates/mozello_admin.html:54
+msgid "Reset URL"
+msgstr ""
+
+#: app/templates/mozello_admin.html:57
+msgid "Current Settings"
+msgstr ""
+
+#: app/templates/mozello_admin.html:58
+msgid "(loading)"
+msgstr ""
+
+#: app/templates/mozello_admin.html:66
+#, python-format
+msgid "Error loading settings: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:67
+#, python-format
+msgid "Failed to load Mozello settings: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:68
+#, python-format
+msgid "Save failed: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:69
+msgid "Mozello settings saved."
+msgstr ""
+
+#: app/templates/mozello_admin.html:70
+#, python-format
+msgid "Failed to save Mozello settings: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:71
+#, python-format
+msgid ""
+"Unsigned webhook POST status: %(status)s\n"
+"%(body)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:2 app/templates/orders_admin.html:10
+msgid "Mozello Orders"
+msgstr ""
+
+#: app/templates/orders_admin.html:16
+msgid "From"
+msgstr ""
+
+#: app/templates/orders_admin.html:20
+msgid "To"
+msgstr ""
+
+#: app/templates/orders_admin.html:23
+msgid "Import paid Mozello orders"
+msgstr ""
+
+#: app/templates/orders_admin.html:28
+msgid "customer@example.com"
+msgstr ""
+
+#: app/templates/orders_admin.html:31 app/templates/orders_admin.html:43
+msgid "Mozello handle"
+msgstr ""
+
+#: app/templates/orders_admin.html:32
+msgid "mozello-handle"
+msgstr ""
+
+#: app/templates/orders_admin.html:34
+msgid "Add Order"
+msgstr ""
+
+#: app/templates/orders_admin.html:44
+msgid "Calibre book"
+msgstr ""
+
+#: app/templates/orders_admin.html:46
+msgid "Calibre user"
+msgstr ""
+
+#: app/templates/orders_admin.html:47
+msgid "Mozello created"
+msgstr ""
+
+#: app/templates/orders_admin.html:48
+msgid "Imported"
+msgstr ""
+
+#: app/templates/orders_admin.html:49 app/templates/users_books_admin.html:108
+msgid "Actions"
+msgstr ""
+
+#: app/templates/orders_admin.html:69
+#, python-format
+msgid "Total: %(total)s | Linked books: %(books)s | Linked users: %(users)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:70
+msgid "No orders recorded."
+msgstr ""
+
+#: app/templates/orders_admin.html:71
+#, python-format
+msgid "Book #%(id)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:72
+msgid "Calibre book missing"
+msgstr ""
+
+#: app/templates/orders_admin.html:73
+msgid "Refresh"
+msgstr ""
+
+#: app/templates/orders_admin.html:74
+#, python-format
+msgid "User #%(id)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:75
+msgid "Not linked"
+msgstr ""
+
+#: app/templates/orders_admin.html:76
+msgid "Create User"
+msgstr ""
+
+#: app/templates/orders_admin.html:78
+msgid "Email and Mozello handle are required"
+msgstr ""
+
+#: app/templates/orders_admin.html:79
+msgid "Order saved"
+msgstr ""
+
+#: app/templates/orders_admin.html:80
+#, python-format
+msgid "Unable to save order: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:81
+#, python-format
+msgid "Failed to load orders: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:82
+msgid "Invalid date range: start must be on or before end"
+msgstr ""
+
+#: app/templates/orders_admin.html:83
+msgid "Invalid date: please select a valid calendar day."
+msgstr ""
+
+#: app/templates/orders_admin.html:84
+msgid "Invalid date range: start must be on or before end."
+msgstr ""
+
+#: app/templates/orders_admin.html:85
+#, python-format
+msgid "Mozello import failed: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:86
+#, python-format
+msgid "Import finished: %(summary)s."
+msgstr ""
+
+#: app/templates/orders_admin.html:87
+#, python-format
+msgid "%(count)s new"
+msgstr ""
+
+#: app/templates/orders_admin.html:88
+#, python-format
+msgid "%(count)s existing ignored"
+msgstr ""
+
+#: app/templates/orders_admin.html:89
+#, python-format
+msgid "%(count)s skipped"
+msgstr ""
+
+#: app/templates/orders_admin.html:90
+#, python-format
+msgid "%(count)s errors"
+msgstr ""
+
+#: app/templates/orders_admin.html:91
+#, python-format
+msgid "Calibre user created. Temporary password: %(password)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:92
+msgid "Linked to existing user."
+msgstr ""
+
+#: app/templates/orders_admin.html:93
+#, python-format
+msgid "Create user failed: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:94
+#, python-format
+msgid "Refresh failed: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:95
+msgid "Delete this order record? This does not affect Mozello."
+msgstr ""
+
+#: app/templates/orders_admin.html:96
+#, python-format
+msgid "Delete failed: %(message)s"
+msgstr ""
+
+#: app/templates/orders_admin.html:97
+msgid "Order deleted"
+msgstr ""
+
+#: app/templates/stats.html:3
+msgid "About"
+msgstr ""
+
+#: app/templates/stats.html:7
+msgid "Library Statistics"
+msgstr ""
+
+#: app/templates/stats.html:12
+msgid "Books in this Library"
+msgstr ""
+
+#: app/templates/stats.html:16
+msgid "Authors in this Library"
+msgstr ""
+
+#: app/templates/stats.html:20
+msgid "Categories in this Library"
+msgstr ""
+
+#: app/templates/stats.html:24
+msgid "Series in this Library"
+msgstr ""
+
+#: app/templates/stats.html:32
+msgid "System Statistics"
+msgstr ""
+
+#: app/templates/stats.html:36
+msgid "Program"
+msgstr ""
+
+#: app/templates/stats.html:37
+msgid "Installed Version"
+msgstr ""
+
+#: app/templates/users_books_admin.html:1
+msgid "users_books Admin"
+msgstr ""
+
+#: app/templates/users_books_admin.html:13
+msgid "users_books Allow-List Management"
+msgstr ""
+
+#: app/templates/users_books_admin.html:14
+msgid "(Admin)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:21
+msgid ""
+"Create and view allow-list mappings between Calibre users and books. 1) "
+"Select one or more users (left) and books (middle) 2) Click \"Add "
+"Selected Mappings\". The bottom table lists all existing mappings (email "
+"→ book title) with delete actions."
+msgstr ""
+
+#: app/templates/users_books_admin.html:28
+msgid "Users (Non-Admin)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:33
+msgid "Filter by email or name"
+msgstr ""
+
+#: app/templates/users_books_admin.html:49
+#: app/templates/users_books_admin.html:89
+msgid "Select All"
+msgstr ""
+
+#: app/templates/users_books_admin.html:56
+#: app/templates/users_books_admin.html:96
+msgid "Clear"
+msgstr ""
+
+#: app/templates/users_books_admin.html:60
+#, python-format
+msgid "Source: %(endpoint)s (excludes admin accounts)."
+msgstr ""
+
+#: app/templates/users_books_admin.html:73
+msgid "Filter by title or id"
+msgstr ""
+
+#: app/templates/users_books_admin.html:100
+#, python-format
+msgid "Source: %(endpoint)s (full library; consider pagination if large)."
+msgstr ""
+
+#: app/templates/users_books_admin.html:115
+msgid "Add Selected Mappings"
+msgstr ""
+
+#: app/templates/users_books_admin.html:122
+msgid "Refresh Mapping List"
+msgstr ""
+
+#: app/templates/users_books_admin.html:129
+msgid "Clear All Selections"
+msgstr ""
+
+#: app/templates/users_books_admin.html:133
+msgid "Selections"
+msgstr ""
+
+#: app/templates/users_books_admin.html:135
+msgid "user(s)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:136
+msgid "book(s)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:140
+msgid ""
+"Each (user, book) pair triggers an individual POST. For large batches "
+"consider a future bulk endpoint."
+msgstr ""
+
+#: app/templates/users_books_admin.html:147
+msgid "Existing Mappings"
+msgstr ""
+
+#: app/templates/users_books_admin.html:152
+msgid "User Email"
+msgstr ""
+
+#: app/templates/users_books_admin.html:153
+msgid "User ID"
+msgstr ""
+
+#: app/templates/users_books_admin.html:154
+msgid "Book Title"
+msgstr ""
+
+#: app/templates/users_books_admin.html:163
+#, python-format
+msgid "Source: %(endpoint)s"
+msgstr ""
+
+#: app/templates/users_books_admin.html:167
+msgid "total"
+msgstr ""
+
+#: app/templates/users_books_admin.html:177
+msgid "No users."
+msgstr ""
+
+#: app/templates/users_books_admin.html:178
+msgid "No books."
+msgstr ""
+
+#: app/templates/users_books_admin.html:179
+#, python-format
+msgid "User %(id)s"
+msgstr ""
+
+#: app/templates/users_books_admin.html:180
+msgid "(no email)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:181
+msgid "(Untitled)"
+msgstr ""
+
+#: app/templates/users_books_admin.html:182
+msgid "No mappings present."
+msgstr ""
+
+#: app/templates/users_books_admin.html:183
+msgid "Delete mapping"
+msgstr ""
+
+#: app/templates/users_books_admin.html:184
+#, python-format
+msgid ""
+"Delete mapping?\n"
+"    User: %(userId)s\n"
+"    Book: %(bookId)s"
+msgstr ""
+
+#: app/templates/users_books_admin.html:187
+msgid "Select at least one user and one book before adding."
+msgstr ""
+
+#: app/templates/users_books_admin.html:188
+msgid "Add operations complete."
+msgstr ""
+

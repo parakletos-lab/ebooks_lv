@@ -15,6 +15,19 @@ from app.db.repositories import email_templates_repo
 from app.services.email_templates_service import allowed_languages
 from app.utils.logging import get_logger
 
+try:  # pragma: no cover - Flask-Babel optional when tasks run outside Flask
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
+
 try:  # pragma: no cover - runtime dependency
     from cps import config as cw_config  # type: ignore
     from cps.tasks.mail import TaskEmail  # type: ignore
@@ -191,7 +204,7 @@ def _build_book_links(
             book_id = int(item.book_id)
         except (TypeError, ValueError):
             continue
-        display = item.title or f"Book {book_id}"
+        display = item.title or _("Book %(number)s", number=book_id)
         detail_path = f"/book/{book_id}"
         reader_url = _login_redirect(detail_path, auth_token)
         links.append({
@@ -213,7 +226,7 @@ def _login_redirect(next_path: str, auth_token: Optional[str]) -> str:
 
 def _render_books_tokens(links: List[Dict[str, str]]) -> Dict[str, str]:
     if not links:
-        placeholder = "Books will appear in your library shortly."
+        placeholder = _("Books will appear in your library shortly.")
         return {"html": f"<li>{html.escape(placeholder)}</li>", "text": placeholder}
     html_items: List[str] = []
     text_items: List[str] = []
@@ -221,7 +234,7 @@ def _render_books_tokens(links: List[Dict[str, str]]) -> Dict[str, str]:
         safe_title = html.escape(link["title"])
         href = link["reader_url"]
         html_items.append(f'<li><a href="{href}">{safe_title}</a></li>')
-        text_items.append(f"- {link['title']}: {href}")
+        text_items.append(_("- %(title)s: %(url)s", title=link["title"], url=href))
     return {"html": "\n".join(html_items), "text": "\n".join(text_items)}
 
 
@@ -267,14 +280,15 @@ def send_book_purchase_email(
     subject_context = context.copy()
     subject_context["books"] = book_tokens["text"]
 
-    subject_rendered = _render_template(template.subject or "Your ebooks are ready", subject_context).strip()
+    default_subject = _("Your ebooks are ready")
+    subject_rendered = _render_template(template.subject or default_subject, subject_context).strip()
     html_body = _render_template(template.html_body or "", context)
     text_variant_html = _render_template(template.html_body or "", subject_context)
     text_body = _html_to_text(text_variant_html)
 
     task = HtmlTaskEmail(
         html_body=html_body,
-        subject=subject_rendered or "Your ebooks are ready",
+        subject=subject_rendered or default_subject,
         settings=_mail_settings(),
         recipient=recipient_email,
         text_body=text_body or book_tokens["text"],
@@ -315,7 +329,8 @@ def send_password_reset_email(
         "new_password_url": reset_url,
     }
 
-    subject_rendered = _render_template(template.subject or "Reset your password", context).strip()
+    default_subject = _("Reset your password")
+    subject_rendered = _render_template(template.subject or default_subject, context).strip()
     html_body = _render_template(template.html_body or "", context)
     text_body = _html_to_text(html_body).strip()
     if reset_url not in text_body:
@@ -323,7 +338,7 @@ def send_password_reset_email(
 
     task = HtmlTaskEmail(
         html_body=html_body,
-        subject=subject_rendered or "Reset your password",
+        subject=subject_rendered or default_subject,
         settings=_mail_settings(),
         recipient=recipient_email,
         text_body=text_body,

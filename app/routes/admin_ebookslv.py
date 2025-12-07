@@ -33,6 +33,19 @@ except Exception:  # pragma: no cover
 from app.config import app_title
 from app.utils import ensure_admin, PermissionError
 from app.utils.logging import get_logger
+try:  # pragma: no cover - Flask-Babel optional in tests
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
+
 from app.services import (
     books_sync,
     mozello_service,
@@ -47,6 +60,33 @@ from urllib.parse import urlencode
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
 LOG = get_logger("ebookslv.admin")
+
+_ERROR_MESSAGES = {
+    "calibre_runtime_unavailable": _("Calibre runtime is unavailable. Try again later."),
+    "order_exists": _("This Mozello order already exists."),
+    "order_missing": _("Order could not be found."),
+    "calibre_unavailable": _("Calibre is currently unavailable."),
+    "user_exists": _("User already exists."),
+    "email_required": _("Email address is required."),
+    "mz_handle_required": _("Mozello handle is required."),
+    "invalid_date": _("Enter valid dates in YYYY-MM-DD format."),
+    "invalid_date_range": _("End date must be on or after the start date."),
+    "invalid_payload": _("Server returned an invalid payload."),
+    "mozello_error": _("Mozello API request failed."),
+    "book_not_found": _("Book not found in the Calibre library."),
+    "delete_failed": _("Delete request failed."),
+    "export_failed": _("Export failed."),
+    "mozello_import_failed": _("Mozello import failed."),
+    "api_key_missing": _("Mozello API key is missing."),
+    "invalid_json": _("Mozello API returned invalid JSON."),
+    "http_error": _("Mozello API request failed."),
+    "not_found": _("Product not found in Mozello store."),
+    "handle_required": _("Mozello handle is required."),
+    "unsupported_language": _("Selected language is not supported."),
+    "unsupported_template": _("Template key is not supported."),
+    "subject_multiline": _("Subject must be a single line."),
+    "subject_too_long": _("Subject is too long."),
+}
 
 # Optional CSRF exemption (reuse pattern from users_books) for pure JSON API routes.
 try:  # runtime guard
@@ -129,8 +169,21 @@ def email_templates_page():  # pragma: no cover - render wrapper
 
 
 # ------------------- Books API (JSON) --------------------
-def _json_error(msg: str, status: int = 400, details: Optional[Dict[str, Any]] = None):
-    payload: Dict[str, Any] = {"error": msg}
+def _error_message_for(code: str) -> Optional[str]:
+    return _ERROR_MESSAGES.get(code)
+
+
+def _json_error(
+    code: str,
+    status: int = 400,
+    *,
+    message: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+):
+    payload: Dict[str, Any] = {"error": code}
+    final_message = message or _error_message_for(code)
+    if final_message:
+        payload["message"] = final_message
     if details is not None:
         payload["details"] = details
     return jsonify(payload), status
@@ -199,7 +252,8 @@ def api_apply_defaults():
         result = _apply_default_user_configuration()
     except RuntimeError as exc:
         LOG.warning("Unable to apply default user configuration: %s", exc)
-        return _json_error(str(exc), 503)
+        code = str(exc) or "calibre_runtime_unavailable"
+        return _json_error(code, 503)
     LOG.info(
         "Applied ebooks.lv default Calibre settings roles_mask=%s visibility_mask=%s upload_enabled=%s title=%s",
         result.get("roles_mask"),
@@ -271,7 +325,12 @@ def api_orders_import_paid():
     except orders_service.OrderValidationError as exc:
         return _json_error(str(exc), 400)
     except orders_service.OrderImportError as exc:
-        return _json_error(str(exc), 502)
+        reason = str(exc)
+        return _json_error(
+            "mozello_import_failed",
+            502,
+            message=_("Mozello import failed: %(reason)s", reason=reason),
+        )
     return jsonify(result)
 
 
@@ -356,7 +415,14 @@ def api_books_load_products():
     calibre_rows = books_sync.list_calibre_books()
     ok, data = mozello_service.list_products_full()
     if not ok:
-        return _json_error(data.get("error", "mozello_error"), 502)
+        code = data.get("error") if isinstance(data, dict) else None
+        status_hint = None
+        if isinstance(data, dict):
+            status_hint = data.get("status")
+        message = None
+        if status_hint:
+            message = _("Mozello API request failed (HTTP %(status)s).", status=status_hint)
+        return _json_error(code or "mozello_error", 502, message=message, details=data if isinstance(data, dict) else None)
     products = data.get("products", [])
     for p in products:
         handle = (p.get("handle") or "").strip()
@@ -401,15 +467,16 @@ def api_books_export_one(book_id: int):
             handle,
             resp,
         )
-        msg = "export_failed"
+        msg_code = "export_failed"
         status_hint = None
         if isinstance(resp, dict):
-            msg = resp.get("error") or msg
+            msg_code = resp.get("error") or msg_code
             status_hint = resp.get("status") or resp.get("update_status") or resp.get("create_status")
-        if status_hint:
-            msg = f"{msg} (status {status_hint})"
         details_payload = resp if isinstance(resp, dict) else {"raw": resp}
-        return _json_error(msg, 502, details_payload)
+        message = None
+        if status_hint:
+            message = _("Export failed (status %(status)s).", status=status_hint)
+        return _json_error(msg_code, 502, message=message, details=details_payload)
     # Persist handle if new
     if not target.get("mz_handle"):
         books_sync.set_mz_handle(book_id, handle)
@@ -513,7 +580,12 @@ def api_books_delete(handle: str):
         return auth
     ok, resp = mozello_service.delete_product(handle)
     if not ok:
-        return _json_error(resp.get("error", "delete_failed"), 502)
+        code = resp.get("error", "delete_failed") if isinstance(resp, dict) else "delete_failed"
+        status_hint = resp.get("status") if isinstance(resp, dict) else None
+        message = None
+        if status_hint:
+            message = _("Mozello API request failed (HTTP %(status)s).", status=status_hint)
+        return _json_error(code, 502, message=message, details=resp if isinstance(resp, dict) else None)
     removed_handle = books_sync.clear_mz_handle(handle)
     books_sync.clear_mz_relative_url_for_handle(handle)
     return jsonify({"status": resp.get("status", "deleted"), "removed_local": removed_handle})

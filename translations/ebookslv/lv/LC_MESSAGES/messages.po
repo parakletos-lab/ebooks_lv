@@ -1,0 +1,1164 @@
+
+msgid ""
+msgstr ""
+"Project-Id-Version:  ebooks_lv-app\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-12-07 13:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: lv\n"
+"Language-Team: lv <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11 ? 0 : n % "
+"10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/routes/admin_ebookslv.py:65
+msgid "Calibre runtime is unavailable. Try again later."
+msgstr "Calibre process nav pieejams. Mēģiniet vēlāk."
+
+#: app/routes/admin_ebookslv.py:66
+msgid "This Mozello order already exists."
+msgstr "Šis Mozello pasūtījums jau pastāv."
+
+#: app/routes/admin_ebookslv.py:67
+msgid "Order could not be found."
+msgstr "Pasūtījumu neizdevās atrast."
+
+#: app/routes/admin_ebookslv.py:68
+msgid "Calibre is currently unavailable."
+msgstr "Calibre pašlaik nav pieejams."
+
+#: app/routes/admin_ebookslv.py:69
+msgid "User already exists."
+msgstr "Lietotājs jau pastāv."
+
+#: app/routes/admin_ebookslv.py:70
+#, fuzzy
+msgid "Email address is required."
+msgstr "Nepieciešams e-pasts un Mozello identifikators"
+
+#: app/routes/admin_ebookslv.py:71 app/routes/admin_ebookslv.py:84
+#, fuzzy
+msgid "Mozello handle is required."
+msgstr "Nepieciešams e-pasts un Mozello identifikators"
+
+#: app/routes/admin_ebookslv.py:72
+msgid "Enter valid dates in YYYY-MM-DD format."
+msgstr "Ievadiet derīgus datumus formātā GGGG-MM-DD."
+
+#: app/routes/admin_ebookslv.py:73
+msgid "End date must be on or after the start date."
+msgstr "Beigu datumam jābūt vienādam ar vai vēlākam par sākuma datumu."
+
+#: app/routes/admin_ebookslv.py:74
+msgid "Server returned an invalid payload."
+msgstr "Serveris atgrieza nederīgu atbildi."
+
+#: app/routes/admin_ebookslv.py:75 app/routes/admin_ebookslv.py:82
+#, fuzzy
+msgid "Mozello API request failed."
+msgstr "Mozello izveides datums"
+
+#: app/routes/admin_ebookslv.py:76
+msgid "Book not found in the Calibre library."
+msgstr "Grāmata Calibre bibliotēkā nav atrasta."
+
+#: app/routes/admin_ebookslv.py:77
+msgid "Delete request failed."
+msgstr "Dzēšanas pieprasījums neizdevās."
+
+#: app/routes/admin_ebookslv.py:78
+msgid "Export failed."
+msgstr "Eksports neizdevās."
+
+#: app/routes/admin_ebookslv.py:79
+#, fuzzy
+msgid "Mozello import failed."
+msgstr "Mozello imports neizdevās: %(message)s"
+
+#: app/routes/admin_ebookslv.py:80
+msgid "Mozello API key is missing."
+msgstr "Trūkst Mozello API atslēgas."
+
+#: app/routes/admin_ebookslv.py:81
+msgid "Mozello API returned invalid JSON."
+msgstr "Mozello API atgrieza nederīgu JSON."
+
+#: app/routes/admin_ebookslv.py:83
+msgid "Product not found in Mozello store."
+msgstr "Produkts Mozello veikalā nav atrasts."
+
+#: app/routes/admin_ebookslv.py:85
+msgid "Selected language is not supported."
+msgstr "Izvēlētā valoda netiek atbalstīta."
+
+#: app/routes/admin_ebookslv.py:86
+msgid "Template key is not supported."
+msgstr "Veidnes atslēga netiek atbalstīta."
+
+#: app/routes/admin_ebookslv.py:87
+msgid "Subject must be a single line."
+msgstr "Tematam jābūt vienā rindā."
+
+#: app/routes/admin_ebookslv.py:88
+msgid "Subject is too long."
+msgstr "Temats ir pārāk garš."
+
+#: app/routes/admin_ebookslv.py:332
+#, python-format
+msgid "Mozello import failed: %(reason)s"
+msgstr "Mozello imports neizdevās: %(reason)s"
+
+#: app/routes/admin_ebookslv.py:424 app/routes/admin_ebookslv.py:587
+#, python-format
+msgid "Mozello API request failed (HTTP %(status)s)."
+msgstr "Mozello API pieprasījums neizdevās (HTTP %(status)s)."
+
+#: app/routes/admin_ebookslv.py:478
+#, python-format
+msgid "Export failed (status %(status)s)."
+msgstr "Eksports neizdevās (statuss %(status)s)."
+
+#: app/routes/admin_mozello.py:58
+msgid "Administrator access required."
+msgstr "Nepieciešamas administratora tiesības."
+
+#: app/routes/admin_mozello.py:59
+msgid "Unable to update Mozello settings."
+msgstr "Neizdevās atjaunināt Mozello iestatījumus."
+
+#: app/routes/admin_mozello.py:60
+msgid "Events payload must be a list."
+msgstr "Notikumu saturam jābūt sarakstam."
+
+#: app/routes/login_override.py:82
+msgid "Secure link is missing the account email."
+msgstr "Drošajā saitē pietrūkst konta e-pasta."
+
+#: app/routes/login_override.py:83
+msgid "This secure link is no longer active."
+msgstr "Šī drošā saite vairs nav aktīva."
+
+#: app/routes/login_override.py:84
+msgid "A secure link is required to finish signing in."
+msgstr "Lai pabeigtu pieteikšanos, nepieciešama drošā saite."
+
+#: app/routes/login_override.py:85
+msgid "This secure link is invalid. Request a new email."
+msgstr "Drošā saite ir nederīga. Pieprasiet jaunu e-pastu."
+
+#: app/routes/login_override.py:86
+msgid "Secure link payload is invalid. Request a new email."
+msgstr "Drošās saites saturs ir nederīgs. Pieprasiet jaunu e-pastu."
+
+#: app/routes/login_override.py:87
+msgid "Secure link timestamp is invalid."
+msgstr "Drošās saites laika zīmogs ir nederīgs."
+
+#: app/routes/login_override.py:88
+msgid "This secure link expired. Request a new one."
+msgstr "Drošā saite ir beigusies. Pieprasiet jaunu."
+
+#: app/routes/login_override.py:89
+msgid "Secure link email does not match the requested account."
+msgstr "Drošās saites e-pasts neatbilst pieprasītajam kontam."
+
+#: app/routes/login_override.py:95 app/routes/login_override.py:96
+msgid "Secure link cannot be used. Request a new email."
+msgstr "Drošo saiti nevar izmantot. Pieprasiet jaunu e-pastu."
+
+#: app/routes/login_override.py:275
+msgid "Reset email failed. Try again."
+msgstr "Neizdevās nosūtīt atiestatīšanas e-pastu. Mēģiniet vēlreiz."
+
+#: app/routes/login_override.py:288
+msgid "Email service is unavailable. Try again."
+msgstr "E-pasta pakalpojums nav pieejams. Mēģiniet vēlreiz."
+
+#: app/routes/login_override.py:303 app/routes/login_override.py:336
+#: app/routes/login_override.py:384
+msgid "Enter your email address."
+msgstr "Ievadiet savu e-pasta adresi."
+
+#: app/routes/login_override.py:305
+#, fuzzy
+msgid "Enter your password."
+msgstr "Jauna parole"
+
+#: app/routes/login_override.py:307
+#, fuzzy
+msgid "Set your new password first."
+msgstr "Lai turpinātu, iestatiet jaunu paroli."
+
+#: app/routes/login_override.py:310
+#, fuzzy
+msgid "Wrong email or password."
+msgstr "Jauna parole"
+
+#: app/routes/login_override.py:312
+msgid "Signed in successfully."
+msgstr "Veiksmīgi pieteicāties."
+
+#: app/routes/login_override.py:338
+#, fuzzy
+msgid "Type and confirm your new password."
+msgstr "Apstipriniet jauno paroli"
+
+#: app/routes/login_override.py:340
+msgid "Passwords do not match."
+msgstr "Paroles nesakrīt."
+
+#: app/routes/login_override.py:345
+msgid "Reset link is no longer valid."
+msgstr "Atiestatīšanas saite vairs nav derīga."
+
+#: app/routes/login_override.py:349
+msgid "Couldn't update this account. Request a new link."
+msgstr "Neizdevās atjaunināt šo kontu. Pieprasiet jaunu saiti."
+
+#: app/routes/login_override.py:352
+msgid "Password update failed. Try again."
+msgstr "Paroles atjaunināšana neizdevās. Mēģiniet vēlreiz."
+
+#: app/routes/login_override.py:355
+msgid "Password updated. Please sign in again."
+msgstr "Parole atjaunināta. Lūdzu, piesakieties atkārtoti."
+
+#: app/routes/login_override.py:357
+msgid "Password updated. You're signed in."
+msgstr "Parole atjaunināta. Jūs esat pieteicies."
+
+#: app/routes/login_override.py:390
+msgid "Reset instructions sent to your email."
+msgstr "Norādījumi nosūtīti uz jūsu e-pastu."
+
+#: app/routes/overrides/catalog_access.py:129
+msgid "Buy Online"
+msgstr "Pirkt tiešsaistē"
+
+#: app/routes/overrides/catalog_access.py:133
+#, fuzzy
+msgid "My Books"
+msgstr "Grāmatas"
+
+#: app/routes/overrides/catalog_access.py:134
+#, fuzzy
+msgid "All Books"
+msgstr "Grāmatas"
+
+#: app/routes/overrides/nav_injection.py:47 app/templates/layout.html:14
+#, fuzzy
+msgid "ebooks.lv"
+msgstr "ebooks.lv administrācija"
+
+#: app/routes/overrides/nav_injection.py:48
+#: app/templates/ebookslv_admin.html:19 app/templates/layout.html:15
+msgid "Orders"
+msgstr "Pasūtījumi"
+
+#: app/routes/overrides/nav_injection.py:49 app/templates/layout.html:16
+#, fuzzy
+msgid "Mozello"
+msgstr "mozello-identifikators"
+
+#: app/routes/overrides/stats_notice.py:75 app/templates/stats.html:27
+msgid ""
+"This application includes Calibre-web as an unmodified submodule, "
+"licensed under GPLv3."
+msgstr "Šī lietotne ietver Calibre-web nemainītā apakšmodulī ar GPLv3 licenci."
+
+#: app/services/email_delivery.py:207
+#, python-format
+msgid "Book %(number)s"
+msgstr "Grāmata Nr. %(number)s"
+
+#: app/services/email_delivery.py:229
+msgid "Books will appear in your library shortly."
+msgstr "Grāmatas drīzumā parādīsies jūsu bibliotēkā."
+
+#: app/services/email_delivery.py:237
+#, python-format
+msgid "- %(title)s: %(url)s"
+msgstr "- %(title)s: %(url)s"
+
+#: app/services/email_delivery.py:283
+msgid "Your ebooks are ready"
+msgstr "Jūsu e-grāmatas ir gatavas"
+
+#: app/services/email_delivery.py:332
+#, fuzzy
+msgid "Reset your password"
+msgstr "Saglabāt paroli"
+
+#: app/templates/ebookslv_admin.html:2
+msgid "ebooks.lv Admin"
+msgstr "ebooks.lv administrācija"
+
+#: app/templates/ebookslv_admin.html:10
+msgid "ebooks.lv Administration"
+msgstr "ebooks.lv administrācija"
+
+#: app/templates/ebookslv_admin.html:14
+msgid "Central hub for ebooks.lv custom admin tools."
+msgstr "Centrālā platforma ebooks.lv pielāgotajiem administratora rīkiem."
+
+#: app/templates/ebookslv_admin.html:15
+msgid "Set default settings"
+msgstr "Pielietot noklusējuma iestatījumus"
+
+#: app/templates/ebookslv_admin.html:20
+msgid "Review Mozello orders, link Calibre books and provision user accounts."
+msgstr ""
+"Pārskatiet Mozello pasūtījumus, sasaitējiet Calibre grāmatas un "
+"izveidojiet lietotāju kontus."
+
+#: app/templates/ebookslv_admin.html:21 app/templates/ebookslv_admin.html:26
+#: app/templates/ebookslv_admin.html:31
+msgid "Open"
+msgstr "Atvērt"
+
+#: app/templates/ebookslv_admin.html:24 app/templates/users_books_admin.html:68
+msgid "Books"
+msgstr "Grāmatas"
+
+#: app/templates/ebookslv_admin.html:25
+msgid "Placeholder for upcoming ebooks.lv book management enhancements."
+msgstr "Rezervēts gaidāmajiem ebooks.lv grāmatu pārvaldības uzlabojumiem."
+
+#: app/templates/ebookslv_admin.html:29
+#: app/templates/email_templates_admin.html:2
+#: app/templates/email_templates_admin.html:11
+msgid "Email Templates"
+msgstr "E-pasta veidnes"
+
+#: app/templates/ebookslv_admin.html:30
+msgid "Manage purchase notification templates across languages."
+msgstr "Pārvaldiet pirkumu paziņojumu veidnes dažādām valodām."
+
+#: app/templates/ebookslv_admin.html:40
+msgid "Applying defaults..."
+msgstr "Pielieto noklusējumus..."
+
+#: app/templates/ebookslv_admin.html:41
+msgid "Defaults applied."
+msgstr "Noklusējumi ir pielietoti."
+
+#: app/templates/ebookslv_admin.html:42
+#, python-format
+msgid "Failed to apply defaults: %(reason)s"
+msgstr "Neizdevās pielietot noklusējumus: %(reason)s"
+
+#: app/templates/ebookslv_books_admin.html:2
+#, fuzzy
+msgid "ebooks.lv Books"
+msgstr "ebooks.lv pieteikšanās"
+
+#: app/templates/ebookslv_books_admin.html:9
+#, fuzzy
+msgid "ebooks.lv Books Sync"
+msgstr "ebooks.lv pieteikšanās"
+
+#: app/templates/ebookslv_books_admin.html:12
+#, fuzzy
+msgid "Reload Calibre Books"
+msgstr "Calibre grāmata"
+
+#: app/templates/ebookslv_books_admin.html:13
+#, fuzzy
+msgid "Load Mozello Products"
+msgstr "Importēt apmaksātos Mozello pasūtījumus"
+
+#: app/templates/ebookslv_books_admin.html:14
+msgid "Export All to Store"
+msgstr "Eksportēt visu uz veikalu"
+
+#: app/templates/ebookslv_books_admin.html:24
+#: app/templates/users_books_admin.html:155
+#, fuzzy
+msgid "Book ID"
+msgstr "Grāmata Nr. %(id)s"
+
+#: app/templates/ebookslv_books_admin.html:25
+msgid "Title"
+msgstr "Nosaukums"
+
+#: app/templates/ebookslv_books_admin.html:26
+msgid "mz_price"
+msgstr "mz_price"
+
+#: app/templates/ebookslv_books_admin.html:27
+msgid "Sync / State"
+msgstr "Sinhr./statuss"
+
+#: app/templates/ebookslv_books_admin.html:28
+#, fuzzy
+msgid "Mozello Title"
+msgstr "Mozello identifikators"
+
+#: app/templates/ebookslv_books_admin.html:29
+#: app/templates/ebookslv_books_admin.html:47
+#: app/templates/orders_admin.html:77 app/templates/users_books_admin.html:156
+msgid "Delete"
+msgstr "Dzēst"
+
+#: app/templates/ebookslv_books_admin.html:42
+#, python-format
+msgid "[%(timestamp)s] %(message)s"
+msgstr "[%(timestamp)s] %(message)s"
+
+#: app/templates/ebookslv_books_admin.html:43
+msgid "(orphan)"
+msgstr "(bez saites)"
+
+#: app/templates/ebookslv_books_admin.html:44
+#, fuzzy
+msgid "ORPHAN"
+msgstr "Atvērt"
+
+#: app/templates/ebookslv_books_admin.html:45
+#, fuzzy
+msgid "Mozello relative URL"
+msgstr "Mozello izveides datums"
+
+#: app/templates/ebookslv_books_admin.html:46
+msgid "Export"
+msgstr "Eksportēt"
+
+#: app/templates/ebookslv_books_admin.html:48
+msgid "Invalid JSON response"
+msgstr "Nederīga JSON atbilde"
+
+#: app/templates/ebookslv_books_admin.html:49
+#, fuzzy
+msgid "Loading Calibre books..."
+msgstr "Calibre grāmata"
+
+#: app/templates/ebookslv_books_admin.html:50
+#, python-format
+msgid "Calibre books loaded: %(count)s"
+msgstr "Ielādētas Calibre grāmatas: %(count)s"
+
+#: app/templates/ebookslv_books_admin.html:51
+msgid "Loading Mozello products..."
+msgstr "Ielādē Mozello produktus..."
+
+#: app/templates/ebookslv_books_admin.html:52
+#, python-format
+msgid "Mozello products loaded: %(products)s (orphans: %(orphans)s)"
+msgstr "Mozello produkti ielādēti: %(products)s (bez saites: %(orphans)s)"
+
+#: app/templates/ebookslv_books_admin.html:53
+#, python-format
+msgid "Exporting book %(book_id)s..."
+msgstr "Eksportē grāmatu %(book_id)s..."
+
+#: app/templates/ebookslv_books_admin.html:54
+#, python-format
+msgid "Exported book %(book_id)s."
+msgstr "Grāmata %(book_id)s eksportēta."
+
+#: app/templates/ebookslv_books_admin.html:55
+#, fuzzy, python-format
+msgid "Failed to export book %(book_id)s: %(reason)s"
+msgstr "Neizdevās pielietot noklusējumus: %(reason)s"
+
+#: app/templates/ebookslv_books_admin.html:56
+#, python-format
+msgid "Export failure payload: %(details)s"
+msgstr "Eksporta kļūdas saturs: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:57
+#, python-format
+msgid "Mozello language: %(language)s"
+msgstr "Mozello valoda: %(language)s"
+
+#: app/templates/ebookslv_books_admin.html:58
+#, fuzzy, python-format
+msgid "Mozello error: %(message)s"
+msgstr "Mozello imports neizdevās: %(message)s"
+
+#: app/templates/ebookslv_books_admin.html:59
+#, python-format
+msgid "Mozello update request: %(details)s"
+msgstr "Mozello atjaunināšanas pieprasījums: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:60
+#, python-format
+msgid "Mozello create request: %(details)s"
+msgstr "Mozello izveides pieprasījums: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:61
+#, python-format
+msgid "Mozello update response: %(details)s"
+msgstr "Mozello atjaunināšanas atbilde: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:62
+#, python-format
+msgid "Mozello response: %(details)s"
+msgstr "Mozello atbilde: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:63
+#, python-format
+msgid "Mozello create response: %(details)s"
+msgstr "Mozello izveides atbilde: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:64
+#, python-format
+msgid "Mozello fetch error: %(details)s"
+msgstr "Mozello ielādes kļūda: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:65
+#, python-format
+msgid "Export failure raw body: %(details)s"
+msgstr "Eksporta kļūdas neapstrādāts saturs: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:66
+#, python-format
+msgid "Export failure stack: %(details)s"
+msgstr "Eksporta kļūdas steks: %(details)s"
+
+#: app/templates/ebookslv_books_admin.html:67
+#, python-format
+msgid "Export ALL started. Missing handles: %(total)s"
+msgstr "Eksports VISIEM sākts. Trūkstošie rokturi: %(total)s"
+
+#: app/templates/ebookslv_books_admin.html:68
+#, python-format
+msgid "Export ALL summary — success: %(success)s failed: %(failed)s"
+msgstr "Eksporta VISI rezultāti — veiksmīgi: %(success)s, kļūdas: %(failed)s"
+
+#: app/templates/ebookslv_books_admin.html:69
+#, python-format
+msgid "Export ALL failed: %(reason)s"
+msgstr "Eksports VISIEM neizdevās: %(reason)s"
+
+#: app/templates/ebookslv_books_admin.html:70
+#, python-format
+msgid "Delete Mozello product %(handle)s?"
+msgstr "Dzēst Mozello produktu %(handle)s?"
+
+#: app/templates/ebookslv_books_admin.html:71
+#, python-format
+msgid "Deleting Mozello product %(handle)s..."
+msgstr "Dzēš Mozello produktu %(handle)s..."
+
+#: app/templates/ebookslv_books_admin.html:72
+#, python-format
+msgid "Deleted product %(handle)s (status %(status)s)."
+msgstr "Produkts %(handle)s dzēsts (statuss %(status)s)."
+
+#: app/templates/ebookslv_books_admin.html:73
+#, python-format
+msgid "Failed to delete product %(handle)s: %(reason)s"
+msgstr "Neizdevās dzēst produktu %(handle)s: %(reason)s"
+
+#: app/templates/ebookslv_books_admin.html:74
+#: app/templates/mozello_admin.html:72
+#, python-format
+msgid "HTTP %(status)s %(status_text)s"
+msgstr "HTTP %(status)s %(status_text)s"
+
+#: app/templates/email_templates_admin.html:35
+msgid "Subject"
+msgstr "Temats"
+
+#: app/templates/email_templates_admin.html:57
+#: app/templates/email_templates_admin.html:90
+#, python-format
+msgid "Last saved: %(timestamp)s"
+msgstr "Pēdējo reizi saglabāts: %(timestamp)s"
+
+#: app/templates/email_templates_admin.html:59
+#: app/templates/email_templates_admin.html:91
+msgid "Not saved yet"
+msgstr "Vēl nav saglabāts"
+
+#: app/templates/email_templates_admin.html:66
+msgid "Tokens:"
+msgstr "Aizstājvārdi:"
+
+#: app/templates/email_templates_admin.html:77
+msgid "No templates configured yet."
+msgstr "Veidnes vēl nav konfigurētas."
+
+#: app/templates/email_templates_admin.html:80
+#, fuzzy
+msgid "Save all templates"
+msgstr "E-pasta veidnes"
+
+#: app/templates/email_templates_admin.html:92
+#, fuzzy
+msgid "Saving all templates..."
+msgstr "E-pasta veidnes"
+
+#: app/templates/email_templates_admin.html:93
+#, python-format
+msgid "Saved %(success)s / %(total)s templates. Failed: %(failed)s"
+msgstr "Saglabātas %(success)s / %(total)s veidnes. Neizdevās: %(failed)s"
+
+#: app/templates/email_templates_admin.html:94
+#, python-format
+msgid "Saved %(count)s templates."
+msgstr "Saglabātas %(count)s veidnes."
+
+#: app/templates/login_override.html:2 app/templates/login_override.html:9
+msgid "ebooks.lv sign in"
+msgstr "ebooks.lv pieteikšanās"
+
+#: app/templates/login_override.html:26
+#, python-format
+msgid "Secure link for %(target)s."
+msgstr "Droša saite kontam %(target)s."
+
+#: app/templates/login_override.html:26
+msgid "your account"
+msgstr "jūsu konts"
+
+#: app/templates/login_override.html:28
+msgid "Set a new password to continue."
+msgstr "Lai turpinātu, iestatiet jaunu paroli."
+
+#: app/templates/login_override.html:30
+msgid "Use the fields below to update your password."
+msgstr "Izmantojiet laukus zemāk, lai atjaunotu paroli."
+
+#: app/templates/login_override.html:51 app/templates/orders_admin.html:27
+#: app/templates/orders_admin.html:45
+msgid "Email"
+msgstr "E-pasts"
+
+#: app/templates/login_override.html:62
+msgid "Password"
+msgstr "Parole"
+
+#: app/templates/login_override.html:69
+msgid "New password"
+msgstr "Jauna parole"
+
+#: app/templates/login_override.html:73
+msgid "Confirm new password"
+msgstr "Apstipriniet jauno paroli"
+
+#: app/templates/login_override.html:81
+msgid "Remember me on this device"
+msgstr "Atcerēties mani šajā ierīcē"
+
+#: app/templates/login_override.html:87
+msgid "Save password"
+msgstr "Saglabāt paroli"
+
+#: app/templates/login_override.html:88
+msgid "Cancel"
+msgstr "Atcelt"
+
+#: app/templates/login_override.html:90
+msgid "Sign in"
+msgstr "Pieteikties"
+
+#: app/templates/login_override.html:91
+msgid "Forgot password?"
+msgstr "Aizmirsi paroli?"
+
+#: app/templates/mozello_admin.html:2
+#, fuzzy
+msgid "Mozello Notifications"
+msgstr "Mozello izveides datums"
+
+#: app/templates/mozello_admin.html:6
+#, fuzzy
+msgid "Mozello Settings"
+msgstr "Mozello pasūtījumi"
+
+#: app/templates/mozello_admin.html:11
+#, fuzzy
+msgid "Mozello Store URL"
+msgstr "Mozello pasūtījumi"
+
+#: app/templates/mozello_admin.html:15
+#, fuzzy
+msgid "Mozello API Key"
+msgstr "Mozello identifikators"
+
+#: app/templates/mozello_admin.html:19
+#, fuzzy
+msgid "Save Settings"
+msgstr "Pielietot noklusējuma iestatījumus"
+
+#: app/templates/mozello_admin.html:21 app/templates/orders_admin.html:35
+#: app/templates/users_books_admin.html:42
+#: app/templates/users_books_admin.html:82
+msgid "Reload"
+msgstr "Pārlādēt"
+
+#: app/templates/mozello_admin.html:28
+msgid "Mozello Notification Settings"
+msgstr "Mozello paziņojumu iestatījumi"
+
+#: app/templates/mozello_admin.html:32
+msgid ""
+"Manage subscribed webhook events. API key and store URL are configured "
+"above."
+msgstr ""
+"Pārvaldiet abonētos webhook notikumus. API atslēga un veikala URL ir "
+"iestatīti augstāk."
+
+#: app/templates/mozello_admin.html:36
+msgid "Candidate Webhook URL (computed)"
+msgstr "Kandidāta webhook URL (aprēķināts)"
+
+#: app/templates/mozello_admin.html:40
+msgid "Events"
+msgstr "Notikumi"
+
+#: app/templates/mozello_admin.html:50
+msgid "Update Remote"
+msgstr "Atjaunināt attālināti"
+
+#: app/templates/mozello_admin.html:52
+msgid "Load Remote"
+msgstr "Ielādēt attālināti"
+
+#: app/templates/mozello_admin.html:53
+msgid "Post Test (unsigned)"
+msgstr "Testa pieprasījums (bez paraksta)"
+
+#: app/templates/mozello_admin.html:54
+#, fuzzy
+msgid "Reset URL"
+msgstr "Izveidot lietotāju"
+
+#: app/templates/mozello_admin.html:57
+#, fuzzy
+msgid "Current Settings"
+msgstr "Pielietot noklusējuma iestatījumus"
+
+#: app/templates/mozello_admin.html:58
+msgid "(loading)"
+msgstr "(ielādē...)"
+
+#: app/templates/mozello_admin.html:66
+#, python-format
+msgid "Error loading settings: %(reason)s"
+msgstr "Kļūda, ielādējot iestatījumus: %(reason)s"
+
+#: app/templates/mozello_admin.html:67
+#, python-format
+msgid "Failed to load Mozello settings: %(reason)s"
+msgstr "Neizdevās ielādēt Mozello iestatījumus: %(reason)s"
+
+#: app/templates/mozello_admin.html:68
+#, python-format
+msgid "Save failed: %(reason)s"
+msgstr "Saglabāšana neizdevās: %(reason)s"
+
+#: app/templates/mozello_admin.html:69
+msgid "Mozello settings saved."
+msgstr "Mozello iestatījumi saglabāti."
+
+#: app/templates/mozello_admin.html:70
+#, python-format
+msgid "Failed to save Mozello settings: %(reason)s"
+msgstr "Neizdevās saglabāt Mozello iestatījumus: %(reason)s"
+
+#: app/templates/mozello_admin.html:71
+#, python-format
+msgid ""
+"Unsigned webhook POST status: %(status)s\n"
+"%(body)s"
+msgstr ""
+"Neparakstīts webhook POST statuss: %(status)s\n"
+"%(body)s"
+
+#: app/templates/orders_admin.html:2 app/templates/orders_admin.html:10
+msgid "Mozello Orders"
+msgstr "Mozello pasūtījumi"
+
+#: app/templates/orders_admin.html:16
+msgid "From"
+msgstr "No"
+
+#: app/templates/orders_admin.html:20
+msgid "To"
+msgstr "Līdz"
+
+#: app/templates/orders_admin.html:23
+msgid "Import paid Mozello orders"
+msgstr "Importēt apmaksātos Mozello pasūtījumus"
+
+#: app/templates/orders_admin.html:28
+msgid "customer@example.com"
+msgstr "klients@example.com"
+
+#: app/templates/orders_admin.html:31 app/templates/orders_admin.html:43
+msgid "Mozello handle"
+msgstr "Mozello identifikators"
+
+#: app/templates/orders_admin.html:32
+msgid "mozello-handle"
+msgstr "mozello-identifikators"
+
+#: app/templates/orders_admin.html:34
+msgid "Add Order"
+msgstr "Pievienot pasūtījumu"
+
+#: app/templates/orders_admin.html:44
+msgid "Calibre book"
+msgstr "Calibre grāmata"
+
+#: app/templates/orders_admin.html:46
+msgid "Calibre user"
+msgstr "Calibre lietotājs"
+
+#: app/templates/orders_admin.html:47
+msgid "Mozello created"
+msgstr "Mozello izveides datums"
+
+#: app/templates/orders_admin.html:48
+msgid "Imported"
+msgstr "Importēts"
+
+#: app/templates/orders_admin.html:49 app/templates/users_books_admin.html:108
+msgid "Actions"
+msgstr "Darbības"
+
+#: app/templates/orders_admin.html:69
+#, python-format
+msgid "Total: %(total)s | Linked books: %(books)s | Linked users: %(users)s"
+msgstr ""
+"Kopā: %(total)s | Saistītās grāmatas: %(books)s | Saistītie lietotāji: "
+"%(users)s"
+
+#: app/templates/orders_admin.html:70
+msgid "No orders recorded."
+msgstr "Nav reģistrētu pasūtījumu."
+
+#: app/templates/orders_admin.html:71
+#, python-format
+msgid "Book #%(id)s"
+msgstr "Grāmata Nr. %(id)s"
+
+#: app/templates/orders_admin.html:72
+msgid "Calibre book missing"
+msgstr "Calibre grāmata nav atrasta"
+
+#: app/templates/orders_admin.html:73
+msgid "Refresh"
+msgstr "Atsvaidzināt"
+
+#: app/templates/orders_admin.html:74
+#, python-format
+msgid "User #%(id)s"
+msgstr "Lietotājs Nr. %(id)s"
+
+#: app/templates/orders_admin.html:75
+msgid "Not linked"
+msgstr "Nav piesaistīts"
+
+#: app/templates/orders_admin.html:76
+msgid "Create User"
+msgstr "Izveidot lietotāju"
+
+#: app/templates/orders_admin.html:78
+msgid "Email and Mozello handle are required"
+msgstr "Nepieciešams e-pasts un Mozello identifikators"
+
+#: app/templates/orders_admin.html:79
+msgid "Order saved"
+msgstr "Pasūtījums saglabāts"
+
+#: app/templates/orders_admin.html:80
+#, python-format
+msgid "Unable to save order: %(message)s"
+msgstr "Nevar saglabāt pasūtījumu: %(message)s"
+
+#: app/templates/orders_admin.html:81
+#, python-format
+msgid "Failed to load orders: %(message)s"
+msgstr "Neizdevās ielādēt pasūtījumus: %(message)s"
+
+#: app/templates/orders_admin.html:82
+msgid "Invalid date range: start must be on or before end"
+msgstr "Nederīgs perioda diapazons: sākumam jābūt pirms vai vienādam ar beigām"
+
+#: app/templates/orders_admin.html:83
+msgid "Invalid date: please select a valid calendar day."
+msgstr "Nederīgs datums: lūdzu, izvēlieties derīgu kalendāra dienu."
+
+#: app/templates/orders_admin.html:84
+msgid "Invalid date range: start must be on or before end."
+msgstr "Nederīgs perioda diapazons: sākumam jābūt pirms vai vienādam ar beigām."
+
+#: app/templates/orders_admin.html:85
+#, python-format
+msgid "Mozello import failed: %(message)s"
+msgstr "Mozello imports neizdevās: %(message)s"
+
+#: app/templates/orders_admin.html:86
+#, python-format
+msgid "Import finished: %(summary)s."
+msgstr "Imports pabeigts: %(summary)s."
+
+#: app/templates/orders_admin.html:87
+#, python-format
+msgid "%(count)s new"
+msgstr "%(count)s jauni"
+
+#: app/templates/orders_admin.html:88
+#, python-format
+msgid "%(count)s existing ignored"
+msgstr "%(count)s esošie ignorēti"
+
+#: app/templates/orders_admin.html:89
+#, python-format
+msgid "%(count)s skipped"
+msgstr "%(count)s izlaisti"
+
+#: app/templates/orders_admin.html:90
+#, python-format
+msgid "%(count)s errors"
+msgstr "%(count)s kļūdas"
+
+#: app/templates/orders_admin.html:91
+#, python-format
+msgid "Calibre user created. Temporary password: %(password)s"
+msgstr "Calibre lietotājs izveidots. Pagaidu parole: %(password)s"
+
+#: app/templates/orders_admin.html:92
+msgid "Linked to existing user."
+msgstr "Sasaitēts ar esošu lietotāju."
+
+#: app/templates/orders_admin.html:93
+#, python-format
+msgid "Create user failed: %(message)s"
+msgstr "Neizdevās izveidot lietotāju: %(message)s"
+
+#: app/templates/orders_admin.html:94
+#, python-format
+msgid "Refresh failed: %(message)s"
+msgstr "Atjaunošana neizdevās: %(message)s"
+
+#: app/templates/orders_admin.html:95
+msgid "Delete this order record? This does not affect Mozello."
+msgstr "Vai dzēst šo pasūtījuma ierakstu? Tas neietekmē Mozello."
+
+#: app/templates/orders_admin.html:96
+#, python-format
+msgid "Delete failed: %(message)s"
+msgstr "Dzēšana neizdevās: %(message)s"
+
+#: app/templates/orders_admin.html:97
+msgid "Order deleted"
+msgstr "Pasūtījums dzēsts"
+
+#: app/templates/stats.html:3
+msgid "About"
+msgstr "Par"
+
+#: app/templates/stats.html:7
+msgid "Library Statistics"
+msgstr "Bibliotēkas statistika"
+
+#: app/templates/stats.html:12
+msgid "Books in this Library"
+msgstr "Grāmatas šajā bibliotēkā"
+
+#: app/templates/stats.html:16
+msgid "Authors in this Library"
+msgstr "Autori šajā bibliotēkā"
+
+#: app/templates/stats.html:20
+msgid "Categories in this Library"
+msgstr "Kategorijas šajā bibliotēkā"
+
+#: app/templates/stats.html:24
+msgid "Series in this Library"
+msgstr "Sērijas šajā bibliotēkā"
+
+#: app/templates/stats.html:32
+msgid "System Statistics"
+msgstr "Sistēmas statistika"
+
+#: app/templates/stats.html:36
+msgid "Program"
+msgstr "Programma"
+
+#: app/templates/stats.html:37
+msgid "Installed Version"
+msgstr "Instalētā versija"
+
+#: app/templates/users_books_admin.html:1
+#, fuzzy
+msgid "users_books Admin"
+msgstr "ebooks.lv administrācija"
+
+#: app/templates/users_books_admin.html:13
+msgid "users_books Allow-List Management"
+msgstr "users_books atļauto sarakstu pārvaldība"
+
+#: app/templates/users_books_admin.html:14
+msgid "(Admin)"
+msgstr "(Administrators)"
+
+#: app/templates/users_books_admin.html:21
+msgid ""
+"Create and view allow-list mappings between Calibre users and books. 1) "
+"Select one or more users (left) and books (middle) 2) Click \"Add "
+"Selected Mappings\". The bottom table lists all existing mappings (email "
+"→ book title) with delete actions."
+msgstr ""
+"Izveidojiet un pārskatiet atļauto sarakstu sasaistes starp Calibre "
+"lietotājiem un grāmatām. 1) Atlasiet vismaz vienu lietotāju (pa kreisi) "
+"un grāmatas (vidū) 2) Nospiediet \"Pievienot izvēlētās sasaistes\". "
+"Apakšējā tabula rāda visas esošās sasaistes (e-pasts → grāmatas "
+"nosaukums) ar dzēšanas darbībām."
+
+#: app/templates/users_books_admin.html:28
+msgid "Users (Non-Admin)"
+msgstr "Lietotāji (ne-administratori)"
+
+#: app/templates/users_books_admin.html:33
+msgid "Filter by email or name"
+msgstr "Filtrēt pēc e-pasta vai vārda"
+
+#: app/templates/users_books_admin.html:49
+#: app/templates/users_books_admin.html:89
+msgid "Select All"
+msgstr "Atzīmēt visus"
+
+#: app/templates/users_books_admin.html:56
+#: app/templates/users_books_admin.html:96
+msgid "Clear"
+msgstr "Notīrīt"
+
+#: app/templates/users_books_admin.html:60
+#, python-format
+msgid "Source: %(endpoint)s (excludes admin accounts)."
+msgstr "Avots: %(endpoint)s (izņemot administratorus)."
+
+#: app/templates/users_books_admin.html:73
+msgid "Filter by title or id"
+msgstr "Filtrēt pēc nosaukuma vai ID"
+
+#: app/templates/users_books_admin.html:100
+#, python-format
+msgid "Source: %(endpoint)s (full library; consider pagination if large)."
+msgstr ""
+"Avots: %(endpoint)s (visa bibliotēka; lielām kolekcijām izmantojiet "
+"lapošanu)."
+
+#: app/templates/users_books_admin.html:115
+msgid "Add Selected Mappings"
+msgstr "Pievienot izvēlētās sasaistes"
+
+#: app/templates/users_books_admin.html:122
+msgid "Refresh Mapping List"
+msgstr "Atsvaidzināt saskaņojumu sarakstu"
+
+#: app/templates/users_books_admin.html:129
+msgid "Clear All Selections"
+msgstr "Notīrīt visas atlases"
+
+#: app/templates/users_books_admin.html:133
+#, fuzzy
+msgid "Selections"
+msgstr "Darbības"
+
+#: app/templates/users_books_admin.html:135
+#, fuzzy
+msgid "user(s)"
+msgstr "Lietotājs Nr. %(id)s"
+
+#: app/templates/users_books_admin.html:136
+#, fuzzy
+msgid "book(s)"
+msgstr "Grāmatas"
+
+#: app/templates/users_books_admin.html:140
+msgid ""
+"Each (user, book) pair triggers an individual POST. For large batches "
+"consider a future bulk endpoint."
+msgstr ""
+"Katrs (lietotājs, grāmata) pāris sūta atsevišķu POST. Lieliem apjomiem "
+"apsveriet nākotnes masveida endpointu."
+
+#: app/templates/users_books_admin.html:147
+msgid "Existing Mappings"
+msgstr "Esošās sasaistes"
+
+#: app/templates/users_books_admin.html:152
+#, fuzzy
+msgid "User Email"
+msgstr "E-pasts"
+
+#: app/templates/users_books_admin.html:153
+#, fuzzy
+msgid "User ID"
+msgstr "Lietotājs Nr. %(id)s"
+
+#: app/templates/users_books_admin.html:154
+msgid "Book Title"
+msgstr "Grāmatas nosaukums"
+
+#: app/templates/users_books_admin.html:163
+#, python-format
+msgid "Source: %(endpoint)s"
+msgstr "Avots: %(endpoint)s"
+
+#: app/templates/users_books_admin.html:167
+msgid "total"
+msgstr "kopā"
+
+#: app/templates/users_books_admin.html:177
+msgid "No users."
+msgstr "Nav lietotāju."
+
+#: app/templates/users_books_admin.html:178
+#, fuzzy
+msgid "No books."
+msgstr "Grāmatas"
+
+#: app/templates/users_books_admin.html:179
+#, fuzzy, python-format
+msgid "User %(id)s"
+msgstr "Lietotājs Nr. %(id)s"
+
+#: app/templates/users_books_admin.html:180
+#, fuzzy
+msgid "(no email)"
+msgstr "E-pasts"
+
+#: app/templates/users_books_admin.html:181
+msgid "(Untitled)"
+msgstr "(Bez nosaukuma)"
+
+#: app/templates/users_books_admin.html:182
+msgid "No mappings present."
+msgstr "Saskaņojumu nav."
+
+#: app/templates/users_books_admin.html:183
+#, fuzzy
+msgid "Delete mapping"
+msgstr "Dzēst"
+
+#: app/templates/users_books_admin.html:184
+#, python-format
+msgid ""
+"Delete mapping?\n"
+"    User: %(userId)s\n"
+"    Book: %(bookId)s"
+msgstr ""
+"Dzēst sasaisti?\n"
+"    Lietotājs: %(userId)s\n"
+"    Grāmata: %(bookId)s"
+
+#: app/templates/users_books_admin.html:187
+msgid "Select at least one user and one book before adding."
+msgstr "Pirms pievienošanas atlasiet vismaz vienu lietotāju un vienu grāmatu."
+
+#: app/templates/users_books_admin.html:188
+msgid "Add operations complete."
+msgstr "Pievienošanas darbības pabeigtas."
+
