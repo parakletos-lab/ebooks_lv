@@ -45,9 +45,7 @@ def _seed_reset_template():
     )
 
 
-def test_send_purchase_email_renders_tokens_and_queues_task(monkeypatch, request_context):
-    _seed_template()
-
+def _install_email_dependencies(monkeypatch):
     class DummyConfig:
         def get_mail_server_configured(self):
             return True
@@ -92,6 +90,13 @@ def test_send_purchase_email_renders_tokens_and_queues_task(monkeypatch, request
     monkeypatch.setattr(email_delivery, "WorkerThread", FakeWorker)
     monkeypatch.setattr(email_delivery, "HtmlTaskEmail", FakeHtmlTaskEmail)
 
+    return FakeWorker
+
+
+def test_send_purchase_email_renders_tokens_and_queues_task(monkeypatch, request_context):
+    _seed_template()
+    worker = _install_email_dependencies(monkeypatch)
+
     result = email_delivery.send_book_purchase_email(
         recipient_email="reader@example.com",
         user_name="Reader",
@@ -106,12 +111,33 @@ def test_send_purchase_email_renders_tokens_and_queues_task(monkeypatch, request
 
     assert result["queued"] is True
     assert result["language"] == "lv"
-    assert len(FakeWorker.added) == 1
-    task = FakeWorker.added[0]["task"]
+    assert len(worker.added) == 1
+    task = worker.added[0]["task"]
     assert task.subject == "Hello Reader"
     assert "test-token" in task._html_body  # type: ignore[attr-defined]
     assert "https://ebooks.test/login?next=%2Fbook%2F101&auth=test-token" in task.text
+    assert "https://ebooks.test/login?next=%2Fcatalog%2Fmy-books&auth=test-token" in task._html_body  # type: ignore[attr-defined]
+
+
+def test_send_purchase_email_plain_my_books_link_without_auth_token(monkeypatch, request_context):
+    _seed_template()
+    worker = _install_email_dependencies(monkeypatch)
+
+    email_delivery.send_book_purchase_email(
+        recipient_email="reader@example.com",
+        user_name="Reader",
+        books=[
+            email_delivery.BookDeliveryItem(book_id=101, title="Alpha", language_code="lv"),
+        ],
+        shop_url="https://shop.example.com",
+        my_books_url=None,
+        auth_token=None,
+    )
+
+    assert len(worker.added) == 1
+    task = worker.added[0]["task"]
     assert "https://ebooks.test/catalog/my-books" in task._html_body  # type: ignore[attr-defined]
+    assert "login?next=%2Fcatalog%2Fmy-books" not in task._html_body  # type: ignore[attr-defined]
 
 
 def test_send_purchase_email_requires_mail_settings(monkeypatch, request_context):

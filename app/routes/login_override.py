@@ -92,6 +92,16 @@ def _build_token_context(token: Optional[str]) -> Tuple[Optional[TokenDisplay], 
     except auth_link_service.AuthLinkError as exc:
         LOG.warning("login override token rejected: %s", exc)
         return None, str(exc)
+    normalized_email = normalize_email(payload.get("email"))
+    if not normalized_email:
+        return None, "email_missing"
+    has_temp = bool(payload.get("temp_password"))
+    try:
+        if not password_reset_service.has_pending_token(email=normalized_email, initial=has_temp):
+            LOG.info("login token ignored email=%s reason=pending_missing", normalized_email)
+            return None, None
+    except password_reset_service.PasswordResetError:
+        return None, "token_inactive"
     return TokenDisplay(
         token=token,
         email=payload.get("email"),

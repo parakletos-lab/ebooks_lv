@@ -64,6 +64,11 @@ def stub_templates(monkeypatch):
     monkeypatch.setattr(login_override, "render_template", _render)
 
 
+@pytest.fixture(autouse=True)
+def stub_has_pending_token(monkeypatch):
+    monkeypatch.setattr(login_override.password_reset_service, "has_pending_token", lambda **_: True)
+
+
 def _stub_user(email: str) -> SimpleNamespace:
     return SimpleNamespace(
         id=7,
@@ -221,3 +226,29 @@ def test_auth_token_mismatch_logs_out(monkeypatch, client, stub_logout_user):
     with client.session_transaction() as sess:
         assert "email" not in sess
         assert "user_id" not in sess
+
+
+def test_stale_initial_token_is_ignored(monkeypatch):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": "Temp", "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    monkeypatch.setattr(login_override.password_reset_service, "has_pending_token", lambda **_: False)
+
+    token_ctx, token_error = login_override._build_token_context("token-xyz")
+
+    assert token_ctx is None
+    assert token_error is None
+
+
+def test_active_reset_token_returns_context(monkeypatch):
+    payload = {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"}
+    monkeypatch.setattr(login_override.auth_link_service, "decode_payload", lambda token: payload)
+    monkeypatch.setattr(login_override.password_reset_service, "has_pending_token", lambda **_: True)
+
+    token_ctx, token_error = login_override._build_token_context("token-xyz")
+
+    assert token_ctx is not None
+    assert token_ctx.email == "reader@example.com"
+    assert token_error is None

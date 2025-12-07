@@ -180,12 +180,20 @@ def purge_expired_records(*, older_than_days: int = 30) -> int:
     return reset_passwords_repo.purge_expired_tokens(older_than_days=older_than_days)
 
 
+def has_pending_token(*, email: str, initial: bool) -> bool:
+    normalized = _require_email(email)
+    token_type = _INITIAL if initial else _RESET
+    record = reset_passwords_repo.get_token(email=normalized, token_type=token_type)
+    return record is not None
+
+
 __all__ = [
     "issue_initial_token",
     "issue_reset_token",
     "resolve_pending_reset",
     "complete_password_change",
     "purge_expired_records",
+    "has_pending_token",
     "PendingReset",
     "PasswordResetError",
     "PendingResetNotFoundError",
