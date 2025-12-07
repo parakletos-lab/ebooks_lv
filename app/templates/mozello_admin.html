@@ -10,12 +10,10 @@
       <div class="form-group" style="max-width:600px;">
         <label for="mz-store-url">Mozello Store URL</label>
         <input type="url" class="form-control" id="mz-store-url" placeholder="https://example.mozello.com/store/" />
-        <p class="help-block">Displayed in admin tools and used when cross-linking to the live storefront.</p>
       </div>
       <div class="form-group" style="max-width:600px;">
         <label for="mz-api-key">Mozello API Key</label>
         <input type="text" class="form-control" id="mz-api-key" autocomplete="off" />
-        <p class="help-block">Stored in the integration database (<code>config/users_books.db</code>); required for API calls and webhook verification.</p>
       </div>
       <button type="button" id="mz-settings-save" class="btn btn-primary">
         <span class="glyphicon glyphicon-floppy-disk"></span> Save Settings
@@ -37,7 +35,6 @@
       <div class="form-group">
         <label for="mz-url">Candidate Webhook URL (computed)</label>
         <input type="text" class="form-control" id="mz-url" readonly />
-        <p class="help-block">Not stored locally; used directly when you press Save.</p>
       </div>
       <div class="form-group">
         <label>Events</label>
@@ -48,7 +45,6 @@
           </label>
           {% endfor %}
         </div>
-        <p class="help-block" style="margin-top:4px;">Select events to subscribe. Leave empty to unsubscribe all.</p>
       </div>
       <button type="button" id="mz-save" class="btn btn-primary">
         <span class="glyphicon glyphicon-floppy-disk"></span> Update Remote

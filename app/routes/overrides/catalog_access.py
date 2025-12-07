@@ -56,11 +56,39 @@ def _login_redirect(next_target: str) -> Response:
     return redirect(login_path)
 
 
+def _current_catalog_state() -> Optional[UserCatalogState]:
+    state = getattr(g, "catalog_state", None)
+    if isinstance(state, UserCatalogState):
+        return state
+    try:
+        admin = is_admin_user()
+    except Exception:
+        admin = False
+    state = build_catalog_state(
+        calibre_user_id=get_current_user_id(),
+        email=get_current_user_email(),
+        is_admin=admin,
+    )
+    g.catalog_state = state
+    return state
+
+
+def _require_authenticated_scope(endpoint_name: str) -> Optional[Response]:
+    state = _current_catalog_state()
+    if isinstance(state, UserCatalogState) and (state.is_admin or state.is_authenticated):
+        return None
+    try:
+        next_target = url_for(endpoint_name)
+    except Exception:
+        next_target = request.path or "/"
+    return _login_redirect(next_target)
+
+
 @scope_bp.route("/catalog/my-books", methods=["GET"])
 def catalog_scope_purchased():
-    state = getattr(g, "catalog_state", None)
-    if not isinstance(state, UserCatalogState) or (not state.is_admin and not state.is_authenticated):
-        return _login_redirect(url_for("catalog_scope.catalog_scope_purchased"))
+    redirect_resp = _require_authenticated_scope("catalog_scope.catalog_scope_purchased")
+    if redirect_resp is not None:
+        return redirect_resp
     session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.PURCHASED.value
     target = _safe_redirect_target(url_for("web.index"))
     return redirect(target)
@@ -68,6 +96,9 @@ def catalog_scope_purchased():
 
 @scope_bp.route("/catalog/all-books", methods=["GET"])
 def catalog_scope_all():
+    redirect_resp = _require_authenticated_scope("catalog_scope.catalog_scope_all")
+    if redirect_resp is not None:
+        return redirect_resp
     session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
     target = _safe_redirect_target(url_for("web.index"))
     return redirect(target)

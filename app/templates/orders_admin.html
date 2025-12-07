@@ -11,10 +11,6 @@
     <input type="hidden" id="orders-csrf" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body">
-    <p class="text-muted ub-panel-note">
-      Manage Mozello order records captured in the users_books database. Each entry stores the Mozello handle and customer email.
-      When a matching Calibre book or user exists, it is linked automatically; otherwise you can create the Calibre user manually.
-    </p>
     <form id="orders-import-form" class="form-inline ub-margin-b-8" autocomplete="off">
       <div class="form-group">
         <label class="sr-only" for="orders-start-date">From</label>
@@ -25,7 +21,6 @@
         <input type="date" class="form-control input-sm" id="orders-end-date" />
       </div>
       <button type="button" class="btn btn-success btn-sm" id="orders-import">Import paid Mozello orders</button>
-      <span class="text-muted ub-micro ub-form-group-gap" id="orders-import-hint">Defaults to last 10 days</span>
     </form>
     <form id="orders-create-form" class="form-inline ub-margin-b-16" autocomplete="off">
       <div class="form-group">
