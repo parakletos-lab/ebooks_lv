@@ -208,6 +208,24 @@ def test_auth_token_redirects_when_session_matches(monkeypatch, client):
     assert resp.headers["Location"].endswith("/book/10")
 
 
+def test_auth_token_redirects_when_session_matches_even_if_pending_missing(monkeypatch, client):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    monkeypatch.setattr(login_override.password_reset_service, "has_pending_token", lambda **_: False)
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
+    with client.session_transaction() as sess:
+        sess["user_id"] = 9
+        sess["email"] = "reader@example.com"
+
+    resp = client.get("/login?auth=token-abc&next=/book/10", follow_redirects=False)
+
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/book/10")
+
+
 def test_auth_token_mismatch_logs_out(monkeypatch, client, stub_logout_user):
     monkeypatch.setattr(
         login_override.auth_link_service,

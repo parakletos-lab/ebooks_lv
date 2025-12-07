@@ -110,6 +110,16 @@ def _build_token_context(token: Optional[str]) -> Tuple[Optional[TokenDisplay], 
     ), None
 
 
+def _extract_token_email(token: Optional[str]) -> Optional[str]:
+    if not token:
+        return None
+    try:
+        payload = auth_link_service.decode_payload(token)
+    except auth_link_service.AuthLinkError:
+        return None
+    return normalize_email(payload.get("email"))
+
+
 def _is_authenticated_session_email(email: Optional[str]) -> bool:
     normalized = normalize_email(email)
     if not normalized:
@@ -128,10 +138,17 @@ def _is_authenticated_session_email(email: Optional[str]) -> bool:
     return session.get("user_id") is not None
 
 
-def _maybe_short_circuit_login(token_ctx: Optional[TokenDisplay], next_url: str) -> Optional[Response]:
-    if not token_ctx or not token_ctx.email or not next_url:
+def _maybe_short_circuit_login(
+    token_ctx: Optional[TokenDisplay],
+    next_url: str,
+    raw_token: Optional[str],
+) -> Optional[Response]:
+    if not next_url:
         return None
-    token_email = normalize_email(token_ctx.email)
+    candidate_email = token_ctx.email if token_ctx and token_ctx.email else None
+    if not candidate_email:
+        candidate_email = _extract_token_email(raw_token)
+    token_email = normalize_email(candidate_email)
     if not token_email:
         return None
     linked_user = _fetch_user_by_email(token_email)
@@ -324,7 +341,7 @@ def login_page():  # pragma: no cover - integration tested via Flask client
     form_errors: List[str] = []
 
     if request.method == "GET":
-        auto_redirect = _maybe_short_circuit_login(token_ctx, next_url)
+        auto_redirect = _maybe_short_circuit_login(token_ctx, next_url, auth_token)
         if auto_redirect is not None:
             return auto_redirect
 
