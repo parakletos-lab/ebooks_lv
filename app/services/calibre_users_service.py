@@ -40,6 +40,10 @@ class PasswordResetError(RuntimeError):
     """Raised when password reset workflow fails unexpectedly."""
 
 
+class LanguageUpdateError(RuntimeError):
+    """Raised when updating the user's language preference fails."""
+
+
 class UserNotFoundError(RuntimeError):
     """Raised when Calibre cannot locate the requested user."""
 
@@ -204,6 +208,37 @@ def create_user_for_email(
         "default_language": getattr(user, "default_language", None),
     }
     return info, password_plain
+
+
+def update_language_preference(
+    user_id: int,
+    preferred_language: Optional[str],
+) -> Dict[str, Optional[str]]:
+    """Persist the requested language preference for an existing user."""
+    _ensure_runtime()
+    sess = _session()
+    if not sess:
+        raise CalibreUnavailableError("Calibre session unavailable")
+    user = sess.query(ub.User).filter(ub.User.id == user_id).one_or_none()
+    if not user:
+        raise UserNotFoundError("user_not_found")
+    normalized = _apply_language_preference(user, preferred_language)
+    if not normalized:
+        raise LanguageUpdateError("unsupported_language")
+    try:
+        sess.commit()
+    except Exception as exc:  # pragma: no cover - SQL error path
+        sess.rollback()
+        LOG.error("Failed updating language preference user_id=%s: %s", user_id, exc)
+        raise LanguageUpdateError("update_language_failed") from exc
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "locale": getattr(user, "locale", None),
+        "default_language": getattr(user, "default_language", None),
+        "preferred_language": normalized,
+    }
 
 
 def update_user_password(user_id: int, plaintext_password: str) -> Dict[str, Optional[str]]:
