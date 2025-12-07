@@ -32,6 +32,6 @@
 19. "/mozello/books/<book_id>" route will navigate to Mozello Web Shop product page to purchase or view.
 20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
 21. For "/calibre-web" pages overrides refer to "app/routes/overrides/*"
+22. Email template content lives in the `email_templates` table (users_books DB) managed only via `app.services.email_templates_service` and the `/admin/ebookslv/email-templates` UI; do not bypass the service or write raw SQL. Token lists per template and persistence details live in `.github/instructions/email_templates.md`.
 ---
 Add more rules if needed
-22. Email template content lives in the `email_templates` table (users_books DB) managed only via `app.services.email_templates_service` and the `/admin/ebookslv/email-templates` UI; do not bypass the service or write raw SQL. Token lists per template and persistence details live in `.github/instructions/email_templates.md`.
