@@ -83,6 +83,7 @@ COPY --from=base /usr/local/bin /usr/local/bin
 COPY calibre-web ./calibre-web
 COPY entrypoint ./entrypoint
 COPY app ./app
+COPY translations ./translations
 
 # Set PYTHONPATH so entrypoint/start.py can import upstream cps and app layer
 ENV PYTHONPATH=/app/calibre-web:/app

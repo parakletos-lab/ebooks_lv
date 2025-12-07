@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% set title = 'Mozello Orders' %}
+{% set title = _('Mozello Orders') %}
 {% block header %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
@@ -7,32 +7,32 @@
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">Mozello Orders</h3>
+    <h3 class="panel-title">{{ _('Mozello Orders') }}</h3>
     <input type="hidden" id="orders-csrf" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body">
     <form id="orders-import-form" class="form-inline ub-margin-b-8" autocomplete="off">
       <div class="form-group">
-        <label class="sr-only" for="orders-start-date">From</label>
+        <label class="sr-only" for="orders-start-date">{{ _('From') }}</label>
         <input type="date" class="form-control input-sm" id="orders-start-date" />
       </div>
       <div class="form-group ub-form-group-gap">
-        <label class="sr-only" for="orders-end-date">To</label>
+        <label class="sr-only" for="orders-end-date">{{ _('To') }}</label>
         <input type="date" class="form-control input-sm" id="orders-end-date" />
       </div>
-      <button type="button" class="btn btn-success btn-sm" id="orders-import">Import paid Mozello orders</button>
+      <button type="button" class="btn btn-success btn-sm" id="orders-import">{{ _('Import paid Mozello orders') }}</button>
     </form>
     <form id="orders-create-form" class="form-inline ub-margin-b-16" autocomplete="off">
       <div class="form-group">
-        <label class="sr-only" for="orders-email">Email</label>
-        <input type="email" class="form-control input-sm" id="orders-email" placeholder="customer@example.com" required />
+        <label class="sr-only" for="orders-email">{{ _('Email') }}</label>
+        <input type="email" class="form-control input-sm" id="orders-email" placeholder="{{ _('customer@example.com') }}" required />
       </div>
       <div class="form-group ub-form-group-gap">
-        <label class="sr-only" for="orders-handle">Mozello handle</label>
-        <input type="text" class="form-control input-sm" id="orders-handle" placeholder="mozello-handle" required />
+        <label class="sr-only" for="orders-handle">{{ _('Mozello handle') }}</label>
+        <input type="text" class="form-control input-sm" id="orders-handle" placeholder="{{ _('mozello-handle') }}" required />
       </div>
-      <button type="submit" class="btn btn-primary btn-sm">Add Order</button>
-      <button type="button" class="btn btn-default btn-sm" id="orders-refresh">Reload</button>
+      <button type="submit" class="btn btn-primary btn-sm">{{ _('Add Order') }}</button>
+      <button type="button" class="btn btn-default btn-sm" id="orders-refresh">{{ _('Reload') }}</button>
     </form>
   <div id="orders-alert" class="alert hidden"></div>
     <div class="text-muted ub-micro" id="orders-summary"></div>
@@ -40,13 +40,13 @@
       <table class="table table-condensed table-striped" id="orders-table">
         <thead>
           <tr class="ub-sticky-top">
-            <th class="ub-w-bookid">Mozello handle</th>
-            <th>Calibre book</th>
-            <th class="ub-w-email">Email</th>
-            <th>Calibre user</th>
-            <th class="ub-w-date">Mozello created</th>
-            <th class="ub-w-date">Imported</th>
-            <th class="ub-w-actions">Actions</th>
+            <th class="ub-w-bookid">{{ _('Mozello handle') }}</th>
+            <th>{{ _('Calibre book') }}</th>
+            <th class="ub-w-email">{{ _('Email') }}</th>
+            <th>{{ _('Calibre user') }}</th>
+            <th class="ub-w-date">{{ _('Mozello created') }}</th>
+            <th class="ub-w-date">{{ _('Imported') }}</th>
+            <th class="ub-w-actions">{{ _('Actions') }}</th>
           </tr>
         </thead>
         <tbody id="orders-table-body"></tbody>
@@ -65,6 +65,37 @@
     remove: (id) => `/admin/ebookslv/orders/api/${id}`,
     importPaid: "/admin/ebookslv/orders/api/import_paid"
   };
+  const translations = {{ {
+    "summaryLine": _('Total: %(total)s | Linked books: %(books)s | Linked users: %(users)s', total='%(total)s', books='%(books)s', users='%(users)s'),
+    "noOrders": _('No orders recorded.'),
+    "bookFallback": _('Book #%(id)s', id='%(id)s'),
+    "bookMissing": _('Calibre book missing'),
+    "refresh": _('Refresh'),
+    "userFallback": _('User #%(id)s', id='%(id)s'),
+    "notLinked": _('Not linked'),
+    "createUser": _('Create User'),
+    "delete": _('Delete'),
+    "emailHandleRequired": _('Email and Mozello handle are required'),
+    "orderSaved": _('Order saved'),
+    "orderSaveFailed": _('Unable to save order: %(message)s', message='%(message)s'),
+    "loadFailed": _('Failed to load orders: %(message)s', message='%(message)s'),
+    "importValidateRange": _('Invalid date range: start must be on or before end'),
+    "importInvalidDate": _('Invalid date: please select a valid calendar day.'),
+    "importDateRangeError": _('Invalid date range: start must be on or before end.'),
+    "importFailed": _('Mozello import failed: %(message)s', message='%(message)s'),
+    "importSummary": _('Import finished: %(summary)s.', summary='%(summary)s'),
+    "importSummaryNew": _('%(count)s new', count='%(count)s'),
+    "importSummaryExisting": _('%(count)s existing ignored', count='%(count)s'),
+    "importSummarySkipped": _('%(count)s skipped', count='%(count)s'),
+    "importSummaryErrors": _('%(count)s errors', count='%(count)s'),
+    "createUserCreated": _('Calibre user created. Temporary password: %(password)s', password='%(password)s'),
+    "createUserLinked": _('Linked to existing user.'),
+    "createUserFailed": _('Create user failed: %(message)s', message='%(message)s'),
+    "refreshFailed": _('Refresh failed: %(message)s', message='%(message)s'),
+    "deleteConfirm": _('Delete this order record? This does not affect Mozello.'),
+    "deleteFailed": _('Delete failed: %(message)s', message='%(message)s'),
+    "deleteSuccess": _('Order deleted')
+  } | tojson }};
   const form = document.getElementById("orders-create-form");
   const emailInput = document.getElementById("orders-email");
   const handleInput = document.getElementById("orders-handle");
@@ -99,6 +130,18 @@
     importEndInput.value = endValue;
   }
 
+  function formatMessage(template, replacements){
+    if(!template){
+      return "";
+    }
+    return template.replace(/%\(([^)]+)\)s/g, function(match, key){
+      if(replacements && Object.prototype.hasOwnProperty.call(replacements, key)){
+        return replacements[key];
+      }
+      return match;
+    });
+  }
+
   function showAlert(message, type="info"){
     if(!alertBox) return;
     alertBox.className = `alert alert-${type}`;
@@ -115,7 +158,11 @@
 
   function renderSummary(summary){
     if(!summaryBox) return;
-    summaryBox.textContent = `Total: ${summary.total || 0} | Linked books: ${summary.linked_books || 0} | Linked users: ${summary.linked_users || 0}`;
+    summaryBox.textContent = formatMessage(translations.summaryLine, {
+      total: summary.total || 0,
+      books: summary.linked_books || 0,
+      users: summary.linked_users || 0
+    });
   }
 
   function renderRows(rows){
@@ -125,7 +172,7 @@
       const td = document.createElement("td");
       td.colSpan = 7;
       td.className = "text-muted";
-      td.textContent = "No orders recorded.";
+      td.textContent = translations.noOrders;
       tr.appendChild(td);
       tableBody.appendChild(tr);
       return;
@@ -149,21 +196,21 @@
 
   function renderBookCell(row){
     if(row.calibre_book){
-      const title = row.calibre_book.title || `Book #${row.calibre_book.book_id}`;
+      const title = row.calibre_book.title || formatMessage(translations.bookFallback, { id: row.calibre_book.book_id });
       return `<span class="text-success">${escapeHtml(title)}</span>`;
     }
-    const message = row.book_error || "Calibre book missing";
-    const refreshBtn = `<button type="button" class="btn btn-xs btn-default orders-btn-refresh" data-order="${row.id}">Refresh</button>`;
+    const message = row.book_error || translations.bookMissing;
+    const refreshBtn = `<button type="button" class="btn btn-xs btn-default orders-btn-refresh" data-order="${row.id}">${escapeHtml(translations.refresh)}</button>`;
     return `<span class="text-danger">${escapeHtml(message)}</span> ${refreshBtn}`;
   }
 
   function renderUserCell(row){
     if(!row.user_missing && row.calibre_user){
-      const name = row.calibre_user.name || `User #${row.calibre_user.id}`;
+      const name = row.calibre_user.name || formatMessage(translations.userFallback, { id: row.calibre_user.id });
       return `<span class="text-success">${escapeHtml(name)}</span>`;
     }
-    const btn = `<button type="button" class="btn btn-xs btn-primary orders-btn-create-user" data-order="${row.id}">Create User</button>`;
-    return `<span class="text-muted">Not linked</span> ${btn}`;
+    const btn = `<button type="button" class="btn btn-xs btn-primary orders-btn-create-user" data-order="${row.id}">${escapeHtml(translations.createUser)}</button>`;
+    return `<span class="text-muted">${escapeHtml(translations.notLinked)}</span> ${btn}`;
   }
 
   function renderDateCell(value){
@@ -182,7 +229,7 @@
   }
 
   function renderActionsCell(row){
-    return `<button type="button" class="btn btn-xs btn-danger orders-btn-delete" data-order="${row.id}">Delete</button>`;
+    return `<button type="button" class="btn btn-xs btn-danger orders-btn-delete" data-order="${row.id}">${escapeHtml(translations.delete)}</button>`;
   }
 
   function escapeHtml(str){
@@ -215,7 +262,7 @@
       renderRows(data.orders || []);
       renderSummary(data.summary || {});
     }catch(err){
-      showAlert(`Failed to load orders: ${err.message || err}`, "danger");
+      showAlert(formatMessage(translations.loadFailed, { message: err.message || err }), "danger");
     }
   }
 
@@ -226,7 +273,7 @@
     const email = emailInput.value.trim();
     const handle = handleInput.value.trim();
     if(!email || !handle){
-      showAlert("Email and Mozello handle are required", "warning");
+      showAlert(translations.emailHandleRequired, "warning");
       return;
     }
     hideAlert();
@@ -235,12 +282,12 @@
         method: "POST",
         body: JSON.stringify({ email, mz_handle: handle })
       });
-      showAlert("Order saved", "success");
+      showAlert(translations.orderSaved, "success");
       emailInput.value = "";
       handleInput.value = "";
       await loadOrders();
     }catch(err){
-      showAlert(`Unable to save order: ${err.message || err}`, "danger");
+      showAlert(formatMessage(translations.orderSaveFailed, { message: err.message || err }), "danger");
     }
   });
 
@@ -255,7 +302,7 @@
       const startValue = importStartInput ? importStartInput.value : "";
       const endValue = importEndInput ? importEndInput.value : "";
       if(startValue && endValue && startValue > endValue){
-        showAlert("Invalid date range: start must be on or before end", "warning");
+        showAlert(translations.importValidateRange, "warning");
         return;
       }
       importBtn.disabled = true;
@@ -278,26 +325,27 @@
         const skipped = typeof summary.skipped === "number" ? summary.skipped : (existing + filtered);
         const errors = Array.isArray(summary.errors) ? summary.errors.length : 0;
         const parts = [];
-        parts.push(`${created} new`);
+        parts.push(formatMessage(translations.importSummaryNew, { count: created }));
         if(existing){
-          parts.push(`${existing} existing ignored`);
+          parts.push(formatMessage(translations.importSummaryExisting, { count: existing }));
         }
         if(skipped){
-          parts.push(`${skipped} skipped`);
+          parts.push(formatMessage(translations.importSummarySkipped, { count: skipped }));
         }
         if(errors){
-          parts.push(`${errors} errors`);
+          parts.push(formatMessage(translations.importSummaryErrors, { count: errors }));
         }
-        showAlert(`Import finished: ${parts.join(", ")}.`, "success");
+        const summaryLine = parts.join(", ");
+        showAlert(formatMessage(translations.importSummary, { summary: summaryLine }), "success");
         await loadOrders();
       }catch(err){
         const message = err && err.message ? String(err.message) : "";
         if(message === "invalid_date"){
-          showAlert("Invalid date: please select a valid calendar day.", "warning");
+          showAlert(translations.importInvalidDate, "warning");
         }else if(message === "invalid_date_range"){
-          showAlert("Invalid date range: start must be on or before end.", "warning");
+          showAlert(translations.importDateRangeError, "warning");
         }else{
-          showAlert(`Mozello import failed: ${err.message || err}`, "danger");
+          showAlert(formatMessage(translations.importFailed, { message: err.message || err }), "danger");
         }
       }finally{
         importBtn.disabled = false;
@@ -315,11 +363,13 @@
       createBtn.disabled = true;
       try{
         const data = await apiFetch(api.createUser(orderId), { method: "POST" });
-        const message = data.password ? `Calibre user created. Temporary password: ${data.password}` : "Linked to existing user.";
+        const message = data.password ?
+          formatMessage(translations.createUserCreated, { password: data.password }) :
+          translations.createUserLinked;
         showAlert(message, "success");
         await loadOrders();
       }catch(err){
-        showAlert(`Create user failed: ${err.message || err}`, "danger");
+        showAlert(formatMessage(translations.createUserFailed, { message: err.message || err }), "danger");
       }finally{
         createBtn.disabled = false;
       }
@@ -332,7 +382,7 @@
         await apiFetch(api.refresh(orderId), { method: "POST" });
         await loadOrders();
       }catch(err){
-        showAlert(`Refresh failed: ${err.message || err}`, "danger");
+        showAlert(formatMessage(translations.refreshFailed, { message: err.message || err }), "danger");
       }finally{
         refreshRowBtn.disabled = false;
       }
@@ -340,16 +390,16 @@
     if(deleteBtn){
       const orderId = Number(deleteBtn.getAttribute("data-order"));
       if(!orderId) return;
-      if(!window.confirm("Delete this order record? This does not affect Mozello.")){
+      if(!window.confirm(translations.deleteConfirm)){
         return;
       }
       deleteBtn.disabled = true;
       try{
         await apiFetch(api.remove(orderId), { method: "DELETE" });
-        showAlert("Order deleted", "success");
+        showAlert(translations.deleteSuccess, "success");
         await loadOrders();
       }catch(err){
-        showAlert(`Delete failed: ${err.message || err}`, "danger");
+        showAlert(formatMessage(translations.deleteFailed, { message: err.message || err }), "danger");
       }finally{
         deleteBtn.disabled = false;
       }

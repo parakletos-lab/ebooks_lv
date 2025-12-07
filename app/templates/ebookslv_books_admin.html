@@ -1,17 +1,17 @@
 {% extends "layout.html" %}
-{% set title = 'ebooks.lv Books' %}
+{% set title = _('ebooks.lv Books') %}
 {% block header %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
 {% endblock %}
 {% block body %}
 <div class="panel panel-default">
-  <div class="panel-heading"><h3 class="panel-title">ebooks.lv Books Sync</h3></div>
+  <div class="panel-heading"><h3 class="panel-title">{{ _('ebooks.lv Books Sync') }}</h3></div>
   <div class="panel-body">
     <div class="mz-toolbar" id="mz-toolbar">
-      <button id="btn-reload-calibre" class="btn btn-default btn-sm" type="button">Reload Calibre Books</button>
-      <button id="btn-load-products" class="btn btn-info btn-sm" type="button">Load Mozello Products</button>
-      <button id="btn-export-all" class="btn btn-success btn-sm" type="button">Export All to Store</button>
+      <button id="btn-reload-calibre" class="btn btn-default btn-sm" type="button">{{ _('Reload Calibre Books') }}</button>
+      <button id="btn-load-products" class="btn btn-info btn-sm" type="button">{{ _('Load Mozello Products') }}</button>
+      <button id="btn-export-all" class="btn btn-success btn-sm" type="button">{{ _('Export All to Store') }}</button>
   <div class="mz-progress mz-hidden" id="mz-progress">
         <div class="mz-spinner"></div>
         <span id="mz-progress-text">0/0</span>
@@ -21,12 +21,12 @@
       <table class="table table-condensed table-striped" id="mz-books-table">
         <thead>
           <tr>
-            <th>Book ID</th>
-            <th>Title</th>
-            <th>mz_price</th>
-            <th class="mz-col">Sync / State</th>
-            <th class="mz-col">Mozello Title</th>
-            <th class="mz-col">Delete</th>
+            <th>{{ _('Book ID') }}</th>
+            <th>{{ _('Title') }}</th>
+            <th>{{ _('mz_price') }}</th>
+            <th class="mz-col">{{ _('Sync / State') }}</th>
+            <th class="mz-col">{{ _('Mozello Title') }}</th>
+            <th class="mz-col">{{ _('Delete') }}</th>
           </tr>
         </thead>
         <tbody id="mz-books-tbody"></tbody>
@@ -38,6 +38,62 @@
 <script>
 (function(){
   'use strict';
+  const strings = {{ {
+    "logLine": _('[%(timestamp)s] %(message)s', timestamp='%(timestamp)s', message='%(message)s'),
+    "orphanPlaceholder": _('(orphan)'),
+    "orphanBadge": _('ORPHAN'),
+    "mozelloUrlTooltip": _('Mozello relative URL'),
+    "exportButton": _('Export'),
+    "deleteIconLabel": _('Delete'),
+    "invalidJson": _('Invalid JSON response'),
+    "loadingCalibre": _('Loading Calibre books...'),
+    "calibreLoaded": _('Calibre books loaded: %(count)s', count='%(count)s'),
+    "loadingProducts": _('Loading Mozello products...'),
+    "productsLoaded": _('Mozello products loaded: %(products)s (orphans: %(orphans)s)', products='%(products)s', orphans='%(orphans)s'),
+    "exportOneStart": _('Exporting book %(book_id)s...', book_id='%(book_id)s'),
+    "exportOneSuccess": _('Exported book %(book_id)s.', book_id='%(book_id)s'),
+    "exportOneError": _('Failed to export book %(book_id)s: %(reason)s', book_id='%(book_id)s', reason='%(reason)s'),
+    "exportFailurePayload": _('Export failure payload: %(details)s', details='%(details)s'),
+    "mozelloLanguageDetail": _('Mozello language: %(language)s', language='%(language)s'),
+    "mozelloErrorDetail": _('Mozello error: %(message)s', message='%(message)s'),
+    "mozelloUpdateRequest": _('Mozello update request: %(details)s', details='%(details)s'),
+    "mozelloCreateRequest": _('Mozello create request: %(details)s', details='%(details)s'),
+    "mozelloUpdateResponse": _('Mozello update response: %(details)s', details='%(details)s'),
+    "mozelloResponse": _('Mozello response: %(details)s', details='%(details)s'),
+    "mozelloCreateResponse": _('Mozello create response: %(details)s', details='%(details)s'),
+    "mozelloFetchError": _('Mozello fetch error: %(details)s', details='%(details)s'),
+    "exportFailureRaw": _('Export failure raw body: %(details)s', details='%(details)s'),
+    "exportFailureStack": _('Export failure stack: %(details)s', details='%(details)s'),
+    "exportAllStart": _('Export ALL started. Missing handles: %(total)s', total='%(total)s'),
+    "exportAllSummary": _('Export ALL summary — success: %(success)s failed: %(failed)s', success='%(success)s', failed='%(failed)s'),
+    "exportAllError": _('Export ALL failed: %(reason)s', reason='%(reason)s'),
+    "deleteConfirm": _('Delete Mozello product %(handle)s?', handle='%(handle)s'),
+    "deleteStart": _('Deleting Mozello product %(handle)s...', handle='%(handle)s'),
+    "deleteSuccess": _('Deleted product %(handle)s (status %(status)s).', handle='%(handle)s', status='%(status)s'),
+    "deleteError": _('Failed to delete product %(handle)s: %(reason)s', handle='%(handle)s', reason='%(reason)s'),
+    "httpError": _('HTTP %(status)s %(status_text)s', status='%(status)s', status_text='%(status_text)s')
+  } | tojson }};
+
+  function formatMessage(template, replacements){
+    if(typeof template !== 'string'){
+      return '';
+    }
+    if(!replacements){
+      return template;
+    }
+    return template.replace(/%\(([^)]+)\)s/g, function(match, key){
+      if(Object.prototype.hasOwnProperty.call(replacements, key)){
+        return replacements[key];
+      }
+      return match;
+    });
+  }
+
+  function t(key, replacements){
+    const template = Object.prototype.hasOwnProperty.call(strings, key) ? strings[key] : key;
+    return formatMessage(template, replacements);
+  }
+
   const tbody = document.getElementById('mz-books-tbody');
   const logBox = document.getElementById('mz-log');
   const btnReload = document.getElementById('btn-reload-calibre');
@@ -48,25 +104,48 @@
   const progText = document.getElementById('mz-progress-text');
   let rows = [];
 
-  function log(msg, level){
+  function log(messageKey, level, replacements){
+    let severity = level;
+    let params = replacements;
+    if(typeof severity === 'object' && params === undefined){
+      params = severity;
+      severity = undefined;
+    }
+    let content = messageKey;
+    if(Object.prototype.hasOwnProperty.call(strings, messageKey)){
+      content = t(messageKey, params);
+    } else if(typeof messageKey === 'string'){
+      content = formatMessage(messageKey, params);
+    }
     const ts = new Date().toLocaleTimeString();
     const line = document.createElement('div');
-    if(level==='error') line.style.color = '#ff8585';
-    line.textContent = `[${ts}] ${msg}`;
+    if(severity === 'error'){
+      line.style.color = '#ff8585';
+    }
+    line.textContent = formatMessage(strings.logLine, {
+      timestamp: ts,
+      message: content,
+    });
     logBox.appendChild(line);
     logBox.scrollTop = logBox.scrollHeight;
   }
 
-  function clearTable(){ tbody.innerHTML=''; }
+  function clearTable(){
+    tbody.innerHTML = '';
+  }
+
   function render(){
     clearTable();
     const frag = document.createDocumentFragment();
     rows.forEach(r => {
       const tr = document.createElement('tr');
-      if(r.orphan) tr.className = 'orphan-row';
+      if(r.orphan){
+        tr.className = 'orphan-row';
+      }
+      const fallbackTitle = r.orphan ? strings.orphanPlaceholder : '';
       tr.innerHTML = `
         <td>${r.book_id ?? '—'}</td>
-        <td>${escapeHtml(r.title ?? (r.orphan ? '(orphan)' : ''))}</td>
+        <td>${escapeHtml(r.title ?? fallbackTitle ?? '')}</td>
         <td>${r.mz_price != null ? r.mz_price : ''}</td>
         <td class="mz-col">${renderSyncCell(r)}</td>
         <td class="mz-col">${escapeHtml(r.mozello_title || '')}</td>
@@ -78,33 +157,41 @@
 
   function renderSyncCell(r){
     if(r.mz_handle){
-      const urlBadge = r.mz_relative_url ? `<span class="mz-cat-badge" title="Mozello relative URL">${escapeHtml(r.mz_relative_url)}</span>` : '';
+      const urlBadge = r.mz_relative_url ? `<span class="mz-cat-badge" title="${escapeHtml(strings.mozelloUrlTooltip)}">${escapeHtml(r.mz_relative_url)}</span>` : '';
       const handlePath = encodeURIComponent(r.mz_handle);
       const handleLabel = escapeHtml(r.mz_handle);
-      const link = `<a class="btn btn-default btn-xs mz-handle-btn" href="/mozello/books/${handlePath}" target="_blank" rel="noopener">${handleLabel}</a>`;
+      const link = `<a class="btn btn-default btn-xs mz-handle-btn" href="/mozello/books/${handlePath}" target="_blank" rel="noopener noreferrer">${handleLabel}</a>`;
       if(r.orphan){
-        const orphanLabel = `<span class="label label-danger">ORPHAN</span>`;
+        const orphanLabel = `<span class="label label-danger">${escapeHtml(strings.orphanBadge)}</span>`;
         const extras = [link, urlBadge].filter(Boolean).join(' ');
         return `${orphanLabel}<div class="mz-handle-actions">${extras}</div>`;
       }
       const extras = urlBadge ? `<div class="mz-handle-actions">${urlBadge}</div>` : '';
       return `${link}${extras}`;
     }
-    return `<button class="btn btn-primary btn-xs" data-export="${r.book_id}">Export</button>`;
+    const buttonLabel = escapeHtml(strings.exportButton);
+    return `<button class="btn btn-primary btn-xs" data-export="${r.book_id}">${buttonLabel}</button>`;
   }
+
   function renderDeleteCell(r){
     if(r.mz_handle || r.orphan){
-      return `<button class="btn btn-danger btn-xs" data-del="${r.mz_handle || r.mz_handle || ''}">X</button>`;
+      const label = escapeHtml(strings.deleteIconLabel);
+      return `<button class="btn btn-danger btn-xs" data-del="${r.mz_handle || ''}" title="${label}" aria-label="${label}">×</button>`;
     }
     return '';
   }
 
   function escapeHtml(str){
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
   }
 
   async function fetchJSON(url, opts){
-    const response = await fetch(url, Object.assign({credentials:'same-origin'}, opts||{}));
+    const response = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts || {}));
     const text = await response.text();
     let payload = null;
     if(text){
@@ -115,147 +202,172 @@
       }
     }
     if(!response.ok){
-      const err = new Error('HTTP '+response.status + (response.statusText ? ' '+response.statusText : ''));
+      const statusText = response.statusText || '';
+      const err = new Error(payload && payload.message ? payload.message : t('httpError', { status: response.status, status_text: statusText }));
+      err.code = payload && payload.error ? payload.error : null;
       err.httpStatus = response.status;
       err.httpPayload = payload;
       err.httpRaw = text;
       throw err;
     }
     if(payload === null){
-      throw new Error('Invalid JSON response');
+      throw new Error(strings.invalidJson);
     }
     return payload;
   }
 
   async function loadCalibre(){
-    log('Loading calibre books...');
+    log('loadingCalibre');
     const data = await fetchJSON('/admin/ebookslv/books/api/data');
     rows = data.rows || [];
     render();
-    log('Calibre books loaded: '+rows.length);
+    log('calibreLoaded', { count: rows.length });
   }
 
   async function loadProducts(){
-    log('Loading Mozello products...');
-    const data = await fetchJSON('/admin/ebookslv/books/api/load_products', {method:'POST'});
+    log('loadingProducts');
+    const data = await fetchJSON('/admin/ebookslv/books/api/load_products', { method: 'POST' });
     rows = data.rows || [];
     render();
-    log(`Products loaded: ${data.products} (orphans: ${data.orphans})`);
+    log('productsLoaded', { products: data.products || 0, orphans: data.orphans || 0 });
   }
 
   async function exportOne(bookId, btn){
     btn.disabled = true;
     try {
-      log('Export book '+bookId+' ...');
-      const data = await fetchJSON('/admin/ebookslv/books/api/export_one/'+bookId, {method:'POST'});
+      log('exportOneStart', { book_id: bookId });
+      const data = await fetchJSON('/admin/ebookslv/books/api/export_one/' + bookId, { method: 'POST' });
       const row = data.row;
-      const idx = rows.findIndex(r=>r.book_id===bookId);
-      if(idx>-1) rows[idx]=row;
+      const idx = rows.findIndex(r => r.book_id === bookId);
+      if(idx > -1){
+        rows[idx] = row;
+      }
       render();
-      log('Exported book '+bookId);
+      log('exportOneSuccess', { book_id: bookId });
     } catch(e){
-      log('ERROR export book '+bookId+': '+e.message, 'error');
+      log('exportOneError', 'error', { book_id: bookId, reason: e && e.message ? e.message : '' });
       if(e && typeof e === 'object'){
         const payload = e.httpPayload;
         if(payload){
-          try{
-            log('Export failure payload: '+JSON.stringify(payload), 'error');
-          } catch(jsonErr){
-            log('Export failure payload (stringified failed): '+String(payload), 'error');
-          }
+          const safeStringify = (value) => {
+            try {
+              return JSON.stringify(value);
+            } catch(jsonErr){
+              return String(value);
+            }
+          };
+          log('exportFailurePayload', 'error', { details: safeStringify(payload) });
           const details = payload.details || {};
           if(details.language){
-            log('Mozello language: '+details.language, 'error');
+            log('mozelloLanguageDetail', 'error', { language: details.language });
           }
           const mozelloMsg = details.error_message || details.error_description || details.error;
           if(mozelloMsg){
-            log('Mozello error: '+mozelloMsg, 'error');
+            log('mozelloErrorDetail', 'error', { message: mozelloMsg });
           }
-          const logJson = (label, obj) => {
-            if(!obj) return;
-            try {
-              log(label+JSON.stringify(obj), 'error');
-            } catch(err) {
-              log(label+String(obj), 'error');
+          const logJson = (key, obj) => {
+            if(!obj){
+              return;
             }
+            log(key, 'error', { details: safeStringify(obj) });
           };
-          logJson('Mozello update request: ', details.update_request);
-          logJson('Mozello create request: ', details.create_request);
-          logJson('Mozello update response: ', details.update_details);
+          logJson('mozelloUpdateRequest', details.update_request);
+          logJson('mozelloCreateRequest', details.create_request);
+          logJson('mozelloUpdateResponse', details.update_details);
           if(details.details && details.details !== details.update_details){
-            logJson('Mozello response: ', details.details);
+            logJson('mozelloResponse', details.details);
           }
           if(details.create_details){
-            logJson('Mozello create response: ', details.create_details);
+            logJson('mozelloCreateResponse', details.create_details);
           }
           if(details.fetch_error){
-            logJson('Mozello fetch error: ', details.fetch_error);
+            logJson('mozelloFetchError', details.fetch_error);
           }
         } else if(e.httpRaw){
-          log('Export failure raw body: '+e.httpRaw, 'error');
+          log('exportFailureRaw', 'error', { details: e.httpRaw });
         }
         if(e.stack){
-          log('Export failure stack: '+e.stack.split('\n')[0], 'error');
+          log('exportFailureStack', 'error', { details: e.stack.split('\n')[0] });
         }
       }
     }
   }
 
-  function disableAll(dis){
-    [btnReload, btnLoad, btnExportAll].forEach(b=> b.disabled=dis);
-    if(dis){ toolbar.classList.add('mz-disabled'); } else { toolbar.classList.remove('mz-disabled'); }
+  function disableAll(disabled){
+    [btnReload, btnLoad, btnExportAll].forEach(b => {
+      if(b){
+        b.disabled = disabled;
+      }
+    });
+    toolbar.classList.toggle('mz-disabled', disabled);
   }
 
   async function exportAll(){
     disableAll(true);
-    progWrap.style.display='flex';
+    progWrap.style.display = 'flex';
     try {
-      // optimistic client-side progress simulation (simple)
-      const calibreMissing = rows.filter(r=>!r.orphan && !r.mz_handle);
-      let done = 0;
+      const calibreMissing = rows.filter(r => !r.orphan && !r.mz_handle);
       const total = calibreMissing.length;
-      progText.textContent = `${done}/${total}`;
-      log('Export ALL start total='+total);
-      const data = await fetchJSON('/admin/ebookslv/books/api/export_all', {method:'POST'});
+      progText.textContent = `0/${total}`;
+      log('exportAllStart', { total });
+      const data = await fetchJSON('/admin/ebookslv/books/api/export_all', { method: 'POST' });
       rows = data.rows || rows;
       render();
-      log(`Export ALL summary success=${data.summary.success} failed=${data.summary.failed}`);
+      const summary = data.summary || {};
+      log('exportAllSummary', { success: summary.success || 0, failed: summary.failed || 0 });
     } catch(e){
-      log('ERROR export all: '+e.message, 'error');
+      log('exportAllError', 'error', { reason: e && e.message ? e.message : '' });
     } finally {
-      progWrap.style.display='none';
+      progWrap.style.display = 'none';
       disableAll(false);
     }
   }
 
   async function deleteHandle(handle){
-    if(!handle) return;
-    if(!confirm('Delete Mozello product '+handle+'?')) return;
-    log('Delete product '+handle+' ...');
+    if(!handle){
+      return;
+    }
+    if(!confirm(t('deleteConfirm', { handle }))){
+      return;
+    }
+    log('deleteStart', { handle });
     try {
-      const data = await fetchJSON('/admin/ebookslv/books/api/delete/'+handle, {method:'DELETE'});
-      // Clear handle in any matching row
-  rows.forEach(r=>{ if(r.mz_handle===handle){ r.mz_handle=null; r.mozello_title=null; r.mozello_price=null; r.mz_relative_url=null; }});
-      // Remove orphan row if any
-      rows = rows.filter(r=> !(r.orphan && r.mz_handle===handle));
+      const data = await fetchJSON('/admin/ebookslv/books/api/delete/' + handle, { method: 'DELETE' });
+      rows = rows.filter(r => !(r.orphan && r.mz_handle === handle));
+      rows.forEach(r => {
+        if(r.mz_handle === handle){
+          r.mz_handle = null;
+          r.mozello_title = null;
+          r.mozello_price = null;
+          r.mz_relative_url = null;
+        }
+      });
       render();
-      log('Deleted product '+handle+' status='+data.status);
+      log('deleteSuccess', { handle, status: data.status || 'ok' });
     } catch(e){
-      log('ERROR delete '+handle+': '+e.message, 'error');
+      log('deleteError', 'error', { handle, reason: e && e.message ? e.message : '' });
     }
   }
 
   tbody.addEventListener('click', e => {
-    const exp = e.target.getAttribute && e.target.getAttribute('data-export');
-    if(exp){ exportOne(Number(exp), e.target); return; }
-    const del = e.target.getAttribute && e.target.getAttribute('data-del');
-    if(del){ deleteHandle(del); return; }
+    const button = e.target.closest('[data-export], [data-del]');
+    if(!button){
+      return;
+    }
+    const exportId = button.getAttribute('data-export');
+    if(exportId){
+      exportOne(Number(exportId), button);
+      return;
+    }
+    const deleteHandleValue = button.getAttribute('data-del');
+    if(deleteHandleValue){
+      deleteHandle(deleteHandleValue);
+    }
   });
 
   btnReload.addEventListener('click', loadCalibre);
   btnLoad.addEventListener('click', loadProducts);
   btnExportAll.addEventListener('click', exportAll);
-  // initial load
   loadCalibre();
 })();
 </script>

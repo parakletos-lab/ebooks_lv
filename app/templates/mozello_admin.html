@@ -1,43 +1,43 @@
 {% extends "layout.html" %}
-{% set title = 'Mozello Notifications' %}
+{% set title = _('Mozello Notifications') %}
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">Mozello Settings</h3>
+    <h3 class="panel-title">{{ _('Mozello Settings') }}</h3>
   </div>
   <div class="panel-body">
     <form id="mz-settings-form" class="form">
       <div class="form-group" style="max-width:600px;">
-        <label for="mz-store-url">Mozello Store URL</label>
+        <label for="mz-store-url">{{ _('Mozello Store URL') }}</label>
         <input type="url" class="form-control" id="mz-store-url" placeholder="https://example.mozello.com/store/" />
       </div>
       <div class="form-group" style="max-width:600px;">
-        <label for="mz-api-key">Mozello API Key</label>
+        <label for="mz-api-key">{{ _('Mozello API Key') }}</label>
         <input type="text" class="form-control" id="mz-api-key" autocomplete="off" />
       </div>
       <button type="button" id="mz-settings-save" class="btn btn-primary">
-        <span class="glyphicon glyphicon-floppy-disk"></span> Save Settings
+        <span class="glyphicon glyphicon-floppy-disk"></span> {{ _('Save Settings') }}
       </button>
-      <button type="button" id="mz-settings-reload" class="btn btn-default">Reload</button>
+      <button type="button" id="mz-settings-reload" class="btn btn-default">{{ _('Reload') }}</button>
     </form>
   </div>
 </div>
 
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">Mozello Notification Settings</h3>
+    <h3 class="panel-title">{{ _('Mozello Notification Settings') }}</h3>
   </div>
   <div class="panel-body">
     <p class="text-muted" style="margin-top:-4px;">
-      Manage subscribed webhook events. API key and store URL are configured above.
+      {{ _('Manage subscribed webhook events. API key and store URL are configured above.') }}
     </p>
     <form id="mz-form" class="form">
       <div class="form-group">
-        <label for="mz-url">Candidate Webhook URL (computed)</label>
+        <label for="mz-url">{{ _('Candidate Webhook URL (computed)') }}</label>
         <input type="text" class="form-control" id="mz-url" readonly />
       </div>
       <div class="form-group">
-        <label>Events</label>
+        <label>{{ _('Events') }}</label>
         <div id="mz-events-box" style="border:1px solid #ddd; padding:6px; max-width:420px; background:#fafafa;">
           {% for ev in allowed %}
           <label style="display:block; font-weight:400;">
@@ -47,21 +47,60 @@
         </div>
       </div>
       <button type="button" id="mz-save" class="btn btn-primary">
-        <span class="glyphicon glyphicon-floppy-disk"></span> Update Remote
+        <span class="glyphicon glyphicon-floppy-disk"></span> {{ _('Update Remote') }}
       </button>
-      <button type="button" id="mz-load" class="btn btn-default">Load Remote</button>
-  <button type="button" id="mz-test" class="btn btn-default">Post Test (unsigned)</button>
-  <button type="button" id="mz-reset" class="btn btn-default">Reset URL</button>
+      <button type="button" id="mz-load" class="btn btn-default">{{ _('Load Remote') }}</button>
+  <button type="button" id="mz-test" class="btn btn-default">{{ _('Post Test (unsigned)') }}</button>
+  <button type="button" id="mz-reset" class="btn btn-default">{{ _('Reset URL') }}</button>
     </form>
     <hr />
-    <h4 style="margin-top:0;">Current Settings</h4>
-    <pre id="mz-current" style="background:#1e1e1e; color:#e6e6e6; padding:8px; max-width:600px; font-size:11px;">(loading)</pre>
+    <h4 style="margin-top:0;">{{ _('Current Settings') }}</h4>
+    <pre id="mz-current" style="background:#1e1e1e; color:#e6e6e6; padding:8px; max-width:600px; font-size:11px;">{{ _('(loading)') }}</pre>
   </div>
 </div>
 
 <script>
 (function() {
   'use strict';
+  const strings = {{ {
+    "errorLoading": _('Error loading settings: %(reason)s', reason='%(reason)s'),
+    "failedLoadSettings": _('Failed to load Mozello settings: %(reason)s', reason='%(reason)s'),
+    "saveFailed": _('Save failed: %(reason)s', reason='%(reason)s'),
+    "settingsSaved": _('Mozello settings saved.'),
+    "failedSaveSettings": _('Failed to save Mozello settings: %(reason)s', reason='%(reason)s'),
+    "unsignedPost": _('Unsigned webhook POST status: %(status)s\n%(body)s', status='%(status)s', body='%(body)s'),
+    "httpError": _('HTTP %(status)s %(status_text)s', status='%(status)s', status_text='%(status_text)s')
+  } | tojson }};
+
+  function formatMessage(template, replacements){
+    if(typeof template !== 'string'){
+      return '';
+    }
+    if(!replacements){
+      return template;
+    }
+    return template.replace(/%\(([^)]+)\)s/g, function(match, key){
+      if(Object.prototype.hasOwnProperty.call(replacements, key)){
+        return replacements[key];
+      }
+      return match;
+    });
+  }
+
+  function t(key, replacements){
+    const template = Object.prototype.hasOwnProperty.call(strings, key) ? strings[key] : key;
+    return formatMessage(template, replacements);
+  }
+
+  function describeError(err){
+    if(!err){
+      return '';
+    }
+    if(err instanceof Error && err.message){
+      return err.message;
+    }
+    return String(err);
+  }
   // Original candidate URL provided on initial render (no remote fetch yet)
   const candidateURL = "{{ mozello.notifications_url }}";
   const box = document.getElementById('mz-events-box');
@@ -86,7 +125,7 @@
   }
   async function fetchJSON(u, opts) {
     const r = await fetch(u, opts || {});
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    if (!r.ok) throw new Error(t('httpError', { status: r.status, status_text: r.statusText || '' }));
     return r.json();
   }
   async function loadRemote() {
@@ -97,7 +136,7 @@
       urlInput.value = data.remote_notifications_url || data.notifications_url || '';
       setSelected(data.notifications_wanted || []);
     } catch (e) {
-      pre.textContent = 'Error loading settings: '+ e;
+      pre.textContent = t('errorLoading', { reason: describeError(e) });
     }
   }
   async function loadMozelloSettings() {
@@ -106,7 +145,7 @@
       storeInput.value = data.mz_store_url || '';
       apiKeyInput.value = data.mz_api_key || '';
     } catch (e) {
-      alert('Failed to load Mozello settings: '+ e);
+      alert(t('failedLoadSettings', { reason: describeError(e) }));
     }
   }
   async function saveSettings() {
@@ -120,7 +159,7 @@
       });
       pre.textContent = JSON.stringify(data, null, 2);
     } catch (e) {
-      alert('Save failed: '+ e);
+      alert(t('saveFailed', { reason: describeError(e) }));
     } finally {
       btnSave.disabled = false;
     }
@@ -141,9 +180,9 @@
       if (Object.prototype.hasOwnProperty.call(data, 'mz_api_key')) {
         apiKeyInput.value = data.mz_api_key || '';
       }
-      alert('Mozello settings saved.');
+      alert(strings.settingsSaved);
     } catch (e) {
-      alert('Failed to save Mozello settings: '+ e);
+      alert(t('failedSaveSettings', { reason: describeError(e) }));
     } finally {
       btnSettingsSave.disabled = false;
     }
@@ -153,7 +192,7 @@
     const raw = JSON.stringify(fake);
     const r = await fetch('/mozello/webhook', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mozello-Test': 'unsigned' }, body: raw });
     const t = await r.json();
-    alert('Unsigned webhook POST status: '+ r.status +'\n'+ JSON.stringify(t));
+    alert(t('unsignedPost', { status: r.status, body: JSON.stringify(t) }));
   }
   btnSave.addEventListener('click', saveSettings);
   btnLoad.addEventListener('click', loadRemote);

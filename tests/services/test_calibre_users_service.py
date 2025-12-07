@@ -106,3 +106,25 @@ def test_update_user_password_missing_user(monkeypatch):
         calibre_users_service.update_user_password(999, "NewSecure123!")
 
     assert session.commits == 0
+
+
+def test_apply_language_preference_accepts_latvian_variants():
+    user = SimpleNamespace(locale=None, default_language=None)
+    normalized = calibre_users_service._apply_language_preference(user, "lav")
+
+    assert normalized == "lv"
+    assert user.locale == "lv"
+    assert user.default_language == "lav"
+
+    user_two = SimpleNamespace(locale=None, default_language=None)
+    normalized_two = calibre_users_service._apply_language_preference(user_two, "LV-lv")
+
+    assert normalized_two == "lv"
+    assert user_two.locale == "lv"
+    assert user_two.default_language == "lav"
+
+
+def test_normalize_language_preference_handles_unknown():
+    assert calibre_users_service._normalize_language_preference(None) is None
+    assert calibre_users_service._normalize_language_preference("   ") is None
+    assert calibre_users_service._normalize_language_preference("de") is None

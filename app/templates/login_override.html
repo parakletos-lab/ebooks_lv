@@ -1,11 +1,12 @@
 {% extends "layout.html" %}
+{% set title = _('ebooks.lv sign in') %}
 {% block body %}
 <div class="container login-override">
   <div class="row">
     <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
       <div class="panel panel-default">
     <div class="panel-heading">
-      <h3 class="panel-title">ebooks.lv sign in</h3>
+      <h3 class="panel-title">{{ _('ebooks.lv sign in') }}</h3>
     </div>
     <div class="panel-body">
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -22,18 +23,22 @@
 
       {% if token_context %}
         <div class="alert alert-info">
-          Secure link for {{ token_context.email or 'your account' }}.
+          {{ _('Secure link for %(target)s.', target=token_context.email or _('your account')) }}
           {% if token_context.has_temp_password %}
-            Set a new password to continue.
+            {{ _('Set a new password to continue.') }}
           {% else %}
-            Use the fields below to update your password.
+            {{ _('Use the fields below to update your password.') }}
           {% endif %}
         </div>
       {% endif %}
 
       {% if form_errors %}
         <div class="alert alert-danger">
-          <ul class="list-unstyled">{%- for error in form_errors %}<li>{{ error }}</li>{%- endfor %}</ul>
+          <ul class="list-unstyled">
+            {% for error in form_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
         </div>
       {% endif %}
 
@@ -43,7 +48,7 @@
         <input type="hidden" name="auth" value="{{ auth_token or '' }}">
 
         <div class="form-group">
-          <label for="login-email">Email</label>
+          <label for="login-email">{{ _('Email') }}</label>
           {% if token_context %}
           <input type="hidden" name="email" value="{{ email_value }}">
           <input id="login-email" type="email" class="form-control" autocomplete="email" value="{{ email_value }}" disabled>
@@ -54,18 +59,18 @@
 
         {% if not token_context %}
         <div class="form-group">
-          <label for="login-password">Password</label>
+          <label for="login-password">{{ _('Password') }}</label>
           <input id="login-password" name="password" type="password" class="form-control" autocomplete="current-password">
         </div>
         {% endif %}
 
         {% if token_context %}
         <div class="form-group">
-          <label for="new-password">New password</label>
+          <label for="new-password">{{ _('New password') }}</label>
           <input id="new-password" name="new_password" type="password" class="form-control" autocomplete="new-password">
         </div>
         <div class="form-group">
-          <label for="confirm-password">Confirm new password</label>
+          <label for="confirm-password">{{ _('Confirm new password') }}</label>
           <input id="confirm-password" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
         </div>
         {% endif %}
@@ -73,17 +78,17 @@
         <div class="checkbox">
           <label>
             <input type="checkbox" name="remember_me" value="1" {% if remember_me %}checked{% endif %}>
-            Remember me on this device
+            {{ _('Remember me on this device') }}
           </label>
         </div>
 
         <div class="btn-toolbar login-actions">
           {% if token_context %}
-            <button type="submit" name="action" value="complete_reset" class="btn btn-success">Save password</button>
-            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn btn-link pull-right">Cancel</a>
+            <button type="submit" name="action" value="complete_reset" class="btn btn-success">{{ _('Save password') }}</button>
+            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn btn-link pull-right">{{ _('Cancel') }}</a>
           {% else %}
-            <button type="submit" name="action" value="login" class="btn btn-primary">Sign in</button>
-            <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>Forgot password?</button>
+            <button type="submit" name="action" value="login" class="btn btn-primary">{{ _('Sign in') }}</button>
+            <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>{{ _('Forgot password?') }}</button>
           {% endif %}
         </div>
       </form>

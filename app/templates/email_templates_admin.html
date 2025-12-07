@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% set title = 'Email Templates' %}
+{% set title = _('Email Templates') %}
 {% block header %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
@@ -8,7 +8,7 @@
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">Email Templates</h3>
+    <h3 class="panel-title">{{ _('Email Templates') }}</h3>
     <input type="hidden" id="email-templates-csrf" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body" id="email-templates-root" data-context="{{ templates_context|tojson|forceescape }}">
@@ -32,7 +32,7 @@
         {% set details = tmpl.languages.get(lang) %}
         <div class="email-template-pane{% if loop.first %} is-active{% endif %}" data-lang="{{ lang }}">
           <div class="form-group email-template-subject-group">
-            <label for="email-template-subject-{{ tmpl.key }}-{{ lang }}">Subject</label>
+            <label for="email-template-subject-{{ tmpl.key }}-{{ lang }}">{{ _('Subject') }}</label>
             <input
               type="text"
               id="email-template-subject-{{ tmpl.key }}-{{ lang }}"
@@ -54,16 +54,16 @@
           >{{ (details.html if details else '')|e }}</textarea>
           <div class="email-template-updated text-muted">
             {% if details and details.updated_at %}
-            Last saved: {{ details.updated_at }}
+            {{ _('Last saved: %(timestamp)s', timestamp=details.updated_at) }}
             {% else %}
-            Not saved yet
+            {{ _('Not saved yet') }}
             {% endif %}
           </div>
         </div>
         {% endfor %}
       </div>
       <div class="email-template-token-bar">
-        <span>Tokens:</span>
+        <span>{{ _('Tokens:') }}</span>
         {% set token_list = tmpl.tokens or templates_context.tokens %}
         {% for token in token_list %}
         <button type="button" class="btn btn-default btn-xs email-token-btn" data-token="{{ token.value }}">
@@ -74,10 +74,10 @@
     </div>
     {% endfor %}
     {% if not templates_context.templates %}
-    <p class="text-muted">No templates configured yet.</p>
+    <p class="text-muted">{{ _('No templates configured yet.') }}</p>
     {% else %}
     <div class="email-templates-footer">
-      <button type="button" class="btn btn-primary btn-sm" id="email-templates-save-all">Save all templates</button>
+      <button type="button" class="btn btn-primary btn-sm" id="email-templates-save-all">{{ _('Save all templates') }}</button>
       <span id="email-templates-save-status" class="text-muted"></span>
     </div>
     {% endif %}
@@ -86,6 +86,34 @@
 <script>
 (function(){
   "use strict";
+  var strings = {{ {
+    "lastSaved": _('Last saved: %(timestamp)s', timestamp='%(timestamp)s'),
+    "notSavedYet": _('Not saved yet'),
+    "savingAll": _('Saving all templates...'),
+    "saveSummaryFailed": _('Saved %(success)s / %(total)s templates. Failed: %(failed)s', success='%(success)s', total='%(total)s', failed='%(failed)s'),
+    "saveSummarySuccess": _('Saved %(count)s templates.', count='%(count)s')
+  } | tojson }};
+
+  function formatMessage(template, replacements){
+    if(typeof template !== "string"){
+      return "";
+    }
+    if(!replacements){
+      return template;
+    }
+    return template.replace(/%\(([^)]+)\)s/g, function(match, key){
+      if(Object.prototype.hasOwnProperty.call(replacements, key)){
+        return replacements[key];
+      }
+      return match;
+    });
+  }
+
+  function t(key, replacements){
+    var template = Object.prototype.hasOwnProperty.call(strings, key) ? strings[key] : key;
+    return formatMessage(template, replacements);
+  }
+
   var root = document.getElementById("email-templates-root");
   if(!root){
     return;
@@ -114,9 +142,9 @@
       return;
     }
     if(updatedAt){
-      el.textContent = "Last saved: " + updatedAt;
+      el.textContent = t("lastSaved", { timestamp: updatedAt });
     } else {
-      el.textContent = "Not saved yet";
+      el.textContent = strings.notSavedYet;
     }
   }
 
@@ -217,7 +245,7 @@
     }
     saveBtn.disabled = true;
     if(statusEl){
-      statusEl.textContent = "Saving all templates...";
+      statusEl.textContent = strings.savingAll;
       statusEl.className = "text-muted";
     }
     var successes = 0;
@@ -262,10 +290,10 @@
           var failed = failures.map(function(item){
             return (item.template || "?") + " / " + (item.language || "").toUpperCase();
           }).join(", ");
-          statusEl.textContent = "Saved " + successes + " / " + payloads.length + " templates. Failed: " + failed;
+          statusEl.textContent = t("saveSummaryFailed", { success: successes, total: payloads.length, failed: failed });
           statusEl.className = "text-danger";
         } else {
-          statusEl.textContent = "Saved " + successes + " templates.";
+          statusEl.textContent = t("saveSummarySuccess", { count: successes });
           statusEl.className = "text-success";
         }
       }

@@ -14,6 +14,18 @@ from flask import (
     session,
     url_for,
 )
+try:  # pragma: no cover - Flask-Babel optional in tests
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
 from urllib.parse import urlencode
 
 from app.services.catalog_access import UserCatalogState, build_catalog_state
@@ -114,9 +126,13 @@ def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dic
         mozello_base = "/mozello/books/"
     payload = state.to_payload()
     payload["mozello_base"] = mozello_base
-    payload["buy_label"] = "Buy Online"
+    payload["buy_label"] = _("Buy Online")
     payload["cart_icon_class"] = "glyphicon-shopping-cart"
     payload["allow_my_books"] = bool(state.is_authenticated)
+    payload["scope_labels"] = {
+        "purchased": _("My Books"),
+        "all": _("All Books"),
+    }
     payload["views"] = {
         "current": scope.value,
         "purchased_url": url_for("catalog_scope.catalog_scope_purchased"),

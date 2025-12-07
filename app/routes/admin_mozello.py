@@ -25,6 +25,19 @@ except Exception:  # pragma: no cover
             raise RuntimeError("Flask not available")
 
 from app.utils import ensure_admin, PermissionError
+try:  # pragma: no cover - Flask-Babel optional in tests
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
+
 from app.services import (
     mozello_service,
     orders_service,
@@ -40,6 +53,22 @@ bp = Blueprint("mozello_admin", __name__, url_prefix="/admin/mozello", template_
 webhook_bp = Blueprint("mozello_webhook", __name__)
 
 _ALL_WEBHOOK_EVENTS = {event.upper() for event in mozello_service.allowed_events()}
+
+_ERROR_MESSAGES = {
+    "permission_denied": _("Administrator access required."),
+    "mozello_settings_error": _("Unable to update Mozello settings."),
+    "notifications_wanted_list": _("Events payload must be a list."),
+}
+
+
+def _json_error(code: str, status: int = 400, *, message: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
+    payload: Dict[str, Any] = {"error": code}
+    final = message or _ERROR_MESSAGES.get(code)
+    if final:
+        payload["message"] = final
+    if details is not None:
+        payload["details"] = details
+    return jsonify(payload), status
 
 try:
     from cps import csrf  # type: ignore
@@ -58,7 +87,7 @@ def _require_admin():
     try:
         ensure_admin()
     except PermissionError as exc:  # type: ignore
-        return jsonify({"error": str(exc)}), 403
+        return _json_error("permission_denied", 403, message=str(exc))
     return True
 
 def _computed_webhook_url() -> Optional[str]:
@@ -140,7 +169,7 @@ def mozello_update_app_settings():
             api_key=data.get("mz_api_key"),
         )
     except RuntimeError as exc:
-        return jsonify({"error": str(exc)}), 503
+        return _json_error("mozello_settings_error", 503, message=str(exc))
     return jsonify(updated)
 
 @bp.route("/settings", methods=["GET"])
@@ -168,7 +197,7 @@ def mozello_update_settings():
     data: Dict[str, Any] = request.get_json(silent=True) or {}
     events = data.get("notifications_wanted") or []
     if not isinstance(events, list):
-        return jsonify({"error": "notifications_wanted must be list"}), 400
+        return _json_error("notifications_wanted_list", 400)
     # Compute candidate URL (authoritative source now)
     candidate = _computed_webhook_url()
     ok_push, remote_after = mozello_service.push_remote_notifications(candidate, events)

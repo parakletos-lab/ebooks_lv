@@ -1,4 +1,4 @@
-{% extends "layout.html" %} {% set title = 'users_books Admin' %} {% set page =
+{% extends "layout.html" %} {% set title = _('users_books Admin') %} {% set page =
 'users_books_admin' %} {% set bodyClass = bodyClass|default('') %} {% set
 instance = instance|default(title) %}
 {% block header %}
@@ -10,30 +10,27 @@ instance = instance|default(title) %}
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">
-      users_books Allow‑List Management
-      <small class="text-muted ub-small-heading">(Admin)</small>
+      {{ _('users_books Allow-List Management') }}
+      <small class="text-muted ub-small-heading">{{ _('(Admin)') }}</small>
     </h3>
   <!-- Hidden CSRF token (explicitly provided by route as ub_csrf_token) -->
   <input type="hidden" id="ub-csrf" name="csrf_token" value="{{ ub_csrf_token|default('') }}" />
   </div>
   <div class="panel-body">
   <p class="text-muted ub-panel-note">
-      Create and view allow‑list mappings between Calibre users and books. 1)
-      Select one or more users (left) and books (middle) 2) Click "Add Selected
-      Mappings". The bottom table lists all existing mappings (email → book
-      title) with delete actions.
+      {{ _('Create and view allow-list mappings between Calibre users and books. 1) Select one or more users (left) and books (middle) 2) Click "Add Selected Mappings". The bottom table lists all existing mappings (email → book title) with delete actions.') }}
     </p>
 
   <div class="row ub-row-gap">
       <!-- Users -->
       <div class="col-sm-4">
         <fieldset class="ub-fieldset">
-          <legend class="ub-section-legend ub-legend">Users (Non‑Admin)</legend>
+          <legend class="ub-section-legend ub-legend">{{ _('Users (Non-Admin)') }}</legend>
           <input
             id="ub-filter-users"
             class="form-control input-sm ub-filter"
             type="text"
-            placeholder="Filter by email or name"
+            placeholder="{{ _('Filter by email or name') }}"
           />
           <div id="ub-users-box"></div>
           <div class="ub-flex ub-box-gap">
@@ -42,25 +39,25 @@ instance = instance|default(title) %}
               class="btn btn-default btn-xs"
               type="button"
             >
-              <span class="glyphicon glyphicon-refresh"></span> Reload
+              <span class="glyphicon glyphicon-refresh"></span> {{ _('Reload') }}
             </button>
             <button
               id="ub-users-select-all"
               class="btn btn-default btn-xs"
               type="button"
             >
-              Select All
+              {{ _('Select All') }}
             </button>
             <button
               id="ub-users-clear"
               class="btn btn-default btn-xs"
               type="button"
             >
-              Clear
+              {{ _('Clear') }}
             </button>
           </div>
           <div class="text-muted ub-box-gap ub-micro">
-            Source: /admin/users_books/all_users (excludes admin accounts).
+            {{ _('Source: %(endpoint)s (excludes admin accounts).', endpoint='/admin/users_books/all_users') }}
           </div>
         </fieldset>
       </div>
@@ -68,12 +65,12 @@ instance = instance|default(title) %}
       <!-- Books -->
       <div class="col-sm-4">
         <fieldset class="ub-fieldset">
-          <legend class="ub-section-legend ub-legend">Books</legend>
+          <legend class="ub-section-legend ub-legend">{{ _('Books') }}</legend>
           <input
             id="ub-filter-books"
             class="form-control input-sm ub-filter"
             type="text"
-            placeholder="Filter by title or id"
+            placeholder="{{ _('Filter by title or id') }}"
           />
           <div id="ub-books-box"></div>
           <div class="ub-flex ub-box-gap">
@@ -82,26 +79,25 @@ instance = instance|default(title) %}
               class="btn btn-default btn-xs"
               type="button"
             >
-              <span class="glyphicon glyphicon-refresh"></span> Reload
+              <span class="glyphicon glyphicon-refresh"></span> {{ _('Reload') }}
             </button>
             <button
               id="ub-books-select-all"
               class="btn btn-default btn-xs"
               type="button"
             >
-              Select All
+              {{ _('Select All') }}
             </button>
             <button
               id="ub-books-clear"
               class="btn btn-default btn-xs"
               type="button"
             >
-              Clear
+              {{ _('Clear') }}
             </button>
           </div>
           <div class="text-muted ub-box-gap ub-micro">
-            Source: /admin/users_books/all_books (full library; consider
-            pagination if large).
+            {{ _('Source: %(endpoint)s (full library; consider pagination if large).', endpoint='/admin/users_books/all_books') }}
           </div>
         </fieldset>
       </div>
@@ -109,69 +105,66 @@ instance = instance|default(title) %}
       <!-- Actions -->
       <div class="col-sm-4">
         <fieldset class="ub-fieldset">
-          <legend class="ub-section-legend ub-legend">Actions</legend>
+          <legend class="ub-section-legend ub-legend">{{ _('Actions') }}</legend>
           <div class="ub-flex ub-flex-col">
             <button
               id="ub-add-mappings"
               class="btn btn-success btn-sm"
               type="button"
             >
-              <span class="glyphicon glyphicon-plus"></span> Add Selected
-              Mappings
+              <span class="glyphicon glyphicon-plus"></span> {{ _('Add Selected Mappings') }}
             </button>
             <button
               id="ub-reload-mappings"
               class="btn btn-primary btn-sm"
               type="button"
             >
-              <span class="glyphicon glyphicon-eye-open"></span> Refresh Mapping
-              List
+              <span class="glyphicon glyphicon-eye-open"></span> {{ _('Refresh Mapping List') }}
             </button>
             <button
               id="ub-clear-selection"
               class="btn btn-default btn-sm"
               type="button"
             >
-              Clear All Selections
+              {{ _('Clear All Selections') }}
             </button>
           </div>
           <hr class="ub-hr-tight" />
-          <p class="help-block ub-help-margin">Selections</p>
+          <p class="help-block ub-help-margin">{{ _('Selections') }}</p>
           <ul class="ub-selections-ul">
-            <li><span id="ub-count-users">0</span> user(s)</li>
-            <li><span id="ub-count-books">0</span> book(s)</li>
+            <li><span id="ub-count-users">0</span> {{ _('user(s)') }}</li>
+            <li><span id="ub-count-books">0</span> {{ _('book(s)') }}</li>
           </ul>
           <hr class="ub-hr-tight" />
           <p class="text-muted ub-micro-tight">
-            Each (user, book) pair triggers an individual POST. For large
-            batches consider a future bulk endpoint.
+            {{ _('Each (user, book) pair triggers an individual POST. For large batches consider a future bulk endpoint.') }}
           </p>
         </fieldset>
       </div>
     </div>
 
     <!-- Mappings Table -->
-    <h4 class="ub-h4">Existing Mappings</h4>
+    <h4 class="ub-h4">{{ _('Existing Mappings') }}</h4>
     <div class="table-responsive ub-table-gap">
   <table id="ub-mappings-table" class="table table-condensed table-striped ub-margin-b-8">
         <thead>
           <tr class="ub-sticky-top">
-            <th class="ub-w-email">User Email</th>
-            <th class="ub-w-userid">User ID</th>
-            <th>Book Title</th>
-            <th class="ub-w-bookid">Book ID</th>
-            <th class="ub-w-del">Delete</th>
+            <th class="ub-w-email">{{ _('User Email') }}</th>
+            <th class="ub-w-userid">{{ _('User ID') }}</th>
+            <th>{{ _('Book Title') }}</th>
+            <th class="ub-w-bookid">{{ _('Book ID') }}</th>
+            <th class="ub-w-del">{{ _('Delete') }}</th>
           </tr>
         </thead>
         <tbody id="ub-mappings-tbody"></tbody>
       </table>
     </div>
   <div class="text-muted ub-mappings-note">
-      Source: /admin/users_books/mappings_full&nbsp; (<span
+      {{ _('Source: %(endpoint)s', endpoint='/admin/users_books/mappings_full') }}&nbsp; (<span
         id="ub-mappings-total"
         >0</span
       >
-      total)
+      {{ _('total') }})
     </div>
 
   </div>
@@ -180,6 +173,35 @@ instance = instance|default(title) %}
 <script>
   (function () {
     "use strict";
+    const strings = {{ {
+      "noUsers": _('No users.'),
+      "noBooks": _('No books.'),
+      "userFallback": _('User %(id)s', id='%(id)s'),
+      "noEmail": _('(no email)'),
+      "untitled": _('(Untitled)'),
+      "noMappings": _('No mappings present.'),
+      "deleteMapping": _('Delete mapping'),
+      "confirmDelete": _('Delete mapping?
+    User: %(userId)s
+    Book: %(bookId)s', userId='%(userId)s', bookId='%(bookId)s'),
+      "selectBeforeAdd": _('Select at least one user and one book before adding.'),
+      "addComplete": _('Add operations complete.'),
+    }|tojson }};
+
+    function formatString(template, values) {
+      if (!template) return "";
+      return template.replace(/%\(([^)]+)\)s/g, (match, key) => {
+        return Object.prototype.hasOwnProperty.call(values || {}, key)
+          ? String(values[key])
+          : match;
+      });
+    }
+
+    function t(key, values) {
+      const template = strings[key];
+      return typeof template === "string" ? formatString(template, values) : key;
+    }
+
     const usersBox = document.getElementById("ub-users-box");
     const booksBox = document.getElementById("ub-books-box");
     const filterUsers = document.getElementById("ub-filter-users");
@@ -227,15 +249,18 @@ instance = instance|default(title) %}
     function renderUserList(users) {
       usersBox.innerHTML = "";
       if (!users.length) {
-        usersBox.innerHTML =
-          '<div class="text-muted" style="font-size:11px;">No users.</div>';
+        const empty = document.createElement("div");
+        empty.className = "text-muted";
+        empty.style.fontSize = "11px";
+        empty.textContent = t("noUsers");
+        usersBox.appendChild(empty);
         return;
       }
       const frag = document.createDocumentFragment();
       users.forEach((u) => {
         const email = (u.email || "").trim();
         const name = (u.name || "").trim();
-        const display = email || name || "User " + u.user_id;
+        const display = email || name || t("userFallback", { id: u.user_id });
         const label = document.createElement("label");
         label.innerHTML =
           '<input type="checkbox" value="' +
@@ -245,7 +270,7 @@ instance = instance|default(title) %}
           '"> <span class="ub-nowrap">' +
           (email
             ? "<strong>" + escapeHtml(email) + "</strong>"
-            : "<strong>(no email)</strong>") +
+            : "<strong>" + escapeHtml(t("noEmail")) + "</strong>") +
           ' <span class="ub-small">#' +
           u.user_id +
           "</span>" +
@@ -264,13 +289,16 @@ instance = instance|default(title) %}
     function renderBookList(books) {
       booksBox.innerHTML = "";
       if (!books.length) {
-        booksBox.innerHTML =
-          '<div class="text-muted" style="font-size:11px;">No books.</div>';
+        const empty = document.createElement("div");
+        empty.className = "text-muted";
+        empty.style.fontSize = "11px";
+        empty.textContent = t("noBooks");
+        booksBox.appendChild(empty);
         return;
       }
       const frag = document.createDocumentFragment();
       books.forEach((b) => {
-        const title = b.title || "(Untitled)";
+        const title = b.title || t("untitled");
         const label = document.createElement("label");
         label.innerHTML =
           '<input type="checkbox" value="' +
@@ -358,7 +386,7 @@ instance = instance|default(title) %}
         const td = document.createElement("td");
         td.colSpan = 5;
         td.className = "text-muted";
-        td.textContent = "No mappings present.";
+        td.textContent = t("noMappings");
         tr.appendChild(td);
         mappingsTbody.appendChild(tr);
         return;
@@ -367,7 +395,7 @@ instance = instance|default(title) %}
       rows.forEach((r) => {
         const tr = document.createElement("tr");
         const email = r.email || "";
-        const title = r.title || "(Untitled)";
+        const title = r.title || t("untitled");
         tr.innerHTML =
           "<td>" +
           escapeHtml(email) +
@@ -381,7 +409,9 @@ instance = instance|default(title) %}
           r.user_id +
           ":" +
           r.book_id +
-          '" title="Delete mapping"><span class="glyphicon glyphicon-remove"></span></button></td>';
+          '" title="' +
+          escapeHtml(t("deleteMapping")) +
+          '"><span class="glyphicon glyphicon-remove"></span></button></td>';
         frag.appendChild(tr);
       });
       mappingsTbody.appendChild(frag);
@@ -392,7 +422,7 @@ instance = instance|default(title) %}
       const parts = btn.getAttribute("data-del").split(":");
       const uid = Number(parts[0]);
       const bid = Number(parts[1]);
-      if (!confirm("Delete mapping?\nUser: " + uid + "\nBook: " + bid)) return;
+      if (!confirm(t("confirmDelete", { userId: uid, bookId: bid }))) return;
       console.log("Deleting mapping user=", uid, " book=", bid, "...");
       setBusy(true);
       try {
@@ -424,7 +454,7 @@ instance = instance|default(title) %}
       const userIds = selectedValues(usersBox);
       const bookIds = selectedValues(booksBox);
       if (!userIds.length || !bookIds.length) {
-        console.warn("Select at least one user and one book before adding.");
+        console.warn(t("selectBeforeAdd"));
         return;
       }
       console.log(
@@ -464,7 +494,7 @@ instance = instance|default(title) %}
             }
           }
         }
-        console.log("Add operations complete.");
+        console.log(t("addComplete"));
         await loadMappings();
       } finally {
         setBusy(false);

@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% set title = 'ebooks.lv Admin' %}
+{% set title = _('ebooks.lv Admin') %}
 {% block header %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
@@ -7,28 +7,28 @@
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">ebooks.lv Administration</h3>
+    <h3 class="panel-title">{{ _('ebooks.lv Administration') }}</h3>
   </div>
   <div class="panel-body">
     <input type="hidden" id="ebookslv-csrf" value="{{ ub_csrf_token|default('') }}" />
-    <p class="text-muted ub-card-lead">Central hub for ebooks.lv custom admin tools.</p>
-    <button type="button" class="btn btn-warning btn-sm" id="ebookslv-defaults-btn">Set default settings</button>
+    <p class="text-muted ub-card-lead">{{ _('Central hub for ebooks.lv custom admin tools.') }}</p>
+    <button type="button" class="btn btn-warning btn-sm" id="ebookslv-defaults-btn">{{ _('Set default settings') }}</button>
     <p id="ebookslv-defaults-status" class="ub-micro ub-help-margin text-muted"></p>
     <div class="ebooks-admin-cards">
       <div class="ebooks-admin-card">
-        <h4><span class="glyphicon glyphicon-list-alt"></span> Orders</h4>
-        <p>Review Mozello orders, link Calibre books and provision user accounts.</p>
-        <a href="/admin/ebookslv/orders/" class="btn btn-primary btn-sm">Open</a>
+        <h4><span class="glyphicon glyphicon-list-alt"></span> {{ _('Orders') }}</h4>
+        <p>{{ _('Review Mozello orders, link Calibre books and provision user accounts.') }}</p>
+        <a href="/admin/ebookslv/orders/" class="btn btn-primary btn-sm">{{ _('Open') }}</a>
       </div>
       <div class="ebooks-admin-card">
-        <h4><span class="glyphicon glyphicon-book"></span> Books</h4>
-        <p>Placeholder for upcoming ebooks.lv book management enhancements.</p>
-        <a href="/admin/ebookslv/books/" class="btn btn-info btn-sm">Open</a>
+        <h4><span class="glyphicon glyphicon-book"></span> {{ _('Books') }}</h4>
+        <p>{{ _('Placeholder for upcoming ebooks.lv book management enhancements.') }}</p>
+        <a href="/admin/ebookslv/books/" class="btn btn-info btn-sm">{{ _('Open') }}</a>
       </div>
       <div class="ebooks-admin-card">
-        <h4><span class="glyphicon glyphicon-envelope"></span> Email Templates</h4>
-        <p>Manage purchase notification templates across languages.</p>
-        <a href="/admin/ebookslv/email-templates/" class="btn btn-success btn-sm">Open</a>
+        <h4><span class="glyphicon glyphicon-envelope"></span> {{ _('Email Templates') }}</h4>
+        <p>{{ _('Manage purchase notification templates across languages.') }}</p>
+        <a href="/admin/ebookslv/email-templates/" class="btn btn-success btn-sm">{{ _('Open') }}</a>
       </div>
     </div>
   </div>
@@ -36,12 +36,29 @@
 <script>
 (function(){
   "use strict";
+  var strings = {{ {
+    "applyStart": _('Applying defaults...'),
+    "applySuccess": _('Defaults applied.'),
+    "applyFailure": _('Failed to apply defaults: %(reason)s', reason='%(reason)s')
+  } | tojson }};
   var applyBtn = document.getElementById("ebookslv-defaults-btn");
   if(!applyBtn){
     return;
   }
   var statusEl = document.getElementById("ebookslv-defaults-status");
   var csrfInput = document.getElementById("ebookslv-csrf");
+
+  function formatMessage(template, replacements){
+    if(!template){
+      return "";
+    }
+    return template.replace(/%\(([^)]+)\)s/g, function(match, key){
+      if(replacements && Object.prototype.hasOwnProperty.call(replacements, key)){
+        return replacements[key];
+      }
+      return match;
+    });
+  }
 
   function setStatus(message, level){
     if(!statusEl){
@@ -59,7 +76,7 @@
   }
 
   applyBtn.addEventListener("click", function(){
-  setStatus("Applying defaults...", "info");
+    setStatus(strings.applyStart, "info");
     applyBtn.disabled = true;
     var headers = {"Content-Type": "application/json"};
     if(csrfInput && csrfInput.value){
@@ -76,10 +93,11 @@
         });
       })
       .then(function(){
-        setStatus("Defaults applied.", "success");
+        setStatus(strings.applySuccess, "success");
       })
       .catch(function(err){
-        setStatus("Failed to apply defaults: " + (err && err.message ? err.message : err), "error");
+        var message = err && err.message ? err.message : err;
+        setStatus(formatMessage(strings.applyFailure, {reason: message}), "error");
       })
       .finally(function(){
         applyBtn.disabled = false;

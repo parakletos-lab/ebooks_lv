@@ -5,15 +5,28 @@ from typing import Any, Tuple
 
 from flask import Request, Response, request
 
+try:  # pragma: no cover - Flask-Babel optional in tests
+    from flask_babel import gettext as _  # type: ignore
+except Exception:  # pragma: no cover
+    def _fallback_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    _ = _fallback_gettext  # type: ignore
+
 from app.utils.logging import get_logger
 
 LOG = get_logger("stats_notice")
 
 NOTICE_MARKER = "stats-submodule-note"
-NOTICE_HTML = (
+NOTICE_HTML_TEMPLATE = (
     '<p class="text-muted stats-submodule-note">'
-    "<small>This application includes Calibre-web as an unmodified submodule, licensed under GPLv3.</small>"
-    "</p>"
+    '<small>{message}</small>'
+    '</p>'
 )
 TARGET_ENDPOINTS = {"about.stats"}
 MAX_BODY_SIZE = 2_000_000  # bytes
@@ -59,7 +72,8 @@ def _inject_notice(body: bytes) -> bytes:
     if close_pos == -1:
         return body
     insertion = close_pos + len(end_tag)
-    updated = text[:insertion] + NOTICE_HTML + text[insertion:]
+    notice_text = _("This application includes Calibre-web as an unmodified submodule, licensed under GPLv3.")
+    updated = text[:insertion] + NOTICE_HTML_TEMPLATE.format(message=notice_text) + text[insertion:]
     return updated.encode("utf-8")
 
 

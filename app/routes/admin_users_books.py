@@ -138,7 +138,7 @@ def _fetch_non_admin_users() -> List[Dict[str, Any]]:
     """Return non-admin, non-anonymous real users.
 
     Strategy order:
-      1. Try Calibre-Web ORM (preferred) – locate User model in cps.ub (or fallback attr)
+      1. Try Calibre-Web ORM (preferred) - locate User model in cps.ub (or fallback attr)
       2. Fallback to direct SQLite query against app.db if ORM symbols unavailable
     """
     try:
@@ -169,7 +169,7 @@ def _fetch_non_admin_users() -> List[Dict[str, Any]]:
                 pass
     except Exception:  # pragma: no cover
         pass
-    # Fallback: raw SQLite (defensive) – minimal columns
+    # Fallback: raw SQLite (defensive) - minimal columns
     try:
         import sqlite3, os
         db_path = os.path.join(os.getenv('CALIBRE_DBPATH', '/app/config'), 'app.db')
