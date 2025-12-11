@@ -439,6 +439,81 @@ def api_books_load_products():
     return jsonify({"rows": merged, "products": len(products), "orphans": len([r for r in merged if r.get("orphan")])})
 
 
+@bp.route("/books/api/sync_prices_from_mozello", methods=["POST"])
+@_maybe_exempt
+def api_sync_prices_from_mozello():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    calibre_rows = books_sync.list_calibre_books()
+    by_handle = {r.get("mz_handle"): r for r in calibre_rows if r.get("mz_handle")}
+    ok, data = mozello_service.list_products_full()
+    if not ok:
+        return _json_error(data.get("error") if isinstance(data, dict) else "mozello_error", 502, details=data if isinstance(data, dict) else None)
+    products = data.get("products", []) if isinstance(data, dict) else []
+    updated = 0
+    missing_price = 0
+    orphans = 0
+    for p in products:
+        handle = (p.get("handle") or "").strip()
+        if not handle:
+            continue
+        price_value = p.get("price")
+        row = by_handle.get(handle)
+        if not row:
+            orphans += 1
+            continue
+        current_price = row.get("mz_price")
+        if price_value is None:
+            missing_price += 1
+            continue
+        if current_price == price_value:
+            continue
+        if books_sync.set_mz_price_for_handle(handle, price_value):
+            row["mz_price"] = price_value
+            updated += 1
+    return jsonify({"status": "ok", "updated": updated, "missing_price": missing_price, "orphans": orphans, "rows": calibre_rows})
+
+
+@bp.route("/books/api/push_prices_to_mozello", methods=["POST"])
+@_maybe_exempt
+def api_push_prices_to_mozello():
+    auth = _require_admin_json()
+    if auth is not True:
+        return auth
+    calibre_rows = books_sync.list_calibre_books()
+    handles_with_price = [r for r in calibre_rows if r.get("mz_handle") and r.get("mz_price") is not None]
+    ok_products, data = mozello_service.list_products_full()
+    remote_price_map = {}
+    if ok_products and isinstance(data, dict):
+        for p in data.get("products", []) or []:
+            h = (p.get("handle") or "").strip()
+            if h:
+                remote_price_map[h] = p.get("price")
+    success = 0
+    skipped_same = 0
+    failures = []
+    for r in handles_with_price:
+        handle = r.get("mz_handle")
+        price_value = r.get("mz_price")
+        if handle in remote_price_map and remote_price_map[handle] == price_value:
+            skipped_same += 1
+            continue
+        ok_update, resp = mozello_service.update_product_price(handle, price_value)
+        if ok_update:
+            success += 1
+        else:
+            failures.append({"handle": handle, "error": resp.get("error") if isinstance(resp, dict) else "unknown"})
+    summary = {
+        "total": len(handles_with_price),
+        "success": success,
+        "skipped_same": skipped_same,
+        "failed": len(failures),
+        "failures": failures,
+    }
+    return jsonify({"status": "ok", "summary": summary})
+
+
 @bp.route("/books/api/export_one/<int:book_id>", methods=["POST"])
 @_maybe_exempt
 def api_books_export_one(book_id: int):

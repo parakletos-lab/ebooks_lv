@@ -11,6 +11,8 @@
     <div class="mz-toolbar" id="mz-toolbar">
       <button id="btn-reload-calibre" class="btn btn-default btn-sm" type="button">{{ _('Reload Calibre Books') }}</button>
       <button id="btn-load-products" class="btn btn-info btn-sm" type="button">{{ _('Load Mozello Products') }}</button>
+      <button id="btn-sync-prices" class="btn btn-primary btn-sm" type="button">{{ _('Sync Prices from Mozello') }}</button>
+      <button id="btn-push-prices" class="btn btn-warning btn-sm" type="button">{{ _('Push Prices to Mozello') }}</button>
       <button id="btn-export-all" class="btn btn-success btn-sm" type="button">{{ _('Export All to Store') }}</button>
   <div class="mz-progress mz-hidden" id="mz-progress">
         <div class="mz-spinner"></div>
@@ -67,6 +69,12 @@
     "exportAllStart": _('Export ALL started. Missing handles: %(total)s', total='%(total)s'),
     "exportAllSummary": _('Export ALL summary — success: %(success)s failed: %(failed)s', success='%(success)s', failed='%(failed)s'),
     "exportAllError": _('Export ALL failed: %(reason)s', reason='%(reason)s'),
+    "syncPricesFromMozelloStart": _('Syncing prices from Mozello...'),
+    "syncPricesFromMozelloDone": _('Synced %(updated)s prices from Mozello (orphans: %(orphans)s, missing: %(missing)s)', updated='%(updated)s', orphans='%(orphans)s', missing='%(missing)s'),
+    "syncPricesFromMozelloError": _('Sync from Mozello failed: %(reason)s', reason='%(reason)s'),
+    "pushPricesStart": _('Pushing Calibre prices to Mozello...'),
+    "pushPricesDone": _('Pushed prices — success: %(success)s skipped: %(skipped)s failed: %(failed)s', success='%(success)s', skipped='%(skipped)s', failed='%(failed)s'),
+    "pushPricesError": _('Push to Mozello failed: %(reason)s', reason='%(reason)s'),
     "deleteConfirm": _('Delete Mozello product %(handle)s?', handle='%(handle)s'),
     "deleteStart": _('Deleting Mozello product %(handle)s...', handle='%(handle)s'),
     "deleteSuccess": _('Deleted product %(handle)s (status %(status)s).', handle='%(handle)s', status='%(status)s'),
@@ -98,6 +106,8 @@
   const logBox = document.getElementById('mz-log');
   const btnReload = document.getElementById('btn-reload-calibre');
   const btnLoad = document.getElementById('btn-load-products');
+  const btnSyncPrices = document.getElementById('btn-sync-prices');
+  const btnPushPrices = document.getElementById('btn-push-prices');
   const btnExportAll = document.getElementById('btn-export-all');
   const toolbar = document.getElementById('mz-toolbar');
   const progWrap = document.getElementById('mz-progress');
@@ -294,12 +304,49 @@
   }
 
   function disableAll(disabled){
-    [btnReload, btnLoad, btnExportAll].forEach(b => {
+    [btnReload, btnLoad, btnSyncPrices, btnPushPrices, btnExportAll].forEach(b => {
       if(b){
         b.disabled = disabled;
       }
     });
     toolbar.classList.toggle('mz-disabled', disabled);
+  }
+
+  async function syncPricesFromMozello(){
+    disableAll(true);
+    log('syncPricesFromMozelloStart');
+    try {
+      const data = await fetchJSON('/admin/ebookslv/books/api/sync_prices_from_mozello', { method: 'POST' });
+      rows = data.rows || rows;
+      render();
+      log('syncPricesFromMozelloDone', {
+        updated: data.updated || 0,
+        orphans: data.orphans || 0,
+        missing: data.missing_price || 0,
+      });
+    } catch(e){
+      log('syncPricesFromMozelloError', 'error', { reason: e && e.message ? e.message : '' });
+    } finally {
+      disableAll(false);
+    }
+  }
+
+  async function pushPricesToMozello(){
+    disableAll(true);
+    log('pushPricesStart');
+    try {
+      const data = await fetchJSON('/admin/ebookslv/books/api/push_prices_to_mozello', { method: 'POST' });
+      const summary = data.summary || {};
+      log('pushPricesDone', {
+        success: summary.success || 0,
+        skipped: summary.skipped_same || 0,
+        failed: summary.failed || 0,
+      });
+    } catch(e){
+      log('pushPricesError', 'error', { reason: e && e.message ? e.message : '' });
+    } finally {
+      disableAll(false);
+    }
   }
 
   async function exportAll(){
@@ -367,6 +414,8 @@
 
   btnReload.addEventListener('click', loadCalibre);
   btnLoad.addEventListener('click', loadProducts);
+  btnSyncPrices.addEventListener('click', syncPricesFromMozello);
+  btnPushPrices.addEventListener('click', pushPricesToMozello);
   btnExportAll.addEventListener('click', exportAll);
   loadCalibre();
 })();
