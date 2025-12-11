@@ -15,6 +15,7 @@ class BookState(str, Enum):
 
     PURCHASED = "purchased"
     AVAILABLE = "available"
+    FREE = "free"
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class UserCatalogState:
     is_admin: bool
     is_authenticated: bool = False
     purchased_book_ids: Set[int] = field(default_factory=set)
+    free_book_ids: Set[int] = field(default_factory=set)
 
     def is_purchased(self, book_id: Optional[int]) -> bool:
         if book_id is None:
@@ -34,14 +36,28 @@ class UserCatalogState:
             return False
         return candidate in self.purchased_book_ids
 
+    def is_free(self, book_id: Optional[int]) -> bool:
+        if book_id is None:
+            return False
+        try:
+            candidate = int(book_id)
+        except (TypeError, ValueError):
+            return False
+        return candidate in self.free_book_ids
+
     def book_state(self, book_id: Optional[int]) -> BookState:
-        return BookState.PURCHASED if self.is_purchased(book_id) else BookState.AVAILABLE
+        if self.is_purchased(book_id):
+            return BookState.PURCHASED
+        if self.is_free(book_id):
+            return BookState.FREE
+        return BookState.AVAILABLE
 
     def to_payload(self) -> Dict[str, Any]:
         return {
             "mode": "admin" if self.is_admin else "non_admin",
             "authenticated": self.is_authenticated,
             "purchased": sorted(self.purchased_book_ids),
+            "free": sorted(self.free_book_ids),
         }
 
 
@@ -51,8 +67,14 @@ def build_catalog_state(
     email: Optional[str],
     is_admin: bool,
 ) -> UserCatalogState:
+    free_ids = books_sync.list_free_book_ids()
     if is_admin:
-        return UserCatalogState(is_admin=True, is_authenticated=True)
+        return UserCatalogState(
+            is_admin=True,
+            is_authenticated=True,
+            purchased_book_ids=set(),
+            free_book_ids=free_ids,
+        )
 
     normalized_email = normalize_email(email)
     is_authenticated = calibre_user_id is not None
@@ -89,6 +111,7 @@ def build_catalog_state(
         is_admin=False,
         is_authenticated=is_authenticated,
         purchased_book_ids=purchased_ids,
+        free_book_ids=free_ids,
     )
 
     return state

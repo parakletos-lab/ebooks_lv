@@ -4,7 +4,7 @@ Read Calibre metadata.db for book list, mz_price custom column and mz_handle
 identifier. Provides minimal read helpers plus identifier insert/delete.
 """
 from __future__ import annotations
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Set
 import os, sqlite3, base64
 from app.utils.logging import get_logger
 
@@ -201,6 +201,40 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             "language_code": languages.get(bid),
         })
     return out
+
+
+def list_free_book_ids() -> Set[int]:
+    """Return Calibre book ids where mz_price is missing or zero.
+
+    Missing mz_price column yields empty set so callers can fall back gracefully.
+    """
+    free_ids: Set[int] = set()
+    conn = _connect_rw()
+    try:
+        price_id = _mz_price_column_id(conn)
+        if price_id is None:
+            return free_ids
+        price_tbl = f"custom_column_{price_id}"
+        prices: Dict[int, Optional[float]] = {}
+        for row in conn.execute(f"SELECT book, value FROM {price_tbl}"):
+            try:
+                prices[int(row[0])] = None if row[1] is None else float(row[1])
+            except Exception:
+                continue
+        all_ids = [int(r[0]) for r in conn.execute("SELECT id FROM books")]
+        for bid in all_ids:
+            val = prices.get(bid)
+            if val is None:
+                free_ids.add(bid)
+                continue
+            try:
+                if float(val) == 0:
+                    free_ids.add(bid)
+            except Exception:
+                continue
+    except Exception:  # pragma: no cover - defensive
+        return free_ids
+    return free_ids
 
 
 def _book_path(conn: sqlite3.Connection, book_id: int) -> Optional[str]:

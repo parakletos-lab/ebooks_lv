@@ -38,14 +38,21 @@ def _patch_common_filters() -> None:
 			state = getattr(g, "catalog_state", None)
 		except RuntimeError:  # outside request context
 			return base_clause
-		if scope != CatalogScope.PURCHASED:
-			return base_clause
-		if not isinstance(state, UserCatalogState):
-			return and_(base_clause, false())
-		ids = state.purchased_book_ids
-		if not ids:
-			return and_(base_clause, false())
-		return and_(base_clause, Books.id.in_(sorted(ids)))
+		if scope == CatalogScope.PURCHASED:
+			if not isinstance(state, UserCatalogState):
+				return and_(base_clause, false())
+			ids = state.purchased_book_ids
+			if not ids:
+				return and_(base_clause, false())
+			return and_(base_clause, Books.id.in_(sorted(ids)))
+		if scope == CatalogScope.FREE:
+			if not isinstance(state, UserCatalogState):
+				return and_(base_clause, false())
+			free_ids = state.free_book_ids
+			if not free_ids:
+				return and_(base_clause, false())
+			return and_(base_clause, Books.id.in_(sorted(free_ids)))
+		return base_clause
 
 	CalibreDB.common_filters = _patched  # type: ignore[assignment]
 	setattr(CalibreDB, "_users_books_common_filters", True)
