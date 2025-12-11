@@ -924,6 +924,41 @@ def upsert_product_basic(
 __all__.append("upsert_product_basic")
 
 
+def update_product_price(handle: str, price: float | None) -> Tuple[bool, Dict[str, Any]]:
+    """Update only the price for an existing Mozello product.
+
+    Keeps title/description untouched to avoid overwriting store content. Does not create products.
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    price_value = 0.0
+    if price is not None:
+        try:
+            price_value = float(price)
+        except Exception:
+            price_value = 0.0
+    payload = {"product": {"price": price_value}}
+    try:
+        _throttle_wait()
+        resp = requests.put(_api_url(f"/store/product/{clean_handle}/"), json=payload, headers=headers, timeout=15)
+        try:
+            data = resp.json()
+        except Exception:
+            data = {"raw": resp.text}
+        if resp.status_code != 200 or data.get("error") is True:
+            return False, {"error": "http_error", "status": resp.status_code, "details": data}
+        return True, data
+    except Exception as exc:  # pragma: no cover - network defensive
+        LOG.warning("update_product_price failed handle=%s: %s", clean_handle, exc)
+        return False, {"error": str(exc)}
+
+__all__.append("update_product_price")
+
+
 def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
     headers = _api_headers()
     if not headers:

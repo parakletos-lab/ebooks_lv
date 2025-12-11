@@ -48,6 +48,7 @@ CATALOG_SCOPE_SESSION_KEY = "catalog_scope"
 class CatalogScope(str, Enum):
     ALL = "all"
     PURCHASED = "purchased"
+    FREE = "free"
 
 
 scope_bp = Blueprint("catalog_scope", __name__)
@@ -108,10 +109,14 @@ def catalog_scope_purchased():
 
 @scope_bp.route("/catalog/all-books", methods=["GET"])
 def catalog_scope_all():
-    redirect_resp = _require_authenticated_scope("catalog_scope.catalog_scope_all")
-    if redirect_resp is not None:
-        return redirect_resp
     session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
+    target = _safe_redirect_target(url_for("web.index"))
+    return redirect(target)
+
+
+@scope_bp.route("/catalog/free-books", methods=["GET"])
+def catalog_scope_free():
+    session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.FREE.value
     target = _safe_redirect_target(url_for("web.index"))
     return redirect(target)
 
@@ -132,11 +137,13 @@ def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dic
     payload["scope_labels"] = {
         "purchased": _("My Books"),
         "all": _("All Books"),
+        "free": _("Free Books"),
     }
     payload["views"] = {
         "current": scope.value,
         "purchased_url": url_for("catalog_scope.catalog_scope_purchased"),
         "all_url": url_for("catalog_scope.catalog_scope_all"),
+        "free_url": url_for("catalog_scope.catalog_scope_free"),
     }
     return payload
 
@@ -186,9 +193,10 @@ def _insert_assets(response: Response, payload: dict[str, Any]) -> None:
 
 
 def _resolve_scope(state: UserCatalogState) -> CatalogScope:
-    if state.is_admin or not state.is_authenticated:
+    if state.is_admin:
         session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
         return CatalogScope.ALL
+
     stored = session.get(CATALOG_SCOPE_SESSION_KEY)
     if isinstance(stored, str):
         try:
@@ -227,7 +235,7 @@ def register_catalog_access(app: Any) -> None:
             book_id = None
             if request.view_args:
                 book_id = request.view_args.get("book_id")
-            if not state.is_purchased(book_id):
+            if not state.is_purchased(book_id) and not state.is_free(book_id):
                 LOG.debug("Blocking reader access for non-purchased book_id=%s", book_id)
                 return redirect(url_for("web.index"))
         return None

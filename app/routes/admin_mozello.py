@@ -247,6 +247,11 @@ def mozello_webhook():
             stored_relative = books_sync.set_mz_relative_url_for_handle(product_handle, relative_url)
         else:
             books_sync.clear_mz_relative_url_for_handle(product_handle)
+        # Sync Mozello price into Calibre if the custom column exists
+        price_value = product_data.get("price")
+        if product_data.get("sale_price") is not None:
+            price_value = product_data.get("sale_price")
+        stored_price = books_sync.set_mz_price_for_handle(product_handle, price_value)
         response_payload = {
             "status": "ok",
             "event": event_upper,
@@ -255,6 +260,7 @@ def mozello_webhook():
         if relative_url:
             response_payload["mz_relative_url"] = relative_url
         response_payload["relative_url_stored"] = bool(stored_relative)
+        response_payload["price_stored"] = bool(stored_price)
         return jsonify(response_payload)
 
     if event_upper != "PAYMENT_CHANGED":

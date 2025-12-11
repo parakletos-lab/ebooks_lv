@@ -25,6 +25,7 @@ from app.routes.overrides.stats_notice import register_stats_notice
 from app.routes.overrides.locale_override import register_locale_override
 from app.routes.overrides.language_switch_injection import register_language_switch_injection
 from app.routes.overrides.profile_guard import register_profile_guard
+from app.routes.overrides.mozello_sync_injection import register_mozello_sync_injection
 
 def _ensure_nav_injection(app: Any) -> None:
     """Register both loader and response nav injection handlers."""
@@ -51,6 +52,7 @@ def register_all(app: Any) -> None:
     register_profile_guard(app)
     register_locale_override(app)
     register_language_switch_injection(app)
+    register_mozello_sync_injection(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

@@ -35,6 +35,10 @@
 .ub-nowrap { white-space:nowrap; }
 .ub-pointer { cursor:pointer; }
 
+.ub-sync-to-mozello { display:inline-flex; align-items:center; gap:6px; font-weight:600; margin-left:8px; }
+.ub-sync-to-mozello .glyphicon { margin-right:2px; }
+.ub-sync-to-mozello.is-busy { opacity:0.85; }
+
 /* Inline style replacements */
 .ub-panel-note { margin-top:-2px; }
 .ub-row-gap { margin-bottom:12px; }

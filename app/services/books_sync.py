@@ -4,7 +4,7 @@ Read Calibre metadata.db for book list, mz_price custom column and mz_handle
 identifier. Provides minimal read helpers plus identifier insert/delete.
 """
 from __future__ import annotations
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Set
 import os, sqlite3, base64
 from app.utils.logging import get_logger
 
@@ -139,6 +139,37 @@ def _mz_price_column_id(conn: sqlite3.Connection) -> Optional[int]:
         return None
 
 
+def _write_mz_price(conn: sqlite3.Connection, book_id: int, price: Optional[float]) -> bool:
+    column_id = _mz_price_column_id(conn)
+    if column_id is None:
+        LOG.warning("mz_price column missing; cannot write price book_id=%s", book_id)
+        return False
+    table = f"custom_column_{column_id}"
+    cleaned_price: Optional[float] = None
+    if price is not None:
+        try:
+            cleaned_price = float(price)
+        except Exception:
+            cleaned_price = None
+    try:
+        cur = conn.execute(f"SELECT value FROM {table} WHERE book=? LIMIT 1", (book_id,))
+        row = cur.fetchone()
+        if cleaned_price is None:
+            if row:
+                conn.execute(f"DELETE FROM {table} WHERE book=?", (book_id,))
+            conn.commit()
+            return True
+        if row:
+            conn.execute(f"UPDATE {table} SET value=? WHERE book=?", (cleaned_price, book_id))
+        else:
+            conn.execute(f"INSERT INTO {table} (value, book) VALUES (?, ?)", (cleaned_price, book_id))
+        conn.commit()
+        return True
+    except Exception as exc:
+        LOG.warning("_write_mz_price failed book_id=%s: %s", book_id, exc)
+        return False
+
+
 def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[str]]]:
     conn = _connect_rw()
     price_id = _mz_price_column_id(conn)
@@ -170,6 +201,40 @@ def list_calibre_books(limit: Optional[int] = None) -> List[Dict[str, Optional[s
             "language_code": languages.get(bid),
         })
     return out
+
+
+def list_free_book_ids() -> Set[int]:
+    """Return Calibre book ids where mz_price is missing or zero.
+
+    Missing mz_price column yields empty set so callers can fall back gracefully.
+    """
+    free_ids: Set[int] = set()
+    conn = _connect_rw()
+    try:
+        price_id = _mz_price_column_id(conn)
+        if price_id is None:
+            return free_ids
+        price_tbl = f"custom_column_{price_id}"
+        prices: Dict[int, Optional[float]] = {}
+        for row in conn.execute(f"SELECT book, value FROM {price_tbl}"):
+            try:
+                prices[int(row[0])] = None if row[1] is None else float(row[1])
+            except Exception:
+                continue
+        all_ids = [int(r[0]) for r in conn.execute("SELECT id FROM books")]
+        for bid in all_ids:
+            val = prices.get(bid)
+            if val is None:
+                free_ids.add(bid)
+                continue
+            try:
+                if float(val) == 0:
+                    free_ids.add(bid)
+            except Exception:
+                continue
+    except Exception:  # pragma: no cover - defensive
+        return free_ids
+    return free_ids
 
 
 def _book_path(conn: sqlite3.Connection, book_id: int) -> Optional[str]:
@@ -232,6 +297,33 @@ def get_book_description(book_id: int, max_len: int = 8000) -> Optional[str]:
     except Exception as exc:  # pragma: no cover
         LOG.warning("get_book_description failed book_id=%s: %s", book_id, exc)
         return None
+
+
+def set_mz_price(book_id: int, price: Optional[float]) -> bool:
+    """Persist Mozello price into Calibre mz_price custom column.
+
+    Accepts None to clear any existing value. Logs a warning if the column is missing.
+    """
+    try:
+        conn = _connect_rw()
+        return _write_mz_price(conn, book_id, price)
+    except Exception as exc:  # pragma: no cover
+        LOG.warning("set_mz_price failed book_id=%s: %s", book_id, exc)
+        return False
+
+
+def set_mz_price_for_handle(handle: str, price: Optional[float]) -> bool:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return False
+    book_id = info.get("book_id")
+    if book_id is None:
+        return False
+    try:
+        bid = int(book_id)
+    except Exception:
+        return False
+    return set_mz_price(bid, price)
 
 
 def set_mz_handle(book_id: int, handle: str) -> bool:
@@ -303,6 +395,8 @@ __all__ = [
     "list_calibre_books",
     "set_mz_handle",
     "clear_mz_handle",
+    "set_mz_price",
+    "set_mz_price_for_handle",
     "get_cover_base64",
     "get_book_description",
     "lookup_books_by_handles",

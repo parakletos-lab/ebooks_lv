@@ -199,6 +199,22 @@ msgstr "Вход выполнен."
 msgid "Type and confirm your new password."
 msgstr "Введите и подтвердите новый пароль."
 
+#: app/templates/layout.html:33
+msgid "Sync to Mozello"
+msgstr "Синхронизировать с Mozello"
+
+#: app/templates/layout.html:39
+msgid "Syncing to Mozello..."
+msgstr "Синхронизация с Mozello..."
+
+#: app/templates/layout.html:54
+msgid "Synced to Mozello."
+msgstr "Синхронизировано с Mozello."
+
+#: app/templates/layout.html:47
+msgid "Mozello sync failed."
+msgstr "Синхронизация с Mozello не удалась."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."

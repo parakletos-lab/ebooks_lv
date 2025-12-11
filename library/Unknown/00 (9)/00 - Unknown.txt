@@ -1,0 +1,938 @@
+
+AI-generated content may be incorrect
+AA
+
+Andrey Adamovich
+0 minutes 24 seconds0:24
+Andrey Adamovich 0 minutes 24 seconds
+Ciao.
+Andrey Adamovich 0 minutes 33 seconds
+That's not sure a link. We are like a link size, but it's not.
+
+Liberts, Kaspars
+0 minutes 36 seconds0:36
+Liberts, Kaspars 0 minutes 36 seconds
+I need to.
+Liberts, Kaspars 0 minutes 39 seconds
+Uh, OK, cool.
+AA
+
+Andrey Adamovich
+0 minutes 42 seconds0:42
+Andrey Adamovich 0 minutes 42 seconds
+Yeah, yeah, yeah, yeah.
+Andrey Adamovich 2 minutes 46 seconds
+Hello. Hello.
+Andrey Adamovich 2 minutes 50 seconds
+So waiting for participants.
+Andrey Adamovich 3 minutes 14 seconds
+5.
+Andrey Adamovich 3 minutes 19 seconds
+U I u
+Andrey Adamovich 3 minutes 38 seconds
+Nine people on the call, so still a minute to go.
+Andrey Adamovich 4 minutes 26 seconds
+OK, we are 15.
+Andrey Adamovich 4 minutes 31 seconds
+Mute.
+Andrey Adamovich 4 minutes 36 seconds
+I'll wait a couple of other, a couple of more minutes just to wait for people to join. I have 18 people. Great.
+Andrey Adamovich 4 minutes 52 seconds
+Um.
+Andrey Adamovich 4 minutes 54 seconds
+Yeah, I already shared a link in in in teams chat which basically is a link to the board which which you see on the screen I hope and if you well and this this link will stay with you after after the after the.
+Andrey Adamovich 5 minutes 9 seconds
+After the training, after the workshop.
+Andrey Adamovich 5 minutes 14 seconds
+And also, as we agreed with Casper, I will also send a PDF version of that of that board.
+Andrey Adamovich 5 minutes 21 seconds
+Later because unfortunately I cannot share files in the in the chat. We will send it after the workshop.
+Andrey Adamovich 5 minutes 28 seconds
+OK, 23 people, 22.
+Andrey Adamovich 5 minutes 32 seconds
+Maybe one more minute.
+Andrey Adamovich 5 minutes 36 seconds
+And then we'll go.
+Andrey Adamovich 6 minutes
+OK, well, while we're waiting for the rest of the people to join, maybe you can write in chat.
+Andrey Adamovich 6 minutes 7 seconds
+Have you used Git before or not? Maybe maybe that's will be helpful for me to understand.
+Andrey Adamovich 6 minutes 22 seconds
+A little, yes.
+Andrey Adamovich 6 minutes 38 seconds
+OK, OK. So we have majority of people who have used Git in some way. I guess some say a little, some say no. OK, good. Good to have a mix of people. So actually at least have at least one person who admitted that they didn't use Git before.
+Andrey Adamovich 6 minutes 54 seconds
+Right, right. For those who used Git before, what was the use case? Are you developers or are you you were using that for something else? Maybe you can also.
+Andrey Adamovich 7 minutes 6 seconds
+Write it down in in chat developer, right?
+Andrey Adamovich 7 minutes 15 seconds
+Mm-hmm. Test leads developers.
+Andrey Adamovich 7 minutes 20 seconds
+Scripts QA, right? Analyse developer, right? Right.
+Andrey Adamovich 7 minutes 28 seconds
+OK.
+Andrey Adamovich 7 minutes 33 seconds
+Thank you. Thank you, folks.
+Andrey Adamovich 7 minutes 36 seconds
+So yeah, we have a mix of people. So some some some are QA people, some are developers, some are analysts, right? So you were using Git in some way, right? One thing, one thing maybe to to distinguish here because you know when when when people say Git.
+Andrey Adamovich 7 minutes 52 seconds
+Quite often they actually mean GitHub or they mean GitLab or Bitbucket or some other Git server, but essentially Git by itself is is just a common line tool that you run locally. So actually when I was asking did you use Git?
+Andrey Adamovich 8 minutes 8 seconds
+I actually meant did you use Git like on the command line, not not on the interface, because I suspect that most of the IT people would actually have used some integration with Git when they were collaborating on the software, right? So if you go on GitHub interface to manage your code or GitHub interface to manage your code or to manage issues that are related to the code.
+Andrey Adamovich 8 minutes 27 seconds
+That's not exactly Git. That's an interface around Git, right? But Git itself, Git itself is more like a version control system that is very simple in a way, right? But on top of that, people have built lots of integrations, lots of interfaces.
+Andrey Adamovich 8 minutes 44 seconds
+OK, so yeah, let's let's go into. I have 31 people. Great. So for those who haven't seen me before, my name is Andre. I'm from Riga and I can see you based on your names. So you're geographically located in different regions.
+Andrey Adamovich 9 minutes
+That's great. But yeah, Speaking of me, I am, I'm I'm a developer for 25 years and I think I used Git professionally for the last 15 at least because you know, Git was born in 2005, but but I use it not not immediately because there are other version of assistants.
+Andrey Adamovich 9 minutes 20 seconds
+On the market, I used it maybe like from 20 and 10 or something like that, but since then I'm using only that. Yeah. Also, I work as a DevOps person, as a fractional CDO and I'm training from time to time, right? So yeah, another couple of things about me.
+Andrey Adamovich 9 minutes 36 seconds
+I am the coorganizer of Cloud Native Latvia community and I'm also teaching at Taltac, which is a talent technical university. But that's that's probably not not interesting to you. I guess our our goal here to talk about Git. So the goal for this workshop, a small short workshop is to talk about, you know, the basics of Git.
+Andrey Adamovich 9 minutes 54 seconds
+The mental model behind the how how the Git repository works in general. They talk about the terminology, talk about the core workflow, how you work with Git in general. So those people who have little experience or small experience with Git and no experience with Git, I think it's you will be the most.
+Andrey Adamovich 10 minutes 12 seconds
+You you get the most benefits from this workshop, so to say people who probably work with git daily in the IDs writing code, maybe, maybe it will be a bit, you know, a simple workshop. So I just I just want to set the expectations so no one that there's no.
+Andrey Adamovich 10 minutes 27 seconds
+No failed expectations so to say, but overall of course we I want to help you build the common model and to explore the key basics together. Also another thing that I probably want to say before we start, if you have any commands or you have any questions as as we as we go to the content.
+Andrey Adamovich 10 minutes 45 seconds
+Please don't hesitate. Either tell it on audio or write it in chat. Chat. I have an additional monitor here where I see all the chat messages, so I'll pretty much see immediately what you're writing and I'll try to address that right away. So don't hesitate to ask questions, write commands and stuff like that.
+Andrey Adamovich 11 minutes 4 seconds
+Please, please be active, right? So yeah, let's start. I guess most of you know what Git is, right? It's a version of a system for tracking changes and then in files. And The thing is that you would usually track changes in files that are text files. So if you're talking about, you know, code like Java.
+Andrey Adamovich 11 minutes 24 seconds
+Java files or JavaScript files or Python files. That's code, but that's text. And the Git or actually any other version of your system is very well designed to manage changes and help you track changes in those plain text files. And those plain text files can be code or could be could be just text files, markdown files, something else.
+Andrey Adamovich 11 minutes 43 seconds
+Right. Git and actually most of the other version of systems are not very good at managing changes in binary files. They can, but it's not as visual. It's not as useful as as with text files. So whenever we're talking about, you know, version kernel system, most likely we are actually managing some.
+Andrey Adamovich 12 minutes 1 second
+Some textual information, whether it's Python or Java or Ruby or or or any other programming language or any other configuration language, right? So text files are are the best fit for any version of the system, including it, right? So.
+Andrey Adamovich 12 minutes 16 seconds
+Maybe a bit brief history, because it's kind of interesting to know how Git was born, because it was born out of necessity. And maybe you've heard that, maybe you didn't. But the the author of Linux, Linus Linus Torvalds, actually created Git to manage Linux kernel source code.
+Andrey Adamovich 12 minutes 33 seconds
+And it happened because the company that were providing version control system for Linux kernel before that decided to charge Linux kernel developers some money for that for the licenses and Linux didn't like it. So basically in a few days.
+Andrey Adamovich 12 minutes 49 seconds
+Well actually on April 3rd he started development of the new version of the system and kind of on April 7th he finished his job and started to self host git itself and then at some point.
+Andrey Adamovich 13 minutes 5 seconds
+In the same month, the whole Linux kernel has migrated to the new version of system. So as you can see, the version of system was created roughly like in four days and then started to be perfect. Linux started to perfect that a bit and eventually eventually the whole Linux kernel ecosystem was running.
+Andrey Adamovich 13 minutes 25 seconds
+On top of Git as a version of the system. So yeah, it's kind of interesting. And I mean initially, at least in the beginning of 2005, 2006, basically only Linux kernel was using Git, but then slowly because you know Linux is like.
+Andrey Adamovich 13 minutes 45 seconds
+It's a very popular product among developers and it's Linus is very much respected among developers for all his work that he does. So slowly the adoption of Git started. So more and more and more projects started to use Git for their as the main version control. Of course, other version control systems existed before Git, right?
+Andrey Adamovich 14 minutes 5 seconds
+Like Beekeeper, which became commercial, there was CVS. Maybe some of you have seen that in your career. There was Subversion. There still are things like Mercurial and Perforce and some others. So in my career I have used, I think 5 different version control systems. There was CVS.
+Andrey Adamovich 14 minutes 25 seconds
+It was Subversion, a bit of Mercurial, a bit of Perforce and eventually Git, right? But because of this, because Git was free and still it is free and because it's very simple design in a way and it's very easy to start with because effectively Git.
+Andrey Adamovich 14 minutes 45 seconds
+Is a local tool. You don't need to have a server, you don't need to have a special ecosystem or infrastructure for you to run it. You basically just install it locally, which basically is just a binary and then you can start managing your files. So the approach to get design was initially very distributed because you know.
+Andrey Adamovich 15 minutes 4 seconds
+Kernel is developed by hundreds of developers who are living in different time zones and different geographical locations, and they don't synchronize frequently. They don't work in the same kind of office or whatever. They really are distributed and they work only at the time when they can work.
+Andrey Adamovich 15 minutes 24 seconds
+And that's that's not predictable. So basically they work on their own and then at some point they send each other. Well, now it probably happens through GitHub or something something like that. But back in the days it happened that they were sending each other patches and were sending each other like requests to pull or push changes from one git repository to another git repository. So.
+Andrey Adamovich 15 minutes 44 seconds
+They are distributed and asynchronous in that regard. So Linus wanted to design a system that will help. Once it will be simple, on the other side will support this kind of distributed asynchronous way of working between different developers. And basically he managed to achieve that. So basically you don't depend on a central point of.
+Andrey Adamovich 16 minutes 3 seconds
+Of of of coordination. You actually just exchange the list of commits, the list of you know history entries between each other and then you may accept those history entries into your repository or or otherwise may not accept that if you don't like it. So that's that's that was the the the goal of that and that's what Linus actually managed to.
+Andrey Adamovich 16 minutes 23 seconds
+Put in.
+Andrey Adamovich 16 minutes 25 seconds
+Another another another benefit is that I mean I worked with other version of systems before git and let's say if you take subversion or if you take perforce creating branches and and those tools actually was not a cheap operation. So for example in subversion especially for the big repositories to create a branch it would take you know few minutes.
+Andrey Adamovich 16 minutes 45 seconds
+Sometimes in Git creating branches is really, it's simultaneous because effectively a branch is not really creating anything, it's just creating a reference in the commit history. We're gonna look into that a bit later. So the simplicity and speed kind of made Git very popular in many other projects.
+Andrey Adamovich 17 minutes 5 seconds
+Object started to adopt that, but again, on one side it was simple. On the other side, there's basically no user interface built in into Git. You have to have one if you will. And nowadays, of course, because Git is so popular, there are many alternatives, there are many ways to interact with Git.
+Andrey Adamovich 17 minutes 22 seconds
+Apart from command line of course, but originally and the original product is still just a command line tool, nothing else. Everything that you see on top of that, like GitHub and GitLab and some IDs and some user interfaces, they are additions. They're not part of the main project, right?
+Andrey Adamovich 17 minutes 39 seconds
+The the main project is still just command line, command line tool, a bunch of command line tools, right? So also Git doesn't have any authentication of the relation mechanism built in, right? It's it's it's it's part of the other software.
+Andrey Adamovich 17 minutes 54 seconds
+And also it's it's not really it's not you can exchange history entries between between the Git repositories, but you don't have really centralised environment as part of of of Git original binary. So yeah, it kind of on one side it's very simple and convenient especially for for.
+Andrey Adamovich 18 minutes 14 seconds
+Disciplined developers like like Linux kernel developers, but at the same time it doesn't have, you know, the enterprise features that that you would expect it to have. And that's why. And actually I I think it's part of the reason why Git became also even more popular is because GitHub was born around 2008.
+Andrey Adamovich 18 minutes 34 seconds
+When they offered very nice UI for collaborating on code and collaborating Git repositories. So basically what GitHub offered to Git is first of all all of these things they offered like a web interface or the mechanism to authenticate authorize.
+Andrey Adamovich 18 minutes 53 seconds
+Permissions for your repositories so that you can actually add people to the project to the repository and allow them to do commits into your repository. I mean of course other solutions existed before GitHub, but GitHub because they made it free and they've actually allowed you to use free accounts and host your.
+Andrey Adamovich 19 minutes 13 seconds
+Repositories for free that I think that started a revolution sort of, so to say, because many developers started to kind of switch over to GitHub because public repos were free and especially for open source code. It was really convenient because they also built and.
+Andrey Adamovich 19 minutes 31 seconds
+A way to exchange code between different repositories and creating forks of different repositories. And basically if you have an open source repo in GitHub, anyone on the planet can go into that repo and make a fork of that repo and then work on that repo with.
+Andrey Adamovich 19 minutes 51 seconds
+Without without disturbing you as the author of the repo and whenever they are ready to to to kind of give you some some part of the code that they did implement and then inside their fork of of that repo they can just send you a pull request or merge request as as they call sometimes.
+Andrey Adamovich 20 minutes 10 seconds
+And then you as an author of the original repo can can decide what do we do with that? Should I accept those changes? Should I merge them into my main repo or should I decline it right? And basically what GitHub gave us as well is the collaboration mechanism for this kind of pull requests. So the ability to fork things quickly and also to send changes back into the.
+Andrey Adamovich 20 minutes 30 seconds
+Into the into the main repository quickly and have an interface where you can, you know, communicate, make commands and make changes and fixes. That's what made you know the social coding a very popular thing and that's what also popularized Git as the as the version of the system.
+Andrey Adamovich 20 minutes 48 seconds
+Right. So Git and GitHub, it's still a different things, but GitHub I think is responsible for part of the popularity of Git in general, right? Without GitHub, I think Git would be less popular or less less used, but because of GitHub, we have it, we have it pretty much as.
+Andrey Adamovich 21 minutes 8 seconds
+The main version control system that is now used in most of the projects. So I mean for the last 10 years I haven't seen any project that would use anything else apart from Git. So I would say that Git probably contributes to 99% of version control.
+Andrey Adamovich 21 minutes 24 seconds
+Market on on on on the planet and I don't know, I don't know if it's a good thing or bad thing, but but that's that's the reality, right? So I I know that some some older projects might still use some some other versions of systems like CVS and and Subversion, maybe Mercurial.
+Andrey Adamovich 21 minutes 39 seconds
+And actually if you know for example the Google is using Perforce as their their way to manage virtual control, but they were using that way way before Git was born. So Google actually I think they at the moment they're using mix of Git and Perforce, but they they optimise Perforce for their own needs and that's that's a completely different story and Google is a.
+Andrey Adamovich 21 minutes 59 seconds
+A little different company in that sense, but most of the enterprises I think pretty much use Git and not not because of Git as the binary as as the original like you know version control tooling, but because of the collaboration ecosystem that is built on top of that. And of course initially we only had GitHub.
+Andrey Adamovich 22 minutes 16 seconds
+As an example, but now we also have GitLab, Bitbucket, Azure DevOps and several others, right? So there are many, many integrations and collaboration, collaboration tools that are built on top of of of Git, Git Ecosystem, Git Git, Git binaries.
+Andrey Adamovich 22 minutes 33 seconds
+Right, so.
+Andrey Adamovich 22 minutes 39 seconds
+Did I share the link with you? I think I did, just in case we'll share that again. So this board will stay with you.
+Andrey Adamovich 22 minutes 46 seconds
+Any questions so far?
+Andrey Adamovich 22 minutes 50 seconds
+Or commands.
+Andrey Adamovich 23 minutes 9 seconds
+Custom git commands. What do you mean by custom?
+Andrey Adamovich 23 minutes 30 seconds
+To be honest, I never used that. But but yeah, so probably no, we're not going to talk about that.
+Andrey Adamovich 23 minutes 46 seconds
+OK, but but thanks thanks for thanks for mentioning that. So you can extend git with with with hooks. So it could be some custom behaviour that you that you get when you do git commit for example before commit or after commit.
+Andrey Adamovich 24 minutes 1 second
+And as answers also specified, we can also add additional commands into into git binary so to say to expand it. Never never never had the need to do that because most of the most of the work that you do with git usually is related to.
+Andrey Adamovich 24 minutes 18 seconds
+To commits and then branches, right?
+Andrey Adamovich 24 minutes 23 seconds
+Actually another thing maybe to to to talk about Git before before we go into some some examples is that some people consider Git to be complex and I would say that it is simple in in the design. It's actually very brilliant design in terms of how how you manage branches.
+Andrey Adamovich 24 minutes 42 seconds
+Is how you manage a reference on the commits, but that simple design can be overcomplicated with your branching strategy. So probably we can discuss that a bit later, but but if you use very complex branching strategy in your in your projects in your in your company that may require you to run some very specific git commands that.
+Andrey Adamovich 25 minutes 1 second
+In normal workflows usually are not needed.
+Andrey Adamovich 25 minutes 6 seconds
+So Dennis is asking I heard git switch is better than git checkout, but why? Well git checkout is the original name of the of of this command. Basically git checkout is to switch between the branches, but you know checkout is not really a user-friendly word.
+Andrey Adamovich 25 minutes 25 seconds
+That that logically denotes the operation. So I mean checkout you basically are checking out part of the part of the the repository into the work into the working tree into the working into the workspace. So again it makes sense but it's not easy for for at least for newcomers into the git into the git ecosystem to understand what checkout means.
+Andrey Adamovich 25 minutes 45 seconds
+So that's why they introduced git switch, I think a few years back, maybe 5-6 years back, to allow people who never used git before to be to to help them out to understand what is going on basically. Because git switch is it's kind of obvious, right? Switch is you're switching between the branches.
+Andrey Adamovich 26 minutes 2 seconds
+But get checkout is not is not really logical like what's checkout and then not not not all people understood what's what's what's that. So switch in that sense is is better because because it's more understandable but also it's more optimised for.
+Andrey Adamovich 26 minutes 18 seconds
+For simpler workflows, so to say. So yeah, that's one. But you still will find a lot of tutorials and blog posts which mention git checkout as the command. But that's because probably the person who wrote the tutorial actually used that used git way longer than the swish command.
+Andrey Adamovich 26 minutes 37 seconds
+Command appeared and and and get binary. But yeah, switch is is is the way to go because it's gonna be easier to to work with fewer fewer assumptions you have to make when you work with switch.
+Andrey Adamovich 26 minutes 51 seconds
+Git good. That fixes all the bugs for me. OK, that's good. I guess. I guess it's AI based or something like that, right? Right. So yeah, let's talk about, let's talk about what is Git and maybe I'll, I'll actually go into the demo mode here.
+Andrey Adamovich 27 minutes 11 seconds
+And I will. I will.
+Andrey Adamovich 27 minutes 15 seconds
+I'll go to the command line actually, because as I mentioned, I'm sorry.
+Andrey Adamovich 27 minutes 22 seconds
+Git is just a binary, right? So let me do it like that. So what you can do is I will create a directory. I can do here, let's say git.
+Andrey Adamovich 27 minutes 38 seconds
+Give demo demo 2 for example. I can go into that directory, Sir.
+Andrey Adamovich 27 minutes 45 seconds
+I'll go to the demo too, and here if I if I take a look what's inside, it's empty at the moment, right? I feel like let me also remove this guy.
+Andrey Adamovich 28 minutes 2 seconds
+So now I'm inside a directory called Demo 2, right? And this is just a directory. What I can do here? I can initialize git repository right in place, right? So I don't need to connect to GitHub, I don't need to connect to any other git provider.
+Andrey Adamovich 28 minutes 18 seconds
+I can actually just do it locally. Nothing else is needed. And that will create a directory called dot git, right? And this dot git directory is actually, well, we call it a repository. Well, no, not fully true because that dot git directory will contain.
+Andrey Adamovich 28 minutes 38 seconds
+Two things, it will contain the repository and will contain the index and also will contain some some references into which branch we're currently working on and stuff like that. So basically internal data about the the the history entries, the current versions and stuff like that are stored inside dot git directory, right?
+Andrey Adamovich 28 minutes 55 seconds
+The directory where you are working is called workspace or working tree or or or your work location basically and there you can go and change the files. So at the moment the repository is empty right and has has nothing inside and if you do git status command here.
+Andrey Adamovich 29 minutes 14 seconds
+You will notice that there's nothing, no no commits, no no. We're on branch main because that's the default name for the branch that you go when you create a new new repo and there's nothing, nothing there, nothing to commit. If I do create a file here, let's say note.txt, something like that.
+Andrey Adamovich 29 minutes 32 seconds
+So you see now I have a file. Now when I run git status command, basically what it does, it compares the state of the repository with the state of the workspace, right? So basically you see that here that untracked files.
+Andrey Adamovich 29 minutes 48 seconds
+We have one file that is not part of the git repository in any way, right? So if I do git add now to TXT a git add command and you can see that also in the.
+Andrey Adamovich 30 minutes 4 seconds
+In the cheat sheet here, it will move the file into the. Well, we call it index or it's also called staging area, right? That's the area where we're preparing files for the next history entry, which may be added or not added into the repository, right? So if I do.
+Andrey Adamovich 30 minutes 23 seconds
+So if you enter on git status now, what you will see here is that now we have a file well to be committed, changes to be committed, which means that they are in the staging area or as we also call it in the index, right?
+Andrey Adamovich 30 minutes 37 seconds
+The index, right? So this is the first operation that you do. You prepare your next history entry. And of course I can also add another file that say touch readme.txt or let's use markdown for example. And if I do git status now, you will see that we have one file that is.
+Andrey Adamovich 30 minutes 56 seconds
+File that isn't tracked. So only place where it's actually is at the moment is the working directory the the the workspace. Another file is in the workspace and in the staging area in the index and well we also have the the the actual repository but but that's that's at the moment is empty.
+Andrey Adamovich 31 minutes 15 seconds
+And actually in order to see what's in the repository, what's in this part of of the repo, you can do git log command which will show you how many entries in the history we have in that in that in that log. And you see that at the moment we have nothing, no no commits there.
+Andrey Adamovich 31 minutes 31 seconds
+Right, so now what I will do, I will add another file to the staging area to the index and if we do git lock now still empty. If we do git status now you see that now in the staging area in the index we have two files, right? Can I? So now what I will do, I will do commit.
+Andrey Adamovich 31 minutes 48 seconds
+Commit minus M will be the message and you can also omit that and use git commit directly, but then it will ask you to still provide a commit message. That's a mandatory thing and it will start a default editor for you to to to to to enter that message. But usually I do that with with if I do it on common line, I do it like that.
+Andrey Adamovich 32 minutes 8 seconds
+So git commit new stuff, something like that.
+Andrey Adamovich 32 minutes 13 seconds
+OK, so now this thing that was in the index now is being put into the repository, right? So now if I check git status, you see that there's nothing to commit. So the working tree, the workspace is clean. There's no no. So the working tree corresponds to the.
+Andrey Adamovich 32 minutes 30 seconds
+To the to the state of the repository and that's why nothing has to be changed, right? If I do git log now, you will see that I do have one commit and commit number is like that and you see that it has new stuff and stuff like that, right? And well, I mean it's kind of obvious we can continue working like that.
+Andrey Adamovich 32 minutes 50 seconds
+So I can create another file, let's say I don't know something like code.py and I can get another file code something like app dot JS whatever. So again git status.
+Andrey Adamovich 33 minutes 5 seconds
+You see that we have two untracked files. We can git add all of them. I just add everything with this thing. Now if I do git status, you will notice that now they moved to the staging area to the index and now I can do commit minus M.
+Andrey Adamovich 33 minutes 21 seconds
+Edit some code, right?
+Andrey Adamovich 33 minutes 31 seconds
+So answer is asking what factors variables does the commit hash consist of? Oh, it's it's a random number pretty much.
+Andrey Adamovich 33 minutes 45 seconds
+So it's it's it's not calculated, it's just basically a random number, just the only thing that it has to be has to be unique, right? It has to be unique within within the repo and that's that's how it kind of knows in which commit it is. So actually commit hash is quite a long thing. So let's let's take a look at that git long.
+Andrey Adamovich 34 minutes 3 seconds
+It is. I think it is, yeah. It's all GUID even or you know, like it's a global thing, but it's generated automatically. I mean, it's it's it's there's no guarantee that all commits in in in in in the world are are unique, right? But there's a guarantee that all commits within the repo are unique.
+Andrey Adamovich 34 minutes 21 seconds
+Uh.
+Andrey Adamovich 34 minutes 23 seconds
+Because otherwise otherwise we have we we can have troubles with with with that right. So you you can see that you can see that we have now two commits right and we we we can continue working with that as well.
+Andrey Adamovich 34 minutes 39 seconds
+Right, so yeah, now if I do git status, you will notice that nothing, nothing has changed. What I can do now, for example, I can I can delete the file. Let's say I will delete up GS and I can do git status and it will tell me that.
+Andrey Adamovich 34 minutes 54 seconds
+That basically what it tells here is that the work, the working tree, the workspace is not matching the status of the repository. So there's mismatch between them and because there's a mismatch, it's it knows that something is is there. So I have two options from here. One of course is to do git add again, right? Or git RAM actually.
+Andrey Adamovich 35 minutes 14 seconds
+Or git add and remove the file for that to make a commit that will delete a file. Or I can also do a reset minus minus hard for example or just reset and it will restore the the state of the of the working tree.
+Andrey Adamovich 35 minutes 31 seconds
+And reset it to the to the state of the repository. So basically it's reverting my back my my definition of that. So if I do get status now we have nothing change and you see that the of JS is back back in business right? Because I just get didn't get reset.
+Andrey Adamovich 35 minutes 51 seconds
+So it's kind of as soon as you committed something into the into the repository, then you can always restore that state by using the commit number or or maybe if there's like also you you can tag your commits if you want to.
+Andrey Adamovich 36 minutes 8 seconds
+And if you if there's a tag, you can also use the tag to kind of restore that.
+Andrey Adamovich 36 minutes 12 seconds
+Right. Any questions about that so far?
+Andrey Adamovich 36 minutes 27 seconds
+8.
+Andrey Adamovich 36 minutes 33 seconds
+OK, let's let's continue for for those who didn't didn't use Git before, do you do you follow?
+Andrey Adamovich 36 minutes 53 seconds
+So Yannis is asking. OK, cool. Ben Ben is saying, but yes, awesome.
+Andrey Adamovich 37 minutes 2 seconds
+OK, actually let's talk about that. So Yannis is asking if I committed some bad code, which is the easiest way to roll that back. The question is did you because you know there are two things in play because at the moment the examples that I showed you, they are really are happening locally, they're not going.
+Andrey Adamovich 37 minutes 22 seconds
+Anywhere and basically basically if they're not going anywhere yet, then you can actually just play with commit traps. Actually maybe I'll do this with the visualization will be easier to follow. So I have well there are some links here which you can also use.
+Andrey Adamovich 37 minutes 40 seconds
+Maybe, maybe let's go into the branching mode. So I will open this guy.
+Andrey Adamovich 37 minutes 50 seconds
+Show you that.
+Andrey Adamovich 37 minutes 53 seconds
+So you see this visualization as how it works, right? Yeah, we don't need this one. So basically inside your repository commits are they reference, they are referencing each other, right? So basically the first commit doesn't have any references, but.
+Andrey Adamovich 38 minutes 13 seconds
+Other commits have a reference of the previous to the previous commit, and the new commit doesn't store the whole thing, doesn't store the whole copy of the working directory. It contains only the delta of the previous commit, right? So as you add things on top of that, they will only contain deltas.
+Andrey Adamovich 38 minutes 31 seconds
+That that also makes kind of that thing a bit quite efficient and basically if you do commits like that, they will.
+Andrey Adamovich 38 minutes 44 seconds
+Just add more more references inside the inside the inside the history right? And each one of them will contain the delta as I mentioned, but also it will contain the git repository will contain your current.
+Andrey Adamovich 39 minutes 1 second
+Active reference, right? So basically here the main branch is pointing to the C4 commit and what it can do is you can say reset C3 I think it was, yeah.
+Andrey Adamovich 39 minutes 17 seconds
+So basically you can move your main reference or your head as it's called in git terminology. You can move your head back a couple of places and then basically this commit becomes like a stale commit and what it can do, you can continue.
+Andrey Adamovich 39 minutes 36 seconds
+In this case, inside your git repository you will have two commits that are referencing the main one. It's technically it's already a branch, but not fully right. And this will be like the main commit because your git configuration knows about that, but this one will.
+Andrey Adamovich 39 minutes 56 seconds
+Will be sort of stale commit that will stay in the repository but will not be used. Unless you know it's a hash, you will be able to return to that. But if you don't know the hash then it will be just stay stale without.
+Andrey Adamovich 40 minutes 12 seconds
+Without being able to kind of find out, actually there are there are commands that can clean up the repository and and because it's only local, right at this point it's only local. When you're going to push your changes into the remote repository, you actually you're not pushing the whole repo, you're pushing just the changes.
+Andrey Adamovich 40 minutes 31 seconds
+That are part of your main flow or current branch, right? Anything that is missing on the remote repo will be added to the history in the remote repo based on that. So these commit IDs of course they have to be the same on local and remote repo and then remote repo can actually also do that join that with with with that.
+Andrey Adamovich 40 minutes 50 seconds
+Right. So yeah, to answer Yanna's question, if you want to get few commits back, just use the git reset command and say which commit you want to go back, right? And actually if I do git reset reset to.
+Andrey Adamovich 41 minutes 5 seconds
+C2 it will just go there and if I start committing there it will create another another parallel timeline and these guys will be stale and not visible anymore.
+Andrey Adamovich 41 minutes 19 seconds
+Right. I hope this question is answered. That's the simplest way, right? But if you pushed it, then it's it's a bit different story, right? So actually let let's try to play with pushing. I will go go to GitHub.
+Andrey Adamovich 41 minutes 36 seconds
+And if you have your GitHub repositories as well available, you can also do that. Actually I have created the GitHub repo already before before this workshop. I called it Git GitHub demo or Git demo. Let me let me find it. Yeah, Git demo. So this repository is completely empty as you can see.
+
+Andrey Adamovich 41 minutes 36 seconds
+And if you have your GitHub repositories as well available, you can also do that. Actually I have created the GitHub repo already before before this workshop. I called it Git GitHub demo or Git demo. Let me let me find it. Yeah, Git demo. So this repository is completely empty as you can see.
+Andrey Adamovich 41 minutes 55 seconds
+What I can do in order to publish my history into that repo, I have to configure git to say where is the remote repo right? So basically if we go back to the slides I need to configure.
+Andrey Adamovich 42 minutes 15 seconds
+Configure the reference between the local repo and its remote fork or remote representation so that I can use git push command to push my changes into that. At the moment this guy is empty and I can just take you know this.
+Andrey Adamovich 42 minutes 33 seconds
+URL of the repo. I will go back into my shell and I will do git remote. I'm sorry slack URL.
+Andrey Adamovich 42 minutes 50 seconds
+So I'm setting the URL of the remote representation of my repo, right? So basically all my changes are still local. I I can still go between them quite easily using git git reset or git commit stuff or git checkout or git switch, but remotely nobody knows about my code, right? So I need I need to I need to push it.
+Andrey Adamovich 43 minutes 9 seconds
+But before I need to set the remote, yeah, actually sorry, remote is is actually one repository can have many remotes. One thing that I missed it at URL also.
+Andrey Adamovich 43 minutes 27 seconds
+Was at yeah should be and remotes. Yeah I have to add origin right? So if I already had the the the public I'd have to had to to change the location through the set URL command. But if it's a new repository which didn't have anything I have to say I use the add command.
+Andrey Adamovich 43 minutes 47 seconds
+Right, so git remote add origin and now I should be able to do git push. Let's see if it works.
+Andrey Adamovich 43 minutes 54 seconds
+And it worked. So basically this guy connected to the repo, figured out that it's an empty repo and pushed the whole history from my git log into that repo, right? And if I go now into that, into that.
+Andrey Adamovich 44 minutes 9 seconds
+Repository. You can see that it's it's it's there and what I can do, I can click on the commits and you can see that these commits are also appearing here as as as elements because that's the thing that we exchanging between the different forks of two repos, right? Whether it's a local repo remote.
+Andrey Adamovich 44 minutes 29 seconds
+We're just exchanging the commit entries.
+Andrey Adamovich 44 minutes 36 seconds
+Any questions about that so far?
+Andrey Adamovich 44 minutes 50 seconds
+No questions.
+Andrey Adamovich 44 minutes 52 seconds
+Oh yeah, you said that commits only store the diff. Does that mean that wherever you want to check out the commit?
+Andrey Adamovich 45 minutes 1 second
+You have to start with initial repository stage and then apply all end ifs to show the latest repository state. I think it's also caching that stuff. So it's kind of it's it's applying the divs also reversibly because of course it has the the the.
+Andrey Adamovich 45 minutes 18 seconds
+Some sort of, you know, preconfigured thing. But if you're doing that for the first time, yes, it has to reconstruct the the whole history thing, yeah.
+Andrey Adamovich 45 minutes 32 seconds
+Actually it could be interesting to look into into the Git directory. So actually let me start, let me start that thing. So Git directory as you can see consists of this several things so to say.
+Andrey Adamovich 45 minutes 48 seconds
+And you see that this is index, right? This is where we keep staged files. That's the staging area. This is our head, so that this is the reference to the to the to the current working.
+Andrey Adamovich 46 minutes 4 seconds
+State of of of our repository. So the things we're working with and at the moment just pointing to the main range. Also it specifies which which commit version it is right. Also here you can see that the remotes are configured in the configure config file.
+Andrey Adamovich 46 minutes 22 seconds
+So the thing that I added through a comment line, you can actually just go and edit that directly if you want to. Also you can see that the commit logs are basically here. We specify you know different information about what is pointing to what, right?
+Andrey Adamovich 46 minutes 39 seconds
+And here we have basically the commits somewhere, yeah.
+Andrey Adamovich 46 minutes 47 seconds
+Commits, commits, commits actually well objects are here. So if I take a look at this object, it's not really it's it's a binary thing, but it does contain information about the the delta. So these are the deltas that are being reconstructed in some way.
+Andrey Adamovich 47 minutes 2 seconds
+Yeah, so this is this is the date the file system. So Rasmus is asking when pushing you did not have to go through any authentication, was it? Yes, yes, because obviously I'm working with GitHub quite a lot. I'm already authenticated against that. So basically as you can see that in GitHub.
+Andrey Adamovich 47 minutes 24 seconds
+There are two ways to authenticate. One is through HTTPS, another one through SSH, right? And I already have my private key configured locally and public key added to GitHub profile. So basically whenever I'm pushing to GitHub, it's using my private key to.
+Andrey Adamovich 47 minutes 43 seconds
+Authenticate me against the GitHub, so it was preconfigured.
+Andrey Adamovich 47 minutes 47 seconds
+In in in your case, if you're just starting, if you've never used Git before, you probably will have to spend some time to to configure that, right? You have to generate your key or potentially also use, you know, HTTP interface. Especially for the starters, it's actually easier to use HTTPS because HTTPS will ask you for.
+Andrey Adamovich 48 minutes 3 seconds
+Password and username and usually if you install some some CLI like you have CLI or some ID, they have this built in. It's kind of easy to to to to follow that. But yeah yeah the reason it worked for me is because I have the key, I have the private key locally.
+Andrey Adamovich 48 minutes 19 seconds
+OK. Any other questions so far?
+Andrey Adamovich 48 minutes 32 seconds
+Yeah, maybe another thing, maybe another thing to to mention. There's another area in the repository called stashing. So just imagine the use case you were you you were working on something. Let's say you're working on some new feature and your your workspace is dirty. It has some files.
+Andrey Adamovich 48 minutes 50 seconds
+And you're not ready to commit them because they're not ready. The feature is not ready, but some some, but suddenly you know very urgent request is coming from from the customer that you need to fix something in the existing code base, but you don't want to throw away your your your commits. One way to do that is, well, one probably the proper way to do that.
+Andrey Adamovich 49 minutes 9 seconds
+Would be to actually use branches, but if you if you were working on the main branch then another way to do that is use stashing. So basically stashing what it does, it takes all The Dirty changes, all the things that are not part of the of the staging area yet in your workspace and putting them aside for for a while and basically cleaning up cleaning up your.
+Andrey Adamovich 49 minutes 28 seconds
+Your your workspace from from from dirty changes so you can do some some something else. Whenever you finish finish it and did that you can do on stash basically stash apply or stash pop and then then you will get your dirty changes back into your workspace.
+Andrey Adamovich 49 minutes 45 seconds
+Right so so basically it's it's it's it's a temporary storage and actually you can even have several stashes there. If you just get stash and then give it some name it will be in like a name stash which can after that I'm on stash or actually pop into your working space through through additional with additional parameter.
+Andrey Adamovich 50 minutes 2 seconds
+Right. So but yeah, yeah that's that's that's the basic idea of how you would work with with Git locally. I mean that's what people who never worked with Git before they don't, they they don't realise as I mentioned right that that GitHub is not Git. Git Git is basically just you know local binary and local file.
+Andrey Adamovich 50 minutes 22 seconds
+A local directory with some files to help you out working with with changes right and to to help you navigate between changes and also if needed reverse certain things, update certain things and maybe roll forward, maybe roll back and stuff like that right?
+Andrey Adamovich 50 minutes 40 seconds
+And then then the the the the thing that you exchange between and you know the the other good part of git and that's that I like as well is that if you're working locally with git without Internet, without anything, you still have the full history available. So when when you when you do.
+Andrey Adamovich 50 minutes 57 seconds
+Uh no.
+Andrey Adamovich 50 minutes 59 seconds
+Clone or push repository from from from remote you actually just you're not getting just the workspace, you're getting also the full history and that that allows you locally to navigate that history and and to take a look what was happening like say a month ago, a year ago and stuff like that if if the repository is very old.
+Andrey Adamovich 51 minutes 18 seconds
+Right. So any questions so far on that?
+Andrey Adamovich 51 minutes 33 seconds
+OK, maybe you're writing, I don't know. So we covered, we covered this, this basic basic terminology. So workspace or working tree also sometimes it's called like that in in in in the documentation.
+Andrey Adamovich 51 minutes 49 seconds
+Index or staging area, right? Also refer to that stashing is is is another thing and repository is basically a list of commits, a history set of commits. So and you want when you're doing pushing or or or fetching or pulling.
+Andrey Adamovich 52 minutes 7 seconds
+You're basically exchanging, you know, part of the commit tree in between the local and remote repository.
+Andrey Adamovich 52 minutes 15 seconds
+Right. And as as as we discussed here, if we go back to, if you're doing reset, you basically are going back in history and forgetting some of the previous commits that were done.
+Andrey Adamovich 52 minutes 30 seconds
+But of course there are other ways to switch between between between the commits. I'll show you with branching a bit later. But but yeah, the thing that we have to understand is that commit is a history entry, right? Commit is created from the.
+Andrey Adamovich 52 minutes 47 seconds
+From the staging area, when we say commit and staging area may contain one file, may contain 100 files, doesn't matter. Commit will contain the delta with previous commit and then put it into the repository and the log is a list of commit entries. OK.
+Andrey Adamovich 53 minutes 2 seconds
+Right. So we discussed also remote as as as one of the one of the terminologies. So remote is one of the remote locations of the same history and potentially you can have several remotes. So potentially you can sync your repository with GitHub and then maybe sync your repository with another repository that is inside.
+Andrey Adamovich 53 minutes 22 seconds
+Private GitLab instance, for example. So a number of remotes is not limited to one. It can be several. That's actually why that's that's how Linux kernel developers are using that, because actually they have many different remotes, so to say, and they exchange the commit.
+Andrey Adamovich 53 minutes 39 seconds
+Logs coming history between between those remotes from down to down. OK, so Git is distributed. Git keeps all the history of your of your repository locally and you exchange commit entries between the the remote.
+Andrey Adamovich 53 minutes 55 seconds
+OK, yeah, let's talk about branches. Actually, I mean, let's start it from scratch, maybe.
+Andrey Adamovich 54 minutes 4 seconds
+So clean clean stuff. I will just it's it's nice to visualize here. So let's say I will do git commit and now I will do git branch. So there's branch command and usually you will give your branch a name. Let's say I would call it V2.
+Andrey Adamovich 54 minutes 21 seconds
+And what happened as you can as you can see nothing really happened on the level of of the of the structure of of Git of the repository. Basically we just added another reference to the same commit. So now at this point you can see the start here in the main at the moment our.
+Andrey Adamovich 54 minutes 40 seconds
+Our working tree or workspace is pointing to the main branch, but at the same time we have a V2 which is pointing to the same commit, but it's not the current branch that we're working on. So if I do git commit.
+Andrey Adamovich 54 minutes 55 seconds
+You would notice that we're moving our hat with the star further, but the V2 stayed where it was, right? Now if I want to, well, if I want to go to the V2, I will do git switch or git checkout if you want to.
+Andrey Adamovich 55 minutes 13 seconds
+We'll do the same effect and we're going to you see basically what what? Nothing has changed in the repo, right? We just changed the pointer at which our working tree is is pointing at. So now it's a kind of a V to.
+Andrey Adamovich 55 minutes 29 seconds
+Branch and now if I do git commit.
+Andrey Adamovich 55 minutes 35 seconds
+You can see that it it's adding commits into a different tree, but now these commits are not stale, they're actually a part of the branch. And now what I can do, I can switch back, I can switch.
+Andrey Adamovich 55 minutes 51 seconds
+Right. And basically what happened is just we switched to a different commit history, right? And of course our work entry will be updated to the state that is represented by this.
+Andrey Adamovich 56 minutes 9 seconds
+History line, timeline and we can easily switch switch back, right? So let's say if I do git.
+Andrey Adamovich 56 minutes 19 seconds
+Uh.
+Andrey Adamovich 56 minutes 21 seconds
+I will do git. Yeah let's switch back to the main and let's say I want my changes that I did here also added to the to the to the to the main branch. So what I will do, I will do git merge here git merge.
+Andrey Adamovich 56 minutes 36 seconds
+RV 2.
+Andrey Adamovich 56 minutes 44 seconds
+So what happened is that we created another commit, which is actually called the merge commit, which will contain.
+Andrey Adamovich 56 minutes 54 seconds
+Changes that were applied here and here merge into the one one thing, right? So it will create another delta that will contain changes from both sides. So effectively it's another commit and it's also referencing from where it was.
+Andrey Adamovich 57 minutes 10 seconds
+Requested. This reference actually is not required, but usually it's created as part of the commit message or commit metadata. So we know from where from each branch this data was coming. Technically of course we're not required to do that, but the merge command does that for us so we can kind of.
+Andrey Adamovich 57 minutes 28 seconds
+Trace back from which branch that and from which branch this came. So I can continue working on the main now. So you see I'm adding more commits and I can also go back to the.
+Andrey Adamovich 57 minutes 44 seconds
+To the V2 switch V2.
+Andrey Adamovich 57 minutes 47 seconds
+As you can see we're just switching the pointers, but of course when you do this locally on your own in your Git repository, everything will be reconstructed. Your working tree will be reconstructed according to the state from from from from this specific commit. So now let me do this commit into the V2. You can see that this thing is guys is becoming.
+Andrey Adamovich 58 minutes 7 seconds
+And branching stuff, right? And of course you can decide at which point you're branching. So for example, if you want to create another branch, let's say V21 and.
+Andrey Adamovich 58 minutes 22 seconds
+And then do get switch.
+Andrey Adamovich 58 minutes 31 seconds
+And then do git commit.
+Andrey Adamovich 58 minutes 34 seconds
+So now we have 3 branches in our in our in our code and they are they are different, right? So let's say quite quite commonly if you have like a very long developer cycles, it could be that this V2 is becoming a stabilising version and you don't want to make make active work in there. Maybe some bug fixes.
+Andrey Adamovich 58 minutes 54 seconds
+And stuff like that. Then you you create another branch and you start working in another branch. So developers starting adding new features and refactorings into into the new branch. But this branch is becoming stabilizing branch and only you know a bunch of people are working there but only with the with the intent to commit minor stuff, minor fixes.
+Andrey Adamovich 59 minutes 11 seconds
+So let's say if I go, if I switch back to V2 and I will do commit here, we can see that it's going to happen, right? And of course the main branch could be like the production branch that is currently active and again can keep some.
+Andrey Adamovich 59 minutes 30 seconds
+Fixes for the main branch here. And then at some point we of course can switch back to any of these versions and decide to merge them into the main thing, right? So now if I do git switch into the main.
+Andrey Adamovich 59 minutes 45 seconds
+And I can do git merge with you.
+Andrey Adamovich 59 minutes 51 seconds
+Right, so now my changes from the from the V2 also have been added into the main, but V V2 one is still independent. The changes of that is not coming anywhere. So now after I did a fix in V2 I can merge it to to to the main and this probably will be released to production right? But then then I can switch back.
+Andrey Adamovich 1 hour 11 seconds
+Git switch V21, sorry V21.
+Andrey Adamovich 1 hour 17 seconds
+What? Of course, yeah, typo switch V21 and I can continue working development work there, right? So we can go more, do more commits.
+Andrey Adamovich 1 hour 32 seconds
+So Christopher is asking which one I would prefer, Git rebase or Git merge. I still prefer Git merge more because it's it's simpler to understand, right? But Git rebase is also fine because Git rebate. Actually, maybe, maybe let's do that. Let's do that.
+Andrey Adamovich 1 hour 47 seconds
+So I mean you see now we have where we have a situation. Actually it's a good question. Now we have a situation that we have some commits that happened in the V2, we have those commits merge into the main and also we have some some commits that happened to the main.
+Andrey Adamovich 1 hour 1 minute 3 seconds
+Apart from the V2. So basically now V21 is actually different from the main. What I want to have actually I want to I want to have this fixes also in my branch right? So and what I will do, I will kind of do I can do git, I can do git merge.
+Andrey Adamovich 1 hour 1 minute 21 seconds
+Right. So in this case basically all the changes that were defined here will be will create another commit in in my branch and then the branch of each one will contain the changes of both sides. Merge is 11 is one thing and I prefer merges because it's you know it's easier to follow but also you can do rebase.
+Andrey Adamovich 1 hour 1 minute 41 seconds
+And rebase will actually I mean it will replay all of these commits on top of the branch here. So actually let's let's try to do that.
+Andrey Adamovich 1 hour 1 minute 51 seconds
+Yeah, basically it's it's some visualising that.
+Andrey Adamovich 1 hour 2 minutes
+Actually I should have done it in then in the other way in the other direction. So actually I did I did the rebase of this guy onto the main. So basically it replayed the commits. Yeah it's it's I should have done it in the wrong direction. That's why I don't like rebates. It's always kind of where should I do that. Yeah. So I I I basically took all the commits from my.
+Andrey Adamovich 1 hour 2 minutes 19 seconds
+V21 and replayed them on top of the commands that existed on on on the main right? So rebase could could be nice if if you like you know this full history of things. Merge could be better because you can it's easier to understand what is the final state right?
+Andrey Adamovich 1 hour 2 minutes 38 seconds
+So that's that's to answer your question. I prefer merge in that sense. Also I prefer working with the smaller number of branches. So in general it's better to work with the some short living branches than to have some long living branches because if you have long living branches then.
+Andrey Adamovich 1 hour 2 minutes 54 seconds
+It's harder to reason about the mergers. So despite of the fact that Git is supporting lots of branches, you can actually have as many as you like. It's very easy and you can see that basically branch is just another reference.
+Andrey Adamovich 1 hour 3 minutes 6 seconds
+It's still mind consuming or cognitive energy consuming exercise to work with more than one active branch. So here if you have active main branch and an active dev branch and an active V 3.5 branch and there are many developers working.
+Andrey Adamovich 1 hour 3 minutes 26 seconds
+On those on those branches at the same time and merging those things together or rebasing merging those things together would actually be not a simple exercise and actually even though you know even though it's it's it's possible, it's it's it's doable. In general if you have very many active branches that is a source of potential.
+Andrey Adamovich 1 hour 3 minutes 46 seconds
+Mistakes and conflict and stuff like that. So if you can minimize the number of active branches and only have like short living branches, then it's much, much easier to work with. And that's what most of the teams actually, you know, eventually working with. They're working with one main branch and a few short living branches that are quite quickly emerged into the main.
+Andrey Adamovich 1 hour 4 minutes 5 seconds
+And then it's easy to reason about the code base, right? OK, Torben is asking, should we have a short break? Yes, let's do that. Now it's 3:00 on my clock. So let's have a break. I would say 10 minutes maybe.
+Andrey Adamovich 1 hour 4 minutes 22 seconds
+And then then let's get back to that.
+Andrey Adamovich 1 hour 4 minutes 31 seconds
+So 10 minutes break, I will actually turn on the music if you can hear that.
+Andrey Adamovich 1 hour 13 minutes 42 seconds
+OK, we're back so.
+Andrey Adamovich 1 hour 13 minutes 49 seconds
+Yeah, it's still one minute till till our proposed break at, but but if you're here, let me know, let me know in chat, maybe raise your hand or something like that.
+Andrey Adamovich 1 hour 14 minutes
+Mm-hmm. Or user reaction, yeah.
+Andrey Adamovich 1 hour 14 minutes 7 seconds
+OK, two people, three people, four people. Cool.
+Andrey Adamovich 1 hour 14 minutes 16 seconds
+Right. Uh huh. Good, good, good, good.
+Andrey Adamovich 1 hour 14 minutes 21 seconds
+Thank you. Thank you. OK, let's let's continue. So actually two questions were asked in in chat before before we started the break. So one of them using rebase will have less commits in main and it will be cleaner. No, because as as you can see, as you can see basically what rebase does.
+Andrey Adamovich 1 hour 14 minutes 38 seconds
+We replayed the commits from the main on top of the of the of the V2.1 branch. So number of commits in the main will actually be bigger if you do rebase because you're basically just replaying the history. You're you're rebasing your branch on top of the main and then you're moving the main into the into the you know.
+Andrey Adamovich 1 hour 14 minutes 58 seconds
+Into the V21, so the number of commits will basically be the same. When you're doing merge, you're just inside the main branch, you would create just another commit. So all the commits that you did in the other one will stay in that branch.
+Andrey Adamovich 1 hour 15 minutes 18 seconds
+The commits inside the main branch will only be one if you do merge, so merge will actually do fewer commits. Also Mithley is asking about squash commit and actually that's a good question as well. Squash commits is kind of doing one commit.
+Andrey Adamovich 1 hour 15 minutes 36 seconds
+Into the main branch as well, but also squashing all the commits and deleting the other branch from the history and basically creating just one commit into the main branch. So squashing is basically the way you work with. Well, squashing is the thing that usually you decide on the level of a team. So if team.
+Andrey Adamovich 1 hour 15 minutes 56 seconds
+Prefers cleaner history. They might prefer using git rebase for that and they might prefer using squash commits. So basically they they don't don't care about how someone created the the the history inside the private branch. So for example you as a developer you started in like a branch V 2.5.
+Andrey Adamovich 1 hour 16 minutes 15 seconds
+And you commit, commit, commit, commit, commit, commit to your branch. And then after that you don't really care what was the path that led you to the final version. You just say merge -1 squash and all of that is collapsed into one commit and added into the main branch and the.
+Andrey Adamovich 1 hour 16 minutes 34 seconds
+The rest of the commits are being deleted, right? So that's that's the idea of the squash. If you don't, if you don't do squashing, the old history of the commits are still there. It still will be visible, but it's not part of the, you know, it's part of the parallel brain, the parallel brain that exists in that. So squashing is it's a nice thing, but.
+Andrey Adamovich 1 hour 16 minutes 52 seconds
+It depends on whether you want to preserve the history of the of the of the of the branch where you made your feature or whatever whatever change you're making right. And I know that some teams are preferring that. It really depends on on the culture of of of the teams, how how they prefer to do that.
+Andrey Adamovich 1 hour 17 minutes 9 seconds
+OK, I can see some people have still raised hands. Maybe you can put them down unless you have questions.
+Andrey Adamovich 1 hour 17 minutes 23 seconds
+Actually, I'm not sure if this tool supports squashing, but let's let's try to do that. Let's say if I do git branch V 3.1 for example, and I would do git switch.
+Andrey Adamovich 1 hour 17 minutes 39 seconds
+7.
+Andrey Adamovich 1 hour 17 minutes 40 seconds
+v3.1 and let's do git commit git commit git commit git commit then we do git switch
+Andrey Adamovich 1 hour 17 minutes 56 seconds
+No.
+Andrey Adamovich 1 hour 18 minutes
+Main and git commit git commit.
+Andrey Adamovich 1 hour 18 minutes 4 seconds
+And now I will do git merge V 3.1 minus minus squash which.
+Andrey Adamovich 1 hour 18 minutes 15 seconds
+Score. Will it work?
+Andrey Adamovich 1 hour 18 minutes 20 seconds
+Yeah, so basically we're kind of we're breaking the cycle right here. The just git merge will create a a special commit type which is called merge commit with a reference to where the history comes from.
+Andrey Adamovich 1 hour 18 minutes 36 seconds
+Git squash still will create the same kind of commit, but it will break this reference, right? So basically now many teams, what they do is they basically delete this thing because like it's a temporary thing and then then then it basically goes to the main branches as a separate commit, right? So.
+Andrey Adamovich 1 hour 18 minutes 51 seconds
+That's that's that's part of the team, team rules, team agreements, right? So if if you want to do that like that, then it's also fine.
+Andrey Adamovich 1 hour 19 minutes 1 second
+OK. Any questions about that?
+Andrey Adamovich 1 hour 19 minutes 6 seconds
+If I do it again, I I can still probably do things like that and then then you can see the reference is kind of here. It will create nothing, will empty commit with no with no changes, but here you can see the references is is preserved. So yeah, that's that's the difference.
+Andrey Adamovich 1 hour 19 minutes 24 seconds
+OK.
+Andrey Adamovich 1 hour 19 minutes 26 seconds
+Let's get back to the to the. So we discussed, we discussed this kind of things. We discussed branching, right. We discussed references more or less and you can see that.
+Andrey Adamovich 1 hour 19 minutes 41 seconds
+References are quite useful, right? Because basically now we're on main. We can easily move back with the reset command and say, well, actually there's several ways to do that. Get reset.
+Andrey Adamovich 1 hour 19 minutes 56 seconds
+Had well, I can say C9 for example. I will go back here and this kind of becomes stale. Of course I can go back. If I remember the hash, I can still go back, but also I can refer to this thing as as go.
+Andrey Adamovich 1 hour 20 minutes 13 seconds
+One commit behind or go 3 commits behind, right? Oh sorry, it should be like that.
+Andrey Adamovich 1 hour 20 minutes 23 seconds
+Yeah, well, two commit behinds. I think three was was it like that. It doesn't understand that. But yeah, it worked like that as well, right? So, so you can also make a relative jumps basically, right? Another thing you can do, let's say if commit C8 introduced some change, some breaking changes and you don't like them.
+Andrey Adamovich 1 hour 20 minutes 42 seconds
+What you can do, you can say git revert C8 for example, right? And then basically it will create another commit that reverts the changes that were done by that delta, right? So it's a new commit, it's a new new delta.
+Andrey Adamovich 1 hour 21 minutes 2 seconds
+So that this commit still remains there, but we are reverting the changes by using creating another commit here and you can also do that with with some other. Let's say we can also do revert. Well C4 will actually not work.
+Andrey Adamovich 1 hour 21 minutes 20 seconds
+It worked, yeah. I mean, it was part of that thing because we kind of merged that. If we didn't merge that, we would not be able to do that, right? Because if we only do, if we did the squash and we stayed on the C9, I would not be able to revert it back to C4 or revert the C4 changes because.
+Andrey Adamovich 1 hour 21 minutes 36 seconds
+Git basically doesn't have the reference to the to the branch where it was made, right? That's why squashing. Squashing is OK because that's that's how people basically keep their. It allows them to delete branches without breaking anything.
+Andrey Adamovich 1 hour 21 minutes 51 seconds
+But sometimes it's kind of nice to go back to a certain part of of your of your merge branches that that that that you did in parallel. OK, so that's that's that's another thing that is is there. Also another thing is.
+Andrey Adamovich 1 hour 22 minutes 7 seconds
+Oh, I already mentioned that if you if you if you modify your files and something is you you don't like it, you can always do git reset and minus minus hard garbage hard. That will basically take the repository data and restore your work entry on top of that, right? So that's that's the thing.
+Andrey Adamovich 1 hour 22 minutes 29 seconds
+OK.
+Andrey Adamovich 1 hour 22 minutes 33 seconds
+Right. Any any more questions maybe about that?
+Andrey Adamovich 1 hour 22 minutes 38 seconds
+Uh.
+Andrey Adamovich 1 hour 22 minutes 46 seconds
+OK.
+Andrey Adamovich 1 hour 22 minutes 49 seconds
+OK.
+Andrey Adamovich 1 hour 22 minutes 51 seconds
+So.
+Andrey Adamovich 1 hour 22 minutes 54 seconds
+Yeah, there's a question.
+Andrey Adamovich 1 hour 22 minutes 58 seconds
+That's a good question. Thank you.
+Andrey Adamovich 1 hour 23 minutes 1 second
+Actually let let let's simulate that. Let's simulate that. So now in my actually I can do that. I can do that with with command line, but also I prefer doing that. I prefer doing that with.
+Andrey Adamovich 1 hour 23 minutes 17 seconds
+ID.
+Andrey Adamovich 1 hour 23 minutes 20 seconds
+Yeah, what is going on?
+Andrey Adamovich 1 hour 23 minutes 27 seconds
+No, let me go back to my ID.
+Andrey Adamovich 1 hour 23 minutes 35 seconds
+5.
+Andrey Adamovich 1 hour 23 minutes 40 seconds
+Right. So the cool thing that you know the ID is already has Git built in as well. Most of the IDs have that and I guess your developers, most of your developers, you know that. So let's say we will add some stuff here.
+Andrey Adamovich 1 hour 23 minutes 58 seconds
+Some notes, some notes, another note I will I will commit it. So basically the same commands that we're using for committing stuff in the common line. They are kind of available here, but through the interface I have to provide.
+Andrey Adamovich 1 hour 24 minutes 14 seconds
+The message expanded nodes and do commit and then sync changes will actually do the push.
+Andrey Adamovich 1 hour 24 minutes 24 seconds
+Now I'll go to my repo and in here we'll see that there's like 3 commits now and one of them is expanded now so you can see that the last commit message on the file is there. The cool thing about GitHub is that you can actually go and edit this files as well and they also create commit entries in the.
+Andrey Adamovich 1 hour 24 minutes 43 seconds
+In the in the history. But but now let's say I will do a change here. I will what I will do. I will expand the line here. Well actually I'll remove the line because it seems like a duplicate line.
+Andrey Adamovich 1 hour 25 minutes
+And and I will add in one more note, right? So basically add it.
+Andrey Adamovich 1 hour 25 minutes 10 seconds
+And I'll say removed and edit, something like that. I will commit the changes. So basically it's the same. We're operating with the same history, with the same objects like commits and stuff like that.
+Andrey Adamovich 1 hour 25 minutes 27 seconds
+And but because I did it through the web interface, that commit entry is only now stored in the remote repository, right? So if you go here in the commits, you can see that it's there, but if I go onto my.
+Andrey Adamovich 1 hour 25 minutes 42 seconds
+Command line and I would do git log here. You will see that this commit is not available here. The other three are here because they were originally created on this machine, but the 4th one is not here. So I will do now another thing I will do. I will actually go and fix something here so.
+Andrey Adamovich 1 hour 26 minutes
+Another.
+Andrey Adamovich 1 hour 26 minutes 2 seconds
+Long note and some notes, some notes, whatever. Yeah, I will change the file here and I will make a commit here, right? So.
+Andrey Adamovich 1 hour 26 minutes 16 seconds
+Some really nice notes.
+Andrey Adamovich 1 hour 26 minutes 23 seconds
+Oh yeah, they didn't. I was not supposed to sync it, but it's kind of it's already tried to do that. But basically now it's already fetched. It already fetched the commits from the remote because it's automatically configured there, but but also you can see that now locally.
+Andrey Adamovich 1 hour 26 minutes 41 seconds
+I do have.
+Andrey Adamovich 1 hour 26 minutes 44 seconds
+To sort of two versions of my timeline. One is coming from remote, another one is actually my local thing. And now I would like to, I would like to kind of merge them together and basically that's that's a conflict, right? Because.
+Andrey Adamovich 1 hour 27 minutes 1 second
+We had like C1C2C3 and then we created 2 versions of C4 and those they are different and what you can do well we can do the rebase thing and basically replay you know the commits on top of that or we can do a git pull with Fast forward.
+Andrey Adamovich 1 hour 27 minutes 20 seconds
+Fast forward and that will also take the commits from outside and we'll add them on top of my repository and we'll add my commit on top of that. So actually I will go to command line.
+
+Andrey Adamovich 1 hour 27 minutes 35 seconds
+I will do git pull.
+Andrey Adamovich 1 hour 27 minutes 39 seconds
+Yeah, you see that it's it, it cannot. That's a typical conflict, right? And there are several ways to deal with the conflict. Usually if the changes in the text are, the changes are applied to different parts of the text.
+Andrey Adamovich 1 hour 27 minutes 57 seconds
+Then we can actually use this configuration and if I do git pull now, it probably will even work, will it? No, right? Because the the the reason the because in a Fast forward means that if two developers changed different parts of the file then they will be automatically merged.
+Andrey Adamovich 1 hour 28 minutes 16 seconds
+And they will Git will create another merge commit on top of that and because it's going to be it's obvious from Git perspective where to to move the changes. But in my case because I I kind of I did the change in the same location of the file as the other me in in GitHub.
+Andrey Adamovich 1 hour 28 minutes 34 seconds
+I cannot automatically Fast forward that right? So now I have to to to do something, either merge these things or or to git rebase and actually what what happens now?
+Andrey Adamovich 1 hour 28 minutes 47 seconds
+Here.
+Andrey Adamovich 1 hour 28 minutes 52 seconds
+I can automatically allow that to be rebased. So basically to replay the commits on top of my commits. So git rebase true and I will do git pull now.
+Andrey Adamovich 1 hour 29 minutes 5 seconds
+OK, now.
+Andrey Adamovich 1 hour 29 minutes 7 seconds
+Git merge.
+Andrey Adamovich 1 hour 29 minutes 12 seconds
+Right, so that's basically it tried to merge the file, but it couldn't because again, we changed the different parts of the file and what you what you see as a result, the file that was generated as you can see.
+Andrey Adamovich 1 hour 29 minutes 32 seconds
+Well, you know, it's, it's, it happens in the IDE. So IDE kind of understands that format and it kind of helps me out with that. But if I go, if I go to the command line, I want to, I will take a look at what's actually inside the notes file. You can see that that's how it looks like, right?
+Andrey Adamovich 1 hour 29 minutes 46 seconds
+Right, so there's some common line that existed both in my version and the version changed by other me in GitHub. Then there is the thing coming from outside that that oh sorry, this is this is my version. Sorry, this is the version local version that I created.
+Andrey Adamovich 1 hour 30 minutes 6 seconds
+And this is the version that's coming from outside. And now I am the because I'm I'm doing the merge, I have to make a decision which part of the code must survive. And you know the simplest way to do that is just, you know, select these things.
+Andrey Adamovich 1 hour 30 minutes 22 seconds
+And then then then let's say well in the ID I can do that. Let's say I prefer this guy, that guy in in in in in the command line. I can I can just you know go here and say that OK, I actually need all the lines.
+Andrey Adamovich 1 hour 30 minutes 39 seconds
+Uh.
+Andrey Adamovich 1 hour 30 minutes 43 seconds
+And I will just delete the other ones, right? So that's the simplest way to do that. But if you do it in in the ID, it will actually help you out with that automatically. You can use some some nice interface there. So what we'll do next is git merge.
+Andrey Adamovich 1 hour 31 minutes 7 seconds
+Yeah, we need to do git add git commit minus M fixed and now we can do git git push.
+Andrey Adamovich 1 hour 31 minutes 20 seconds
+Right. So basically what we did here, we resolved the the the the conflict which manifested itself through this kind of extra lines and sorted into the file that has a conflict I as as the.
+Andrey Adamovich 1 hour 31 minutes 36 seconds
+The person performing the merge have to decide which parts survive, and then after that I'm creating another commit that contains the merged stuff, right? So basically again, if two developers created the commit on top of the history of the common history, then the.
+Andrey Adamovich 1 hour 31 minutes 56 seconds
+The person who is doing the the, the push, the last, they should actually resolve the conflicts before they be able to push that thing and then apply their changes, right? So then anyone who is first will win. Anyone who is who is last will have to resolve the merge conflicts.
+Andrey Adamovich 1 hour 32 minutes 17 seconds
+And again, if if you set it, if you set this thing to like to Fast forward, then for example let's say now if you go, if you go to the to the repository and we take take a look at that, you see that we have now two commits on top of that. One is the one that I actually did locally before another one.
+Andrey Adamovich 1 hour 32 minutes 37 seconds
+That is actually resolving the changes from this guy and we have now six commits in total. And let's say now I will simulate another type of conflict which can be resolved automatically and basically if I do.
+Andrey Adamovich 1 hour 32 minutes 52 seconds
+I will on on my local machine I will edit a file.
+Andrey Adamovich 1 hour 32 minutes 57 seconds
+More, more notes, even more notes and stuff like that. I will do, I will do edit, add more notes. Not very smart, but as you can see just for the demo purposes.
+Andrey Adamovich 1 hour 33 minutes 17 seconds
+Actually, yeah, I should shouldn't, should not have synced it. Yeah, let's let's add more notes. One more note and one more note. So just commit.
+Andrey Adamovich 1 hour 33 minutes 31 seconds
+Two more notes.
+Andrey Adamovich 1 hour 33 minutes 35 seconds
+Yeah so now this commit only exists in my local machine. If I go back here I have yeah just this one and now I will go into this repo and also do the change.
+Andrey Adamovich 1 hour 33 minutes 48 seconds
+So I will actually I will do the change in a different file. Let's say I will do the change here.
+Andrey Adamovich 1 hour 33 minutes 58 seconds
+This is very useful note taking project. I will do the commit.
+Andrey Adamovich 1 hour 34 minutes 7 seconds
+Commit. So now our timelines locally and remotely, again they differ, right? So we have common history, but we have divergence from the history and but but this, this.
+Andrey Adamovich 1 hour 34 minutes 23 seconds
+The changes, they do not intercept each other. So basically we can actually do fast forward and if I go here and we'll actually do well, there are two operations in Ng that are available. One is called git fetch and git fetch will just fetch the changes from the remote.
+Andrey Adamovich 1 hour 34 minutes 43 seconds
+Will not apply them to the to the to the local changes to the local tree or another one is git pool which does fetching and merging right? So and if I do git git pool now actually git git pool.
+Andrey Adamovich 1 hour 34 minutes 59 seconds
+It will do both operations and in this case, well, yeah.
+Andrey Adamovich 1 hour 35 minutes 7 seconds
+Get merch.
+Andrey Adamovich 1 hour 35 minutes 10 seconds
+It will still do a merge commit.
+Andrey Adamovich 1 hour 35 minutes 13 seconds
+But but because it's well actually in in the IDE it will do that quite fast, but here it's I have to still do that.
+Andrey Adamovich 1 hour 35 minutes 32 seconds
+Uh, come on.
+Andrey Adamovich 1 hour 35 minutes 37 seconds
+Yeah, so I wrote it down. So now, I mean, when you do it in the common line, it will actually ask you for that. But if you do it in the ID, it will actually automatically Fast forward and merge merge things together because there's no, there's no conflict, right? Actually, it's a normal thing. We just have conflicting history entries in the commit log, but because.
+Andrey Adamovich 1 hour 35 minutes 57 seconds
+If they were applying changes to different files, they can be automatically merged and you don't need to do anything about that. It will happen automatically. Another type of automatic merge that can happen is that if developers have changed the same file but different lines in that file. Again, that's.
+Andrey Adamovich 1 hour 36 minutes 16 seconds
+This, this can be fast forward and merged automatically. So that's that's that's the thing. And actually answering Yanis's question about what's the best way to resolve conflicts, I mean that's probably the best way.
+Andrey Adamovich 1 hour 36 minutes 33 seconds
+Right. One of one of the best way to resolve conflicts is to actually commit frequently, right? And then push and pull from the main branch frequently. Then the probability of the conflict is actually small and that's that's what I want actually to discuss with you as well about the branching stretches because there are two of them.
+Andrey Adamovich 1 hour 36 minutes 53 seconds
+Well, not actually more, but you know two main polarized ones. And if you work in short branches and short living branches, then the probability of the conflict is very small and especially if you if the ownership of the code is very well separated and people actually changing different parts of the code.
+Andrey Adamovich 1 hour 37 minutes 11 seconds
+There's no one dependency magnet that that that that attracts people to the same part of the code. Then most of the commits, most of the mergers will be fast forward mergers, right? So then the conflicts will be will be way less frequent. But when you do have a conflict, let's say you have changes in the same file.
+Andrey Adamovich 1 hour 37 minutes 29 seconds
+Either you do it by yourself by looking at the files where it's inserted this angle brackets and decide which part, or you use the ID which will kind of help you out to do the same but with some visual tools. So yeah, actually you know.
+Andrey Adamovich 1 hour 37 minutes 46 seconds
+Conflicts is a normal thing in in in in git, but if you really want to minimize them, then you have to kind of maybe work with team culture a bit, right? So so that you really have short living branches, you really agree where you're working on, you really have a good architecture and stuff like that.
+Andrey Adamovich 1 hour 38 minutes 4 seconds
+But again, if you have conflicts, that's also a normal thing. There's nothing to avoid of. It's just that you have to have to figure out who is, who is, which which changes should survive, right?
+Andrey Adamovich 1 hour 38 minutes 17 seconds
+OK, right. And basically for those who never work with git, I I hope I showed you, you know the basic workflow, how to do with that, how to work with that. So you have your we have this git checkout or git switch command to to to create branches or to switch between the branches.
+Andrey Adamovich 1 hour 38 minutes 35 seconds
+You do this continuously with git add, git status. Also you can use git diff to show you the difference between the two commits and stuff like that. You do git commit and of course I mean all these commands. If you have an ID or some visual tool, they are invoked through that visual tool.
+Andrey Adamovich 1 hour 38 minutes 53 seconds
+And visual tool usually is a useful thing to have, but overall you don't need to have visual tool. You can also work completely on on the on the command line.
+Andrey Adamovich 1 hour 39 minutes 2 seconds
+And yeah, I mean at some point you you may want to create a branch in which you do your work, but prefer that branch to be short living. When you're done with the work, you do the, you do the merge and continue working on a new feature, stuff like that. Whenever you're done with your commits, you do the pushing, right?
+Andrey Adamovich 1 hour 39 minutes 19 seconds
+And again, the more frequently you do that, the fewer conflicts you will have in the team, right? OK. Any questions about that?
+Andrey Adamovich 1 hour 39 minutes 49 seconds
+OK. No questions so far, right. So the thing I wanted to discuss with you is these two things because obviously.
+Andrey Adamovich 1 hour 39 minutes 59 seconds
+When you work with together with other team members, you have to organise your your workflow, right? And you have to decide how many branches you have, what kind of things you execute.
+Andrey Adamovich 1 hour 40 minutes 14 seconds
+How do you, how do you, how many branches you have? How long do they leave? What? How do you control mergers between the branches? Because of course, I mean I showed you an example where we had like V1V2V21 and so on some branches, but of course in real life situation there could be even more branches.
+Andrey Adamovich 1 hour 40 minutes 30 seconds
+But but as I already mentioned, your goal is to reduce the conflicts in general, right? And to organise the work in a way that it's easier to collaborate on on the files. And usually that means that you have fewer branches other than more branches.
+Andrey Adamovich 1 hour 40 minutes 47 seconds
+And historically there are there was, you know, a branching strategy which is called Gitflow, right? Actually, I think I specified it here as well. There's a link and I mean maybe you've seen this picture before, right? Actually it's very nice blog post.
+Andrey Adamovich 1 hour 41 minutes 5 seconds
+Where Vincent is describing how they decided to implement branching in their company. The only thing is that you know this blog post is from 2020 and 10, so like 15 years old.
+Andrey Adamovich 1 hour 41 minutes 21 seconds
+And the other thing you can you can also see that there's a note of reflection coming from 2020 where Vincent says don't use git flow, which is kind of funny. So because git flow, I mean it seems logical when you look at that, right? But if you ever been in in git flow.
+Andrey Adamovich 1 hour 41 minutes 41 seconds
+Gitflow projects inside of the organizations that are using Gitflow, you might realize that it's actually not that convenient to work with. So Mithali is asking, can I work with two different feature branches at the same time? Sure, yeah, yeah, of course.
+Andrey Adamovich 1 hour 41 minutes 56 seconds
+I mean I I I think the most important thing to decide is how long your branches are are are living because you you can of course you you can switch between any branch right? You can have VV 2.1 V 2.2 or call on feature branches for specific stuff and you can switch between them. So technically you work at the.
+Andrey Adamovich 1 hour 42 minutes 16 seconds
+At the same time, only in one branch, right? But then if you're decided to work in another branch, you just do git switch and then work in another branch. And then when you decided to work in the first branch, do git switch again and work in that branch. It's technically possible that you are having two active branches, but of course as a single human being you can.
+Andrey Adamovich 1 hour 42 minutes 36 seconds
+You can only work on one branch at the same time, but technically the work will happen in parallel, like in sequence in both of them, right? And of course, when you have more people, obviously they can have as many branches as people are in the project, even more, and try to pretend they can parallelize their work as well.
+Andrey Adamovich 1 hour 42 minutes 55 seconds
+So yeah.
+Andrey Adamovich 1 hour 42 minutes 57 seconds
+Basically the idea of git flow just briefly that you always have you know the main branch right that that nobody is committing to directly. You only you only do the merge commits into that branch, right? So this branch is for for stable code that is running in production so to say.
+Andrey Adamovich 1 hour 43 minutes 14 seconds
+And then you have a develop branch where your developers are stabilizing the the the next version of your of your application for example. And then you have feature branches where developers embed features and then eventually those features are merged into the development branch. Well, seems logical.
+Andrey Adamovich 1 hour 43 minutes 32 seconds
+The the the only thing is that usually with git flow is that these branches can leave sometimes weeks, sometimes months. I've seen, I've seen companies where these branches were actually months long and of course when when you merge something into the.
+Andrey Adamovich 1 hour 43 minutes 52 seconds
+And into the other branch, when you have lived different timelines for a month, of course the number of conflicts will be much, much higher, right? So long living branches.
+Andrey Adamovich 1 hour 44 minutes 7 seconds
+By themselves are are a bad thing. Don't do that. Only use short living branches because that will reduce the amount of conflict that you have and and to answer my mythic questions and once again if you have two parallel, if you have if you if you created two feature branches and you switch.
+Andrey Adamovich 1 hour 44 minutes 26 seconds
+Frequently between them. That means that you work, you have two contacts you work on, and then it means that both branches will live longer than they should. You will, you will, you will split your focus between two things. And because they live longer, the amount of conflict that will happen when you try to merge one of them into the main into the active branch will of course be.
+Andrey Adamovich 1 hour 44 minutes 45 seconds
+Higher, right? So the risk of having it will be higher. So of course it's about focus as well, right? So if you as a developer work on some feature, better finish that feature within a reasonable time frame. And usually I would say it's a day or sometimes it's a few hours. You work on the feature, you finish that within.
+Andrey Adamovich 1 hour 45 minutes 5 seconds
+Couple of hours and you merge them immediately in an active branch. That's that's a good time time flow. That's a good workflow. If you work on a feature for a week or two weeks or three weeks, of course you increase number of conflicts that may happen, right? And you and you definitely don't want that. And especially it's it's even it's even harder if you have other branching happening in that thing. So maybe.
+Andrey Adamovich 1 hour 45 minutes 25 seconds
+Let's say you have another develop branch, another team is doing some work and they do. They also have some parallel branches that they do. So the more branches you have, the harder it is to manage the whole overall workflow. Sometimes this might be needed, but still your goal would be to minimize the number of branches anyway.
+Andrey Adamovich 1 hour 45 minutes 41 seconds
+Yeah, but Speaking of git flow, I mean the the terminology that that that is used by git flow is actually quite common. So people are still using the the idea of feature branches, but the only thing is that in Vincent's version of in 2010 feature branches were actually quite long living.
+Andrey Adamovich 1 hour 45 minutes 59 seconds
+And the version of 2025 feature branches usually, as I mentioned, few hours long, a few hours, maybe a couple of days long, but but not longer because you don't want to to have conflict. And also you know the other thing that is part of Gitflow is that they have special.
+Andrey Adamovich 1 hour 46 minutes 18 seconds
+Release branch, right. So where you kind of stabilize the code and then but but then developers can kind of you know continue doing active development, active experiments on on the development branch. So and this again is is OK if you have if you really want to if you really have this necessity to stabilize certain code base.
+Andrey Adamovich 1 hour 46 minutes 37 seconds
+And with a separate team, but again, it's using a lot of resources, right? It's using a lot of context switching and stuff like that. I mean, it seems logical from the beginning, but to be honest, it's probably, it probably makes sense in certain contexts like, you know, if you have, if you're releasing medical software for some medical devices and you really want to kind of make sure.
+Andrey Adamovich 1 hour 46 minutes 57 seconds
+That the current version is super stable and you have a special team that focusing on that, then using a release branch for that makes sense. But if you're working on the web app and releasing the web app like let's say every every week or even every day, having a release branch doesn't make sense, right? Because you want to release your web app as fast as possible.
+Andrey Adamovich 1 hour 47 minutes 15 seconds
+And what what is usually happening in in in in continuous delivery companies that are implementing continuous delivery and continuous integration, you actually have only one main branch and then some feature branches that are really short living and that thing is called trunk based development.
+Andrey Adamovich 1 hour 47 minutes 32 seconds
+So that's another thing that is, well, it's not extreme, but actually that's that's more or less the standard, right? That you have short living branches, you have the main range which is supposed to be or muster, main, trunk, muster. It's the same thing which is supposed to be always in in in a releasable state. You always you make.
+Andrey Adamovich 1 hour 47 minutes 52 seconds
+Make sure that running that it's compilable of course and it's usable and deployable to production or at least to some staging environment and then you continue adding features. But those feature branches that you create, they're really short living and that kind of makes sure that you as a team.
+Andrey Adamovich 1 hour 48 minutes 12 seconds
+Almost focus, right? You always, you always focus on the fact that your main branch is always ready. It's always ready to be released and your branching is really, really short living, right? In this case it's kind of it's easier to focus. So kind of the opposite of classical git flow where you.
+Andrey Adamovich 1 hour 48 minutes 32 seconds
+Where you have long living feature branches, long living release branches which required more more people, more communication, more merging, more conflicts and stuff like that. So yeah, trunk based development is a better thing. Definitely trust me, just just just use that.
+Andrey Adamovich 1 hour 48 minutes 47 seconds
+There's there's another one kind of in in in the in the middle in the middle. It's kind of called also GitHub flow actually was recently also referred by by Vincent here. And GitHub flow is kind of very similar to trunk based development, just maybe with the help of the pull requests. So if you have a work with pull requests.
+Andrey Adamovich 1 hour 49 minutes 7 seconds
+Because pull request basically it's pull request is a branch sort of or and but it's it's actually pull request is a terminology that more or less introduced by GitHub. Also you may hear the word merge request.
+Andrey Adamovich 1 hour 49 minutes 24 seconds
+But it allows you to kind of have a a a discussion on top of the branch, right? So basically if I if I go here and into my into my.
+Andrey Adamovich 1 hour 49 minutes 39 seconds
+You see at the moment my local repository only has one branch and I can create another branch. Let's say feature feature one, create new branch and on top of this branch I can create a pull request. So branching of course is by itself is part of git and I'll create a new pull request and I will.
+Andrey Adamovich 1 hour 49 minutes 58 seconds
+Create feature one.
+Andrey Adamovich 1 hour 50 minutes 1 second
+So, so far nothing is there, right?
+Andrey Adamovich 1 hour 50 minutes 6 seconds
+Sorry, actually base feature one.
+Andrey Adamovich 1 hour 50 minutes 9 seconds
+Main.
+Andrey Adamovich 1 hour 50 minutes 14 seconds
+Of course they're identical, I know that. But what I will do, I will do git pull all.
+Andrey Adamovich 1 hour 50 minutes 25 seconds
+Big Branch.
+Andrey Adamovich 1 hour 50 minutes 29 seconds
+So git pull. Yeah, so now we have also feature one here, so git switch.
+Andrey Adamovich 1 hour 50 minutes 40 seconds
+Switch feature feature one.
+Andrey Adamovich 1 hour 50 minutes 43 seconds
+I will add some file touch new feature dot TXT. I want to git add git commit.
+Andrey Adamovich 1 hour 50 minutes 57 seconds
+Feature.
+Andrey Adamovich 1 hour 51 minutes
+And now we get push.
+Andrey Adamovich 1 hour 51 minutes 3 seconds
+Yeah, by the way, you can see that my I my shell is kind of helping me with showing me in which branch I'm currently in. Actually the ID is helping me as well. If I go back here, it will show me as well that my current branch is feature one, not main, and what I can do then from the interface.
+Andrey Adamovich 1 hour 51 minutes 20 seconds
+If I do pull request.
+Andrey Adamovich 1 hour 51 minutes 26 seconds
+Comparing pull request. So I'm creating a pull request. So pull request is a thing about that exists only in the Git managers like GitHub or GitLab or Beatbucket and basically it shows me what is the difference between different branches and also allows me to have a conversation.
+Andrey Adamovich 1 hour 51 minutes 45 seconds
+So of course now it's kind of doesn't make sense because I'm the only author in the repo. But technically I can I can go and say what about, what about, you know, let's say to other Andrei, what about this library, blah blah blah, something like that. I can make a command there, right?
+Andrey Adamovich 1 hour 52 minutes 4 seconds
+Uh.
+Andrey Adamovich 1 hour 52 minutes 11 seconds
+OK, did it? Did it? Yeah. And then I can also go to the files changed and I can say that I can submit a review for this change. This file seems to be.
+Andrey Adamovich 1 hour 52 minutes 26 seconds
+Useless, right?
+Andrey Adamovich 1 hour 52 minutes 30 seconds
+2.
+Andrey Adamovich 1 hour 52 minutes 31 seconds
+Submit review.
+Andrey Adamovich 1 hour 52 minutes 35 seconds
+So basically this interface allows me to have conversation around my code or our code or the team's code and that's what GitHub GitHub flow basically is. We are creating pool requests on top of our branches, feature branches, release branches, whatever we call them, but usually called feature branches.
+Andrey Adamovich 1 hour 52 minutes 54 seconds
+And usually it will be another person who will be doing doing a review on top of that and when we agree that the code is good and that the feature is good, we are merging pull requests into the into the into the main branch.
+Andrey Adamovich 1 hour 53 minutes 11 seconds
+So answer is asking is there a reason why PRS aren't natively implemented in Git? Actually they they are, but not in the way you think because the the term pull requests was there, but basically because original workflow for Git.
+Andrey Adamovich 1 hour 53 minutes 29 seconds
+For for Linux kernel developers was that they were exchanging patches over e-mail between each other. Also they were exchanging commit history between each other. Basically Linus or some other person will send a message. Please make a.
+Andrey Adamovich 1 hour 53 minutes 49 seconds
+The please please make a pull from my repository from my remote to get the changes that I implemented. So that's why it's called pull request. So technically pull request was part of the workflow but not not not not part of not part of the you know git binary but actually git pull request there is actually there is.
+Andrey Adamovich 1 hour 54 minutes 9 seconds
+There's a command in there git pull request command line.
+Andrey Adamovich 1 hour 54 minutes 20 seconds
+So but but it just generating a message with with some some some some parameters right? So pull request is is still there but but it's not. It doesn't have any interface, doesn't have any idea because it was basically attached to the flow that Linux kernel developers were using.
+Andrey Adamovich 1 hour 54 minutes 37 seconds
+The the the thing that exists in GitHub and Beatbucket and others, it's more like you know, collaboration on top of the branch, but it's they're using the same the same term as original developers used to to use for denoting their their workflows.
+Andrey Adamovich 1 hour 54 minutes 53 seconds
+Yeah and the other the other the other reason for this for like not having a proper pull request integration into into git binary is because they wanted to to to to keep binary git binary very simple and isolated from from any other integrations.
+Andrey Adamovich 1 hour 55 minutes 13 seconds
+So that's that's why the the the the request pull integration with GitHub is not is not implemented right? But GitHub has their own CLI where you can actually create pull requests from GitHub CLI, right? That's not it's another thing.
+Andrey Adamovich 1 hour 55 minutes 28 seconds
+So answers is asking me request perhaps then. Yes, exactly, exactly. And that's, you know, GitHub because it was created in 2008, still was using the terminology from the original Git users, Git, Git office.
+Andrey Adamovich 1 hour 55 minutes 43 seconds
+But if you look at GitLab, which was created later, they actually call it merge requests, right?
+Andrey Adamovich 1 hour 55 minutes 52 seconds
+Because because technically, well, technically pull requests were supposed to be between different forks of the same repo. So the the repos were hosted in different servers, different locations, but merge requests are about things hosted in the same repo between different branches.
+Andrey Adamovich 1 hour 56 minutes 8 seconds
+But yeah, it's it's a confusing terminology sometimes. So yeah, merge requests is definitely a better term.
+Andrey Adamovich 1 hour 56 minutes 16 seconds
+OK.
+Andrey Adamovich 1 hour 56 minutes 18 seconds
+OK folks, so yeah, we we discussed pretty much everything I wanted to cover. So we have Git flow which is dead, which is bad. We have trunk based which is awesome, which is cool. We have GitHub flow which is the one or which is the one using pull request and merge request as the as the basis for.
+Andrey Adamovich 1 hour 56 minutes 38 seconds
+Communication, but technically it's also the same trunk base. It's just, you know, the the way that we communicate over the branches is slightly different. It uses the interface of GitHub to do that, right? Right.
+Andrey Adamovich 1 hour 56 minutes 51 seconds
+I actually prepared some tasks for you. I didn't plan for you to do them right now, but if you want to play with with Git a bit more, and especially if you haven't, if you haven't done anything with Git before, then it could be a good starting point for you.
+Andrey Adamovich 1 hour 57 minutes 6 seconds
+To kind of try to play some commands, I also have added some command examples onto the board as well. You can also try to play with that if you want to and I have put some links.
+Andrey Adamovich 1 hour 57 minutes 21 seconds
+With with some of them I showed you on Git flow. I showed you this visualizing Git link as well. You can just click click it here, play around with the branches, understand, understand how how the merge rebase works. This really helps with with understanding. Also the docs of the GitHub flow. What's the idea there?
+Andrey Adamovich 1 hour 57 minutes 39 seconds
+And also, especially for the beginners, I really recommend a series of videos from Coding Train, which is called GitHub, Git and GitHub for Poets, right? So it's very, very light and funny introduction into Git, especially for those who never worked with that before.
+Andrey Adamovich 1 hour 57 minutes 58 seconds
+Right. Other than that, I think I'm finished. Any questions? Any questions? Commands.
+Andrey Adamovich 1 hour 58 minutes 11 seconds
+So Christopher's asking this question. Go pruning. I mean, it really depends on the team. I really prefer to keep all history, so I'm just doing merging with keeping the reference of the previous merge branch, especially like in repositories where you don't have many people working. So let's say 3-4 developers in the same.
+Andrey Adamovich 1 hour 58 minutes 31 seconds
+Repo is quite normal and then you don't really want to do any commit optimization there. But if you work in a very active repository, a very big repository where you have lots of branches, lots of commits, lots of changes happening then.
+Andrey Adamovich 1 hour 58 minutes 48 seconds
+You may go into the squashing level where you basically do the squashing and then you delete the branch after that, right? So you don't really care about the branches because of course git is very efficient, but if you have many branches and they accumulated lots of changes on the.
+Andrey Adamovich 1 hour 59 minutes 8 seconds
+Of deltas, eventually the the size of the repo will be quite big. So in in very active repositories you might you might think of you know doing squash commits and then deleting the branch after that, right? So basically your main line will still still be just new feature, new feature, new feature, but it will not.
+Andrey Adamovich 1 hour 59 minutes 26 seconds
+Have the history of of the of the feature branch that existed before that.
+Andrey Adamovich 1 hour 59 minutes 37 seconds
+Yeah.
+Andrey Adamovich 1 hour 59 minutes 41 seconds
+Good question. I would think about that. I'll probably send some links to Casper and he will share that with you. That's a question from Denise about heart exercises. I don't know about any heart exercises, but but it's quite easy to to to mess up with, you know?
+Andrey Adamovich 1 hour 59 minutes 57 seconds
+One thing to remember, sometimes, sometimes if you really messed up the changes, you can always go back, right? It's always that's a cool thing about git. You can always reset your history back to the previous version. Do git reset hard.
+Andrey Adamovich 2 hours 13 seconds
+Or do git clone with with a fresh copy of the repo and then replay your changes and look at that. So sometimes I I I fall back to that. I don't want to figure out what's what's what's the rebase command I have to use. I basically just do git clone and then I apply the changes once again on top of that of that clone to to to to keep it up.
+Andrey Adamovich 2 hours 33 seconds
+So yeah, that's that's that's the way. But I will think, I will, I will think about maybe some hard exercises. I will send, I will send them as a follow up, OK.
+Andrey Adamovich 2 hours 47 seconds
+Yeah, and this board stays with you. I will also share that board as a PDF and I will share some commands about hard exercises with you.
+Andrey Adamovich 2 hours 1 minute
+OK.
+Andrey Adamovich 2 hours 1 minute 4 seconds

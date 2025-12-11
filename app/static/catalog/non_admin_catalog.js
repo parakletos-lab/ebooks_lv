@@ -17,48 +17,77 @@
     }
 
     const purchased = new Set(Array.isArray(payload.purchased) ? payload.purchased.map(Number) : []);
+    const free = new Set(Array.isArray(payload.free) ? payload.free.map(Number) : []);
     const views = payload.views || {};
     const catalogScope = typeof views.current === 'string' ? views.current : 'all';
     const allowMyBooks = payload.allow_my_books === true;
     const myBooksHref = typeof views.purchased_url === 'string' ? views.purchased_url : '/catalog/my-books';
     const allBooksHref = typeof views.all_url === 'string' ? views.all_url : '/catalog/all-books';
+    const freeBooksHref = typeof views.free_url === 'string' ? views.free_url : '/catalog/free-books';
     const mozelloBase = String(payload.mozello_base || '/mozello/books/');
     const buyLabel = String(payload.buy_label || 'Buy Online');
     const iconClass = String(payload.cart_icon_class || 'glyphicon-shopping-cart');
+    const scopeLabels = payload.scope_labels || {};
+    const myLabel = scopeLabels.purchased || 'My Books';
+    const freeLabel = scopeLabels.free || 'Free Books';
     let lastSelectedBookId = null;
     const ensureScopeNav = () => {
         const booksNav = document.getElementById('nav_new');
         if (!booksNav) {
             return;
         }
-        if (!allowMyBooks) {
-            const existingMyNav = document.getElementById('nav_mybooks');
-            if (existingMyNav) {
-                existingMyNav.remove();
-            }
-            booksNav.classList.add('active');
-            return;
-        }
         const booksLink = booksNav.querySelector('a');
         if (booksLink && allBooksHref) {
             booksLink.setAttribute('href', allBooksHref);
         }
+
+        let freeNav = document.getElementById('nav_freebooks');
+        if (freeBooksHref) {
+            if (!freeNav) {
+                freeNav = document.createElement('li');
+                freeNav.id = 'nav_freebooks';
+                const anchor = document.createElement('a');
+                anchor.href = freeBooksHref;
+                anchor.innerHTML = '<span class="glyphicon glyphicon-gift"></span> ' + freeLabel;
+                freeNav.appendChild(anchor);
+                booksNav.insertAdjacentElement('afterend', freeNav);
+            }
+        } else if (freeNav) {
+            freeNav.remove();
+            freeNav = null;
+        }
+
         let myNav = document.getElementById('nav_mybooks');
-        if (!myNav) {
-            myNav = document.createElement('li');
-            myNav.id = 'nav_mybooks';
-            const anchor = document.createElement('a');
-            anchor.href = myBooksHref;
-            anchor.innerHTML = '<span class="glyphicon glyphicon-heart"></span> My Books';
-            myNav.appendChild(anchor);
-            booksNav.insertAdjacentElement('afterend', myNav);
+        if (allowMyBooks) {
+            if (!myNav) {
+                myNav = document.createElement('li');
+                myNav.id = 'nav_mybooks';
+                const anchor = document.createElement('a');
+                anchor.href = myBooksHref;
+                anchor.innerHTML = '<span class="glyphicon glyphicon-heart"></span> ' + myLabel;
+                myNav.appendChild(anchor);
+                const insertTarget = freeNav || booksNav;
+                insertTarget.insertAdjacentElement('afterend', myNav);
+            }
+        } else if (myNav) {
+            myNav.remove();
+            myNav = null;
         }
-        if (catalogScope === 'purchased') {
-            booksNav.classList.remove('active');
+
+        booksNav.classList.remove('active');
+        if (catalogScope === 'purchased' && myNav) {
             myNav.classList.add('active');
-        } else {
-            myNav.classList.remove('active');
+            if (freeNav) freeNav.classList.remove('active');
+            return;
         }
+        if (catalogScope === 'free' && freeNav) {
+            freeNav.classList.add('active');
+            if (myNav) myNav.classList.remove('active');
+            return;
+        }
+        if (myNav) myNav.classList.remove('active');
+        if (freeNav) freeNav.classList.remove('active');
+        booksNav.classList.add('active');
     };
 
 
@@ -102,11 +131,16 @@
         if (!bookEl) {
             return;
         }
-        if (purchased.has(bookId)) {
+        if (purchased.has(bookId) || free.has(bookId)) {
             bookEl.classList.add('book-purchased');
+            bookEl.classList.remove('book-available');
+            if (free.has(bookId)) {
+                bookEl.classList.add('book-free');
+            }
             removeExistingBadge(bookEl);
             return;
         }
+        bookEl.classList.remove('book-free');
         const cover = bookEl.querySelector('.cover');
         if (!cover || cover.querySelector('.catalog-buy-badge')) {
             return;
@@ -191,7 +225,7 @@
         if (!bookId) {
             return;
         }
-        if (purchased.has(bookId)) {
+        if (purchased.has(bookId) || free.has(bookId)) {
             return;
         }
         removeGroup(root, '#readbtn');

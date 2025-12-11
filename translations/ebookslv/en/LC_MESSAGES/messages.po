@@ -202,6 +202,22 @@ msgstr "Signed in successfully."
 msgid "Type and confirm your new password."
 msgstr "Type and confirm your new password."
 
+#: app/templates/layout.html:33
+msgid "Sync to Mozello"
+msgstr "Sync to Mozello"
+
+#: app/templates/layout.html:39
+msgid "Syncing to Mozello..."
+msgstr "Syncing to Mozello..."
+
+#: app/templates/layout.html:54
+msgid "Synced to Mozello."
+msgstr "Synced to Mozello."
+
+#: app/templates/layout.html:47
+msgid "Mozello sync failed."
+msgstr "Mozello sync failed."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Passwords do not match."
