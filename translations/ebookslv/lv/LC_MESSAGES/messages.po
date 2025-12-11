@@ -199,6 +199,22 @@ msgstr "Veiksmīgi pieteicāties."
 msgid "Type and confirm your new password."
 msgstr "Ierakstiet un apstipriniet jauno paroli."
 
+#: app/templates/layout.html:33
+msgid "Sync to Mozello"
+msgstr "Sinhronizēt ar Mozello"
+
+#: app/templates/layout.html:39
+msgid "Syncing to Mozello..."
+msgstr "Sinhronizē ar Mozello..."
+
+#: app/templates/layout.html:54
+msgid "Synced to Mozello."
+msgstr "Sinhronizēts ar Mozello."
+
+#: app/templates/layout.html:47
+msgid "Mozello sync failed."
+msgstr "Mozello sinhronizācija neizdevās."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Paroles nesakrīt."
