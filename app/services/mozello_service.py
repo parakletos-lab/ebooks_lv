@@ -794,6 +794,8 @@ def upsert_product_basic(
         "title": {selected_language: title_clean},
         "price": price_value,
         "visible": True,
+        # Keep Mozello product URL aligned with Calibre/Mozello handle.
+        "url": {selected_language: clean_handle},
     }
     description_clean = (description_html or "").strip()
     if description_clean:
