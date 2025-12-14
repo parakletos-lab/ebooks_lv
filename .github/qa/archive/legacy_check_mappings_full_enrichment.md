@@ -1,7 +1,11 @@
-# Script: Verify /admin/users_books/mappings_full enrichment
+# Legacy (Archived): /admin/users_books/mappings_full enrichment
 
-> LEGACY: This checks the retired users_books allow-list UI.
-> Archived copy: `.github/qa/archive/legacy_check_mappings_full_enrichment.md`.
+This file is archived because the legacy allow-list UI is no longer the primary access mechanism.
+
+Original content preserved below.
+
+```markdown
+# Script: Verify /admin/users_books/mappings_full enrichment
 
 Objective: Ensure each mapping JSON object now contains `email` and `title` keys (non-empty when source data exists) and UI table renders those values.
 
@@ -22,3 +26,5 @@ Automation Notes:
 - Use `document.querySelectorAll('#ub-mappings-tbody tr')` to get rows.
 - Skip rows where single TD has `No mappings present.`
 - Use fetch in page context: `await (await fetch('/admin/users_books/mappings_full')).json()`.
+
+```

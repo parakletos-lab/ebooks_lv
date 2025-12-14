@@ -137,7 +137,7 @@ def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dic
     payload["scope_labels"] = {
         "purchased": _("My Books"),
         "all": _("All Books"),
-        "free": _("Free Books"),
+        "free": _("Free"),
     }
     payload["views"] = {
         "current": scope.value,

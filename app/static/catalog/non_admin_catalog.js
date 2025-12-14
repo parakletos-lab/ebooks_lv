@@ -29,7 +29,7 @@
     const iconClass = String(payload.cart_icon_class || 'glyphicon-shopping-cart');
     const scopeLabels = payload.scope_labels || {};
     const myLabel = scopeLabels.purchased || 'My Books';
-    const freeLabel = scopeLabels.free || 'Free Books';
+    const freeLabel = scopeLabels.free || 'Free';
     let lastSelectedBookId = null;
     const ensureScopeNav = () => {
         const booksNav = document.getElementById('nav_new');

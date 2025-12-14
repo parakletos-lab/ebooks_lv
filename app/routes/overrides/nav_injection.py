@@ -152,18 +152,31 @@ class _NavPatchedLoader(BaseLoader):
             source, filename, uptodate = self._wrapped.get_source(environment, template)  # type: ignore[attr-defined]
         except TemplateNotFound:  # pragma: no cover
             raise
-        if PLUGIN_NAV_ID in source or SEARCH_ANCHOR not in source:
-            return source, filename, uptodate
         try:
-            anchor_pos = source.find(SEARCH_ANCHOR)
-            if anchor_pos == -1:
-                return source, filename, uptodate
-            close_pos = source.find('</li>', anchor_pos)
-            if close_pos == -1:
-                return source, filename, uptodate
-            insertion_point = close_pos + len('</li>')
-            new_source = source[:insertion_point] + LINK_HTML_JINJA + source[insertion_point:]
-            LOG.debug("nav injected (loader) template=%s", template)
+            new_source = source
+
+            # 1) Admin nav links injection
+            if PLUGIN_NAV_ID not in new_source and SEARCH_ANCHOR in new_source:
+                anchor_pos = new_source.find(SEARCH_ANCHOR)
+                if anchor_pos != -1:
+                    close_pos = new_source.find('</li>', anchor_pos)
+                    if close_pos != -1:
+                        insertion_point = close_pos + len('</li>')
+                        new_source = new_source[:insertion_point] + LINK_HTML_JINJA + new_source[insertion_point:]
+                        LOG.debug("nav injected (loader) template=%s", template)
+
+            # 2) Allow anonymous "Read in Browser" for free books
+            # We patch upstream detail template in-memory to avoid copying the full template.
+            if template == "detail.html":
+                target = "{% if entry.reader_list and current_user.role_viewer() %}"
+                if target in new_source:
+                    replacement = (
+                        "{% set ub_has_free_access = (g.catalog_state is defined and g.catalog_state and g.catalog_state.is_free(entry.id)) %}\n"
+                        "{% if entry.reader_list and (current_user.role_viewer() or ub_has_free_access) %}"
+                    )
+                    new_source = new_source.replace(target, replacement, 1)
+                    LOG.debug("detail.html patched for free-book anonymous read")
+
             return new_source, filename, uptodate
         except Exception as exc:  # pragma: no cover
             LOG.debug("loader injection failed: %s", exc)

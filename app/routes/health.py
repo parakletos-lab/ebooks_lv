@@ -16,6 +16,7 @@ except Exception:  # pragma: no cover
 
 from app.utils.logging import get_logger
 from app.db.engine import app_session
+from sqlalchemy import text
 
 LOG = get_logger("health")
 
@@ -28,7 +29,7 @@ def healthz():  # pragma: no cover (trivial)
     db_ok = True
     try:
         with app_session() as s:
-            s.execute("SELECT 1")  # type: ignore[arg-type]
+            s.execute(text("SELECT 1"))
     except Exception as exc:  # pragma: no cover
         db_ok = False
         LOG.debug("Health DB probe failed: %s", exc)

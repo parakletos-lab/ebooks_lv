@@ -1,6 +1,7 @@
 
 ## Agent Quick Rules
 
+0. Go straight to implementation and do not ask questions unless instructed. I want all changes to be tested (in browser by using Playwright MCP in case of UI changes) and working.
 1. Never touch core "/calibre-web" without approval.
 2. Use service layer (no raw SQL). 
 3. Invalidate cache after every mutation.
@@ -33,7 +34,8 @@
 20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
 21. For "/calibre-web" pages overrides refer to "app/routes/overrides/*"
 22. Email template content lives in the `email_templates` table (users_books DB) managed only via `app.services.email_templates_service` and the `/admin/ebookslv/email-templates` UI; do not bypass the service or write raw SQL. Token lists per template and persistence details live in `.github/instructions/email_templates.md`.
-23. When adding Mozello UI strings (e.g. Sync to Mozello), update `translations/ebookslv/messages.pot` and all locale PO files.
+23. When adding UI strings, update `translations/ebookslv/messages.pot` and all locale PO files.
 24. For local UI checks use Playwright MCP against http://localhost:8083 (admin@example.org / AdminTest123!).
+25. After adding/modifying UI add e2e test to ".github/qa" folder; quick-run local QA via `bash .github/qa/scripts/run_all.sh`. All UI e2e tests should be done in browser. Use Playwright MCP for in browser e2e testing.
 ---
 Add more rules if needed

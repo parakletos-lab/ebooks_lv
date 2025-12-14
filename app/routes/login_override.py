@@ -59,7 +59,7 @@ except Exception:  # pragma: no cover - fallback to local sanitizer
 
 from sqlalchemy import func
 from werkzeug.security import check_password_hash
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from app.services import auth_link_service, password_reset_service, email_delivery, calibre_users_service
 from app.services.password_reset_service import PendingReset
@@ -261,6 +261,32 @@ def _build_reset_url(token: str, next_url: Optional[str], email: str) -> str:
     return f"{base}?{urlencode(params)}"
 
 
+def _reset_catalog_scope_to_all_if_no_next(next_raw: Optional[str]) -> None:
+    """Ensure landing page shows all books when no explicit return URL exists.
+
+    We reset when the login flow doesn't have a meaningful return URL.
+    In practice, the login form may still submit a `next` value like `/`.
+    If `next` points at a specific page (e.g. `/catalog/my-books`), we preserve
+    the scope set by that flow.
+    """
+    raw = (str(next_raw).strip() if next_raw is not None else "")
+    if raw:
+        try:
+            path = urlparse(raw).path
+        except Exception:
+            path = raw
+        if path not in {"", "/", "/login"}:
+            return
+    try:
+        from app.routes.overrides.catalog_access import CATALOG_SCOPE_SESSION_KEY, CatalogScope
+
+        session[CATALOG_SCOPE_SESSION_KEY] = CatalogScope.ALL.value
+        return
+    except Exception:
+        # Fallback: older session key name or if overrides cannot be imported.
+        session["catalog_scope"] = "all"
+
+
 def _remember_me_enabled(raw_value: Optional[str]) -> bool:
     if raw_value is None:
         return True
@@ -406,6 +432,7 @@ def login_page():  # pragma: no cover - integration tested via Flask client
                 next_url=next_url,
             )
             if isinstance(result, Response):
+                _reset_catalog_scope_to_all_if_no_next(next_raw)
                 return result
             form_errors.append(result)
         else:
@@ -417,6 +444,7 @@ def login_page():  # pragma: no cover - integration tested via Flask client
                 token_ctx=token_ctx,
             )
             if isinstance(result, Response):
+                _reset_catalog_scope_to_all_if_no_next(next_raw)
                 return result
             form_errors.append(result)
 

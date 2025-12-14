@@ -59,10 +59,66 @@ def _patch_common_filters() -> None:
 	LOG.debug("Patched CalibreDB.common_filters for purchased scope filtering")
 
 
+def _patch_read_book_access(app: Any) -> None:
+	"""Allow anonymous reading of free books.
+
+	We avoid modifying Calibre-Web sources by replacing the registered Flask
+	view function for endpoint `web.read_book`.
+	"""
+	try:
+		from cps.usermanagement import login_required_if_no_ano  # type: ignore
+		from cps.cw_login import current_user  # type: ignore
+		from flask import abort, g as flask_g  # type: ignore
+	except Exception:  # pragma: no cover
+		LOG.warning("Unable to import Calibre-Web auth helpers; read_book patch skipped")
+		return
+
+	view_functions = getattr(app, "view_functions", None)
+	if not isinstance(view_functions, dict):  # pragma: no cover
+		return
+	if getattr(app, "_ebookslv_read_book_patched", False):  # type: ignore[attr-defined]
+		return
+
+	original = view_functions.get("web.read_book")
+	if not callable(original):
+		LOG.warning("web.read_book endpoint not found; read_book patch skipped")
+		return
+
+	# Unwrap decorators applied in cps.web: login_required_if_no_ano(viewer_required(read_book))
+	inner = getattr(original, "__wrapped__", None)
+	if inner is None:
+		LOG.warning("web.read_book has no __wrapped__; cannot patch safely")
+		return
+	raw = getattr(inner, "__wrapped__", None)
+	if raw is None:
+		LOG.warning("web.read_book inner wrapper has no __wrapped__; cannot patch safely")
+		return
+
+	def _can_view_free(book_id: Any) -> bool:
+		try:
+			state = getattr(flask_g, "catalog_state", None)
+			exists = state is not None and hasattr(state, "is_free")
+			return bool(exists and state.is_free(book_id))  # type: ignore[attr-defined]
+		except Exception:
+			return False
+
+	def _patched_read_book(book_id, book_format):  # type: ignore[no-untyped-def]
+		if current_user.role_viewer():
+			return raw(book_id, book_format)
+		if _can_view_free(book_id):
+			return raw(book_id, book_format)
+		abort(403)
+
+	view_functions["web.read_book"] = login_required_if_no_ano(_patched_read_book)
+	setattr(app, "_ebookslv_read_book_patched", True)
+	LOG.debug("Patched web.read_book to allow anonymous free-book reading")
+
+
 def register_calibre_overrides(app: Any) -> None:  # pragma: no cover - glue code
 	if getattr(app, "_users_books_calibre_overrides", False):  # type: ignore[attr-defined]
 		return
 	_patch_common_filters()
+	_patch_read_book_access(app)
 	setattr(app, "_users_books_calibre_overrides", True)
 
 

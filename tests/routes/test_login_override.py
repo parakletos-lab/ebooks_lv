@@ -13,6 +13,11 @@ from app.routes.login_override import register_login_override
 from app.routes import login_override
 from app.services.password_reset_service import PendingReset
 
+try:  # pragma: no cover - available in repo runtime
+    from app.routes.overrides.catalog_access import CATALOG_SCOPE_SESSION_KEY
+except Exception:  # pragma: no cover
+    CATALOG_SCOPE_SESSION_KEY = "catalog_scope"  # type: ignore
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 APP_TEMPLATES = PROJECT_ROOT / "app" / "templates"
@@ -55,6 +60,19 @@ def stub_logout_user(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def stub_gettext(monkeypatch):
+    def _fake_gettext(message, **kwargs):
+        if kwargs:
+            try:
+                return message % kwargs
+            except Exception:
+                return message
+        return message
+
+    monkeypatch.setattr(login_override, "_", _fake_gettext)
+
+
+@pytest.fixture(autouse=True)
 def stub_templates(monkeypatch):
     def _render(_template_name, **context):
         body = context.get("form_errors") or []
@@ -92,6 +110,57 @@ def test_standard_login_success_sets_session(monkeypatch, client):
     with client.session_transaction() as sess:
         assert sess["user_id"] == 7
         assert sess["email"] == "reader@example.com"
+
+
+def test_direct_login_without_next_resets_catalog_scope(monkeypatch, client):
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
+    with client.session_transaction() as sess:
+        sess[CATALOG_SCOPE_SESSION_KEY] = "free"
+
+    resp = client.post(
+        "/login",
+        data={"email": "reader@example.com", "password": "Secret123!"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/")
+    with client.session_transaction() as sess:
+        assert sess[CATALOG_SCOPE_SESSION_KEY] == "all"
+
+
+def test_login_with_next_root_resets_catalog_scope(monkeypatch, client):
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
+    with client.session_transaction() as sess:
+        sess[CATALOG_SCOPE_SESSION_KEY] = "my"
+
+    resp = client.post(
+        "/login",
+        data={"email": "reader@example.com", "password": "Secret123!", "next": "/"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/")
+    with client.session_transaction() as sess:
+        assert sess[CATALOG_SCOPE_SESSION_KEY] == "all"
+
+
+def test_login_with_explicit_catalog_next_preserves_catalog_scope(monkeypatch, client):
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
+    with client.session_transaction() as sess:
+        sess[CATALOG_SCOPE_SESSION_KEY] = "my"
+
+    resp = client.post(
+        "/login",
+        data={"email": "reader@example.com", "password": "Secret123!", "next": "/catalog/my-books"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/catalog/my-books")
+    with client.session_transaction() as sess:
+        assert sess[CATALOG_SCOPE_SESSION_KEY] == "my"
 
 
 def test_login_with_wrong_password_shows_error(monkeypatch, client):

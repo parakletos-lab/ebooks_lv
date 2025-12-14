@@ -1,8 +1,11 @@
-# E2E: users_books Admin Page
+# Legacy (Archived): users_books Admin Page
 
-> LEGACY: The users_books allow-list admin UI is no longer the primary mechanism.
-> Use `.github/qa/e2e/roles_smoke.md` and `.github/qa/e2e/non_admin_catalog_scope.md`.
-> Archived copy: `.github/qa/archive/legacy_e2e_users_books_admin_page.md`.
+This file is archived because the **users_books allow-list admin UI is no longer the active mechanism**.
+
+Original content preserved below.
+
+````markdown
+# E2E: users_books Admin Page
 
 Goal: Validate the allow‑list admin UI at `/admin/users_books` renders correctly and core operations (list + add + delete) function.
 
@@ -80,3 +83,5 @@ if(btn) btn.click();
 
 ---
 Keep this file concise; expand only if new behaviors are added.
+
+````

@@ -255,6 +255,10 @@ msgstr "Manas grāmatas"
 msgid "All Books"
 msgstr "Visas grāmatas"
 
+#: app/routes/overrides/catalog_access.py:135
+msgid "Free"
+msgstr "Bezmaksas"
+
 #: app/routes/overrides/nav_injection.py:47 app/templates/layout.html:14
 msgid "ebooks.lv"
 msgstr "ebooks.lv"
