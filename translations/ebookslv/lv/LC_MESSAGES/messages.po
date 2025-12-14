@@ -323,37 +323,41 @@ msgstr ""
 "izveidojiet lietotāju kontus."
 
 #: app/templates/ebookslv_admin.html:21 app/templates/ebookslv_admin.html:26
-#: app/templates/ebookslv_admin.html:31
+#: app/templates/ebookslv_admin.html:31 app/templates/ebookslv_admin.html:36
 msgid "Open"
 msgstr "Atvērt"
 
-#: app/templates/ebookslv_admin.html:24 app/templates/users_books_admin.html:68
+#: app/templates/ebookslv_admin.html:25
+msgid "Manage Mozello store settings and webhook notifications."
+msgstr "Pārvaldiet Mozello veikala iestatījumus un webhook paziņojumus."
+
+#: app/templates/ebookslv_admin.html:29 app/templates/users_books_admin.html:68
 msgid "Books"
 msgstr "Grāmatas"
 
-#: app/templates/ebookslv_admin.html:25
-msgid "Placeholder for upcoming ebooks.lv book management enhancements."
-msgstr "Rezervēts gaidāmajiem ebooks.lv grāmatu pārvaldības uzlabojumiem."
+#: app/templates/ebookslv_admin.html:30
+msgid "Sync Calibre books with Mozello store (export products, sync prices, delete products)."
+msgstr "Sinhronizējiet Calibre grāmatas ar Mozello veikalu (eksportējiet produktus, sinhronizējiet cenas, dzēsiet produktus)."
 
-#: app/templates/ebookslv_admin.html:29
+#: app/templates/ebookslv_admin.html:34
 #: app/templates/email_templates_admin.html:2
 #: app/templates/email_templates_admin.html:11
 msgid "Email Templates"
 msgstr "E-pasta veidnes"
 
-#: app/templates/ebookslv_admin.html:30
+#: app/templates/ebookslv_admin.html:35
 msgid "Manage purchase notification templates across languages."
 msgstr "Pārvaldiet pirkumu paziņojumu veidnes dažādām valodām."
 
-#: app/templates/ebookslv_admin.html:40
+#: app/templates/ebookslv_admin.html:45
 msgid "Applying defaults..."
 msgstr "Pielieto noklusējumus..."
 
-#: app/templates/ebookslv_admin.html:41
+#: app/templates/ebookslv_admin.html:46
 msgid "Defaults applied."
 msgstr "Noklusējumi ir pielietoti."
 
-#: app/templates/ebookslv_admin.html:42
+#: app/templates/ebookslv_admin.html:47
 #, python-format
 msgid "Failed to apply defaults: %(reason)s"
 msgstr "Neizdevās pielietot noklusējumus: %(reason)s"

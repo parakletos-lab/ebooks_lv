@@ -91,6 +91,9 @@ class MozelloConfig(Base):
     api_key = Column(String(128), nullable=True)
     notifications_url = Column(String(500), nullable=True)
     store_url = Column(String(500), nullable=True)
+    store_url_lv = Column(String(500), nullable=True)
+    store_url_ru = Column(String(500), nullable=True)
+    store_url_en = Column(String(500), nullable=True)
     notifications_wanted = Column(Text, nullable=True)  # JSON array
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -121,6 +124,9 @@ class MozelloConfig(Base):
             "api_key_set": bool(self.api_key),  # do not expose raw key here
             "notifications_url": self.notifications_url,
             "store_url": self.store_url,
+            "store_url_lv": self.store_url_lv,
+            "store_url_ru": self.store_url_ru,
+            "store_url_en": self.store_url_en,
             "notifications_wanted": self.events_list(),
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

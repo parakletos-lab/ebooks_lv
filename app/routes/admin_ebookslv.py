@@ -6,7 +6,7 @@ administration tools (orders management, product sync, etc.).
 Routes:
     /admin/ebookslv/          -> landing page with navigation buttons
     /admin/ebookslv/orders/   -> Mozello orders admin UI
-    /admin/ebookslv/books/    -> placeholder (future feature)
+    /admin/ebookslv/books/    -> Books sync with Mozello store
 
 All routes enforce admin access via ensure_admin.
 """
@@ -147,7 +147,7 @@ def orders_page():  # pragma: no cover - thin render wrapper
     return render_template("orders_admin.html", ub_csrf_token=generate_csrf())
 
 
-@bp.route("/books/", methods=["GET"])  # placeholder page
+@bp.route("/books/", methods=["GET"])
 def books_page():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:

@@ -46,7 +46,6 @@ def _nav_labels() -> dict[str, str]:
     return {
         "ebooks": _("ebooks.lv"),
         "orders": _("Orders"),
-        "mozello": _("Mozello"),
     }
 
 
@@ -64,7 +63,6 @@ def _render_combined_html() -> str:
     return "".join([
         _render_nav_item("top_users_books", "/admin/ebookslv/", "glyphicon-book", labels["ebooks"]),
         _render_nav_item("top_orders", "/admin/ebookslv/orders/", "glyphicon-list-alt", labels["orders"]),
-        _render_nav_item("top_mozello", "/admin/mozello/", "glyphicon-flash", labels["mozello"]),
     ])
 
 
@@ -76,9 +74,6 @@ LINK_HTML_JINJA = (
     '<li><a id="top_orders" data-text="{{ _("Orders") }}" href="/admin/ebookslv/orders/">'
     '<span class="glyphicon glyphicon-list-alt"></span> '
     '<span class="hidden-sm">{{ _("Orders") }}</span></a></li>'
-    '<li><a id="top_mozello" data-text="{{ _("Mozello") }}" href="/admin/mozello/">'
-    '<span class="glyphicon glyphicon-flash"></span> '
-    '<span class="hidden-sm">{{ _("Mozello") }}</span></a></li>'
     '{% endif %}'
 )
 

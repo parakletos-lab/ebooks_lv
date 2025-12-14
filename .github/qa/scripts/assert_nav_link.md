@@ -4,7 +4,7 @@ Automated DOM assertion (manual run steps until MCP scripted):
 3. Ensure element with id 'top_admin' exists.
 4. Assert element with id 'top_users_books' exists (ebooks.lv hub link).
 5. Assert element with id 'top_orders' exists.
-6. Assert element with id 'top_mozello' exists.
+6. Navigate to `/admin/ebookslv/` and ensure a Mozello card/link to `/admin/mozello/` exists.
 7. If missing, open console and check for injection debug logs (search for 'nav injected').
 
 Notes:

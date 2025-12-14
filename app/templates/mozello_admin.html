@@ -1,5 +1,9 @@
 {% extends "layout.html" %}
 {% set title = _('Mozello Notifications') %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
 {% block body %}
 <div class="panel panel-default">
   <div class="panel-heading">
@@ -8,8 +12,25 @@
   <div class="panel-body">
     <form id="mz-settings-form" class="form">
       <div class="form-group" style="max-width:600px;">
-        <label for="mz-store-url">{{ _('Mozello Store URL') }}</label>
-        <input type="url" class="form-control" id="mz-store-url" placeholder="https://example.mozello.com/store/" />
+        <div class="email-template-card-header" style="margin-bottom:6px;">
+          <label for="mz-store-url-lv" style="margin:0;">{{ _('Mozello Store URL') }}</label>
+          <div class="email-template-tabs" id="mz-store-url-tabs">
+            <button type="button" class="email-template-tab is-active" data-lang="lv">LV</button>
+            <button type="button" class="email-template-tab" data-lang="ru">RU</button>
+            <button type="button" class="email-template-tab" data-lang="en">EN</button>
+          </div>
+        </div>
+        <div class="email-template-editor-panes" id="mz-store-url-panes" style="margin-top:0;">
+          <div class="email-template-pane is-active" data-lang="lv">
+            <input type="url" class="form-control" id="mz-store-url-lv" placeholder="https://example.mozello.com/store/" />
+          </div>
+          <div class="email-template-pane" data-lang="ru">
+            <input type="url" class="form-control" id="mz-store-url-ru" placeholder="https://example.mozello.com/store/" />
+          </div>
+          <div class="email-template-pane" data-lang="en">
+            <input type="url" class="form-control" id="mz-store-url-en" placeholder="https://example.mozello.com/store/" />
+          </div>
+        </div>
       </div>
       <div class="form-group" style="max-width:600px;">
         <label for="mz-api-key">{{ _('Mozello API Key') }}</label>
@@ -110,11 +131,38 @@
   const btnLoad = document.getElementById('mz-load');
   const btnTest = document.getElementById('mz-test');
   const btnReset = document.getElementById('mz-reset');
-  const storeInput = document.getElementById('mz-store-url');
+  const storeInputLv = document.getElementById('mz-store-url-lv');
+  const storeInputRu = document.getElementById('mz-store-url-ru');
+  const storeInputEn = document.getElementById('mz-store-url-en');
+  const storeTabs = document.getElementById('mz-store-url-tabs');
+  const storePanes = document.getElementById('mz-store-url-panes');
   const apiKeyInput = document.getElementById('mz-api-key');
   const btnSettingsSave = document.getElementById('mz-settings-save');
   const btnSettingsReload = document.getElementById('mz-settings-reload');
   const portInput = null; // removed forced port feature
+
+  function switchStoreLang(lang){
+    if(!storeTabs || !storePanes){
+      return;
+    }
+    Array.from(storeTabs.querySelectorAll('.email-template-tab')).forEach(function(btn){
+      btn.classList.toggle('is-active', btn.getAttribute('data-lang') === lang);
+    });
+    Array.from(storePanes.querySelectorAll('.email-template-pane')).forEach(function(pane){
+      pane.classList.toggle('is-active', pane.getAttribute('data-lang') === lang);
+    });
+  }
+
+  if(storeTabs){
+    storeTabs.addEventListener('click', function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('button[data-lang]') : null;
+      if(!btn){
+        return;
+      }
+      var lang = btn.getAttribute('data-lang') || 'lv';
+      switchStoreLang(lang);
+    });
+  }
 
   function selectedEvents() {
     return Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
@@ -142,7 +190,10 @@
   async function loadMozelloSettings() {
     try {
       const data = await fetchJSON('/admin/mozello/app_settings');
-      storeInput.value = data.mz_store_url || '';
+      const fallback = data.mz_store_url || '';
+      storeInputLv.value = data.mz_store_url_lv || fallback;
+      storeInputRu.value = data.mz_store_url_ru || fallback;
+      storeInputEn.value = data.mz_store_url_en || fallback;
       apiKeyInput.value = data.mz_api_key || '';
     } catch (e) {
       alert(t('failedLoadSettings', { reason: describeError(e) }));
@@ -168,7 +219,11 @@
     btnSettingsSave.disabled = true;
     try {
       const body = {
-        mz_store_url: storeInput.value || '',
+        mz_store_url_lv: storeInputLv.value || '',
+        mz_store_url_ru: storeInputRu.value || '',
+        mz_store_url_en: storeInputEn.value || '',
+        // Backward-compatible alias
+        mz_store_url: storeInputEn.value || '',
         mz_api_key: apiKeyInput.value || ''
       };
       const data = await fetchJSON('/admin/mozello/app_settings', {
@@ -176,7 +231,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      storeInput.value = data.mz_store_url || '';
+      const fallback = data.mz_store_url || '';
+      storeInputLv.value = data.mz_store_url_lv || fallback;
+      storeInputRu.value = data.mz_store_url_ru || fallback;
+      storeInputEn.value = data.mz_store_url_en || fallback;
       if (Object.prototype.hasOwnProperty.call(data, 'mz_api_key')) {
         apiKeyInput.value = data.mz_api_key || '';
       }
@@ -202,6 +260,7 @@
   btnTest.addEventListener('click', postTest);
   btnSettingsSave.addEventListener('click', saveMozelloSettings);
   btnSettingsReload.addEventListener('click', loadMozelloSettings);
+  switchStoreLang('lv');
   loadMozelloSettings();
   // No automatic remote API call on load (conservative mode)
 })();

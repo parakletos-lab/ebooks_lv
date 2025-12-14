@@ -617,7 +617,9 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                 recipient_email=email_norm,
                 user_name=existing_user.get("name") or existing_user.get("email") or email_norm,
                 books=books_for_email,
-                shop_url=mozello_service.get_store_url(),
+                shop_url=mozello_service.get_store_url(
+                    existing_user.get("locale") if isinstance(existing_user, dict) else None
+                ),
                 auth_token=auth_token,
                 preferred_language=existing_user.get("locale") if isinstance(existing_user, dict) else None,
             )

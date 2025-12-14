@@ -35,6 +35,8 @@ _CATEGORY_CACHE: Dict[str, _CategoryCacheEntry] = {}
 _CATEGORY_CACHE_TTL = 3600.0  # seconds
 _CATEGORY_CACHE_LOCK = threading.Lock()
 
+_STORE_URL_LANGUAGES = ("lv", "ru", "en")
+
 
 def _normalize_category_path(value: str) -> str:
     parts = [segment.strip("/") for segment in value.split("/") if segment.strip("/")]
@@ -324,33 +326,76 @@ def _seed_store_url_from_env() -> None:
             if cfg is None:
                 cfg = MozelloConfig(id=1)
                 s.add(cfg)
-            existing = (cfg.store_url or "").strip()
-            if not existing:
+            existing_any = any(
+                (getattr(cfg, attr, None) or "").strip()
+                for attr in ("store_url", "store_url_lv", "store_url_ru", "store_url_en")
+            )
+            if not existing_any:
+                cfg.store_url_lv = cleaned_env
+                cfg.store_url_ru = cleaned_env
+                cfg.store_url_en = cleaned_env
                 cfg.store_url = cleaned_env
-                LOG.info("Mozello store URL seeded from environment into mozello_config table.")
+                LOG.info("Mozello store URL seeded from environment into mozello_config table (all languages).")
     except Exception:  # pragma: no cover - defensive
         LOG.warning("Failed seeding Mozello store URL from environment", exc_info=True)
 
 
-def _current_store_url() -> Optional[str]:
-    cfg = _get_singleton(create=False)
-    if cfg and cfg.store_url:
-        cleaned = cfg.store_url.strip()
-        return cleaned or None
+def _store_url_attr_for_language(language_code: Optional[str]) -> Optional[str]:
+    normalized = _normalize_product_language(language_code)
+    if normalized == "lv":
+        return "store_url_lv"
+    if normalized == "ru":
+        return "store_url_ru"
+    if normalized == "en":
+        return "store_url_en"
     return None
 
 
-def get_store_url() -> Optional[str]:
-    """Return configured Mozello store base URL if available."""
+def _clean_store_url(value: Optional[str]) -> Optional[str]:
+    if not value or not isinstance(value, str):
+        return None
+    cleaned = value.strip()
+    return cleaned.rstrip("/") if cleaned else None
+
+
+def _current_store_url(language_code: Optional[str]) -> Optional[str]:
+    cfg = _get_singleton(create=False)
+    if not cfg:
+        return None
+
+    attr = _store_url_attr_for_language(language_code)
+    if attr:
+        return _clean_store_url(getattr(cfg, attr, None))
+
+    preferred_en = _clean_store_url(getattr(cfg, "store_url_en", None))
+    if preferred_en:
+        return preferred_en
+    legacy = _clean_store_url(getattr(cfg, "store_url", None))
+    if legacy:
+        return legacy
+    return None
+
+
+def get_store_url(language_code: Optional[str] = None) -> Optional[str]:
+    """Return configured Mozello store base URL for a language (lv/ru/en) if available."""
     _seed_store_url_from_env()
-    value = _current_store_url()
+    value = _current_store_url(language_code)
     if value:
-        return value.rstrip("/")
+        return value
     env_value = config.mozello_store_url()
     if env_value:
         cleaned_env = env_value.strip()
         return cleaned_env.rstrip("/") if cleaned_env else None
     return None
+
+
+def invalidate_cache() -> None:
+    """Invalidate in-process Mozello caches after mutations."""
+    try:
+        with _CATEGORY_CACHE_LOCK:
+            _CATEGORY_CACHE.clear()
+    except Exception:  # pragma: no cover
+        pass
 def get_app_settings() -> Dict[str, Any]:
     seeded_key = _resolve_api_key()
     _seed_store_url_from_env()
@@ -358,19 +403,42 @@ def get_app_settings() -> Dict[str, Any]:
     key_value = cfg.api_key.strip() if cfg and isinstance(cfg.api_key, str) else None
     if not key_value and seeded_key:
         key_value = seeded_key.strip() or None
-    url_value = cfg.store_url.strip() if cfg and isinstance(cfg.store_url, str) else None
-    if not url_value:
-        env_url = config.mozello_store_url()
-        if env_url:
-            url_value = env_url.strip() or None
+
+    env_url = config.mozello_store_url()
+    env_url_clean = env_url.strip() if isinstance(env_url, str) and env_url.strip() else None
+    legacy_url = cfg.store_url.strip() if cfg and isinstance(cfg.store_url, str) and cfg.store_url.strip() else None
+
+    def resolve_lang(lang: str) -> Optional[str]:
+        key = f"store_url_{lang}"
+        raw = getattr(cfg, key, None) if cfg else None
+        if isinstance(raw, str) and raw.strip():
+            return raw.strip()
+        if legacy_url:
+            return legacy_url
+        return env_url_clean
+
+    url_lv = resolve_lang("lv")
+    url_ru = resolve_lang("ru")
+    url_en = resolve_lang("en")
+
     return {
-        "mz_store_url": url_value or None,
+        "mz_store_url": (url_en or legacy_url or env_url_clean) or None,
+        "mz_store_url_lv": url_lv or None,
+        "mz_store_url_ru": url_ru or None,
+        "mz_store_url_en": url_en or None,
         "mz_api_key": key_value or None,
         "mz_api_key_set": bool(key_value),
     }
 
 
-def update_app_settings(store_url: Optional[str], api_key: Optional[str]) -> Dict[str, Any]:
+def update_app_settings(
+    store_url: Optional[str],
+    api_key: Optional[str],
+    *,
+    store_url_lv: Optional[str] = None,
+    store_url_ru: Optional[str] = None,
+    store_url_en: Optional[str] = None,
+) -> Dict[str, Any]:
     _ensure_schema_migrations()
     with app_session() as s:
         cfg = s.get(MozelloConfig, 1)
@@ -379,11 +447,35 @@ def update_app_settings(store_url: Optional[str], api_key: Optional[str]) -> Dic
             s.add(cfg)
         changed = False
 
-        if store_url is not None:
+        if store_url_lv is not None:
+            sanitized = (store_url_lv or "").strip() or None
+            if getattr(cfg, "store_url_lv", None) != sanitized:
+                cfg.store_url_lv = sanitized
+                changed = True
+
+        if store_url_ru is not None:
+            sanitized = (store_url_ru or "").strip() or None
+            if getattr(cfg, "store_url_ru", None) != sanitized:
+                cfg.store_url_ru = sanitized
+                changed = True
+
+        if store_url_en is not None:
+            sanitized = (store_url_en or "").strip() or None
+            if getattr(cfg, "store_url_en", None) != sanitized:
+                cfg.store_url_en = sanitized
+                changed = True
+
+        # Backward-compatible single-field update.
+        if store_url is not None and store_url_lv is None and store_url_ru is None and store_url_en is None:
             sanitized_url = (store_url or "").strip() or None
             if cfg.store_url != sanitized_url:
                 cfg.store_url = sanitized_url
                 changed = True
+
+        # Keep legacy column aligned for older callers when per-language fields are used.
+        if store_url_en is not None and cfg.store_url != cfg.store_url_en:
+            cfg.store_url = cfg.store_url_en
+            changed = True
 
         if api_key is not None:
             sanitized_key = (api_key or "").strip() or None
@@ -394,9 +486,12 @@ def update_app_settings(store_url: Optional[str], api_key: Optional[str]) -> Dic
         if changed:
             LOG.info(
                 "Mozello app settings updated store_url_set=%s api_key_set=%s",
-                bool(cfg.store_url),
+                bool(cfg.store_url_en or cfg.store_url_lv or cfg.store_url_ru or cfg.store_url),
                 bool(cfg.api_key),
             )
+
+    if changed:
+        invalidate_cache()
 
     return get_app_settings()
 
@@ -490,6 +585,7 @@ __all__ = [
     "handle_webhook",
     "get_app_settings",
     "get_store_url",
+    "invalidate_cache",
     "update_app_settings",
     "fetch_category",
     "resolve_category_url_path",
@@ -526,6 +622,15 @@ def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
             if "store_url" not in cols:
                 LOG.info("Applying schema migration: adding mozello_config.store_url column")
                 s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url VARCHAR(500)"))
+            if "store_url_lv" not in cols:
+                LOG.info("Applying schema migration: adding mozello_config.store_url_lv column")
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url_lv VARCHAR(500)"))
+            if "store_url_ru" not in cols:
+                LOG.info("Applying schema migration: adding mozello_config.store_url_ru column")
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url_ru VARCHAR(500)"))
+            if "store_url_en" not in cols:
+                LOG.info("Applying schema migration: adding mozello_config.store_url_en column")
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url_en VARCHAR(500)"))
     except Exception as exc:
         LOG.error("Mozello schema migration check failed: %s", exc)
     finally:

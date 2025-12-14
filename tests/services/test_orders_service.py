@@ -43,7 +43,7 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
         return mapping
 
     monkeypatch.setattr(orders_service.books_sync, "lookup_books_by_handles", fake_lookup_books)
-    monkeypatch.setattr(orders_service.mozello_service, "get_store_url", lambda: "https://shop.example.com")
+    monkeypatch.setattr(orders_service.mozello_service, "get_store_url", lambda *_a, **_k: "https://shop.example.com")
 
     existing_user: Optional[Dict[str, object]] = None
 

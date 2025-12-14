@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 try:
-    from flask import Blueprint, request, jsonify, render_template, redirect, abort
+    from flask import Blueprint, request, jsonify, render_template, redirect, abort, session
 except Exception:  # pragma: no cover
     Blueprint = object  # type: ignore
     def request():  # type: ignore
@@ -46,8 +46,27 @@ from app.services import (
     books_sync,
 )
 from app.utils.logging import get_logger
+from app.i18n.preferences import SESSION_LOCALE_KEY
 
 LOG = get_logger("mozello.routes")
+
+
+def _request_language_code() -> Optional[str]:
+    try:  # pragma: no cover
+        from flask_babel import get_locale  # type: ignore
+
+        loc = get_locale()
+        if loc:
+            return str(loc)
+    except Exception:
+        pass
+    try:
+        raw = session.get(SESSION_LOCALE_KEY)
+        if isinstance(raw, str) and raw.strip():
+            return raw.strip()
+    except Exception:
+        pass
+    return None
 
 bp = Blueprint("mozello_admin", __name__, url_prefix="/admin/mozello", template_folder="../templates")
 webhook_bp = Blueprint("mozello_webhook", __name__)
@@ -138,7 +157,7 @@ def mozello_product_redirect(mz_handle: str):
         LOG.info("Mozello product redirect missing relative url handle=%s", handle)
         abort(404)
 
-    store_base = mozello_service.get_store_url()
+    store_base = mozello_service.get_store_url(_request_language_code())
     if not store_base:
         LOG.warning("Mozello store URL not configured for redirect handle=%s", handle)
         abort(503)
@@ -166,6 +185,9 @@ def mozello_update_app_settings():
     try:
         updated = mozello_service.update_app_settings(
             store_url=data.get("mz_store_url"),
+            store_url_lv=data.get("mz_store_url_lv"),
+            store_url_ru=data.get("mz_store_url_ru"),
+            store_url_en=data.get("mz_store_url_en"),
             api_key=data.get("mz_api_key"),
         )
     except RuntimeError as exc:

@@ -28,7 +28,7 @@ Use these three personas consistently (agents should follow `e2e/roles_smoke.md`
 
 ### 1) Anonymous (not logged in)
 - Can load `/` (status 200)
-- Does **not** see admin nav injection items (`#top_users_books`, `#top_orders`, `#top_mozello`)
+- Does **not** see admin nav injection items (`#top_users_books`, `#top_orders`)
 - Visiting `/admin/ebookslv/` redirects to login
 
 ### 2) Non-admin user (logged in)
@@ -41,8 +41,8 @@ Use these three personas consistently (agents should follow `e2e/roles_smoke.md`
 - Sees injected admin nav links:
 	- `#top_users_books` -> `/admin/ebookslv/` (ebooks.lv hub)
 	- `#top_orders` -> `/admin/ebookslv/orders/`
-	- `#top_mozello` -> `/admin/mozello/`
 - Can open `/admin/ebookslv/` and `/admin/ebookslv/orders/`
+- Mozello admin is reachable from the Mozello card on `/admin/ebookslv/`
 
 ## Bootstrap scripts (inside container)
 
