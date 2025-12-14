@@ -17,9 +17,10 @@
 
 /* Landing cards */
 .ebooks-admin-cards { display:flex; gap:18px; flex-wrap:wrap; margin-top:14px; }
-.ebooks-admin-card { flex:0 0 240px; border:1px solid #ddd; border-radius:6px; padding:14px 16px; background:#fafafa; }
+.ebooks-admin-card { flex:0 0 240px; border:1px solid #ddd; border-radius:6px; padding:14px 16px; background:#fafafa; display:flex; flex-direction:column; }
 .ebooks-admin-card h4 { margin:0 0 6px; font-weight:600; font-size:15px; }
 .ebooks-admin-card p { font-size:12px; margin:0 0 10px; color:#555; }
+.ebooks-admin-card > a.btn { margin-top:auto; align-self:flex-end; }
 
 /* Users ↔ Books admin (moved from inline) */
 #ub-users-box, #ub-books-box { max-height:260px; overflow:auto; border:1px solid #ccc; padding:6px 6px 4px; background:#fafafa; border-radius:4px; }
