@@ -237,7 +237,7 @@ def register_catalog_access(app: Any) -> None:
                 book_id = request.view_args.get("book_id")
             if not state.is_purchased(book_id) and not state.is_free(book_id):
                 LOG.debug("Blocking reader access for non-purchased book_id=%s", book_id)
-                return redirect(url_for("web.index"))
+                return redirect(url_for("web.show_book", book_id=book_id))
         return None
 
     @app.after_request  # type: ignore[misc]
