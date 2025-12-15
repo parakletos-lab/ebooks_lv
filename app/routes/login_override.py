@@ -15,6 +15,11 @@ from flask import (
     url_for,
 )
 
+try:  # runtime dependency on Calibre-Web
+    from cps.render_template import render_title_template as _cw_render_title_template  # type: ignore
+except Exception:  # pragma: no cover - allow unit tests without Calibre runtime
+    _cw_render_title_template = None  # type: ignore
+
 try:  # pragma: no cover - Flask-Babel optional in unit tests
     from flask_babel import gettext as _  # type: ignore
 except Exception:  # pragma: no cover
@@ -458,6 +463,10 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         "form_errors": form_errors,
         "csrf_token_value": generate_csrf(),
     }
+    # Use Calibre-Web's rendering helper to ensure template variables like
+    # `instance` and `sidebar` are present (keeps /login consistent with /).
+    if _cw_render_title_template:
+        return _cw_render_title_template("login_override.html", **context)
     return render_template("login_override.html", **context)
 
 
