@@ -1,0 +1,344 @@
+/* ebooks.lv Mozello-aligned theme overrides (loaded on top of Calibre-Web Standard Theme).
+   This file is injected via app/routes/overrides/mozello_theme_injection.py.
+*/
+
+/* Note: Calibre-Web sets a CSP that blocks remote stylesheets, so we rely on a
+  local/system-installed Poppins if available, with sensible fallbacks. */
+
+:root {
+  --eblv-font-sans: Poppins, Arial, Helvetica, sans-serif;
+
+  /* Mozello-like accent (green) */
+  --eblv-accent: #0a8f6a;
+  --eblv-accent-hover: #087a5b;
+
+  /* Brand teal seen in Mozello header UI */
+  --eblv-brand: #567d81;
+
+  --eblv-text: #0f172a;
+  --eblv-muted: #475569;
+  --eblv-border: #e5e7eb;
+  --eblv-surface: #ffffff;
+}
+
+html,
+body {
+  font-family: var(--eblv-font-sans);
+  color: var(--eblv-text);
+  /* Mozello shop pages use a light grey page background */
+  background-color: #f5f5f5;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Header / navbar */
+.navbar.navbar-default.navbar-static-top {
+  background: var(--eblv-surface);
+  border-bottom: 1px solid var(--eblv-border);
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.navbar.navbar-default .navbar-brand {
+  font-family: var(--eblv-font-sans);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--eblv-brand) !important;
+
+  /* Put logo on top of title */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  line-height: 1.1;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.navbar.navbar-default .navbar-brand:hover,
+.navbar.navbar-default .navbar-brand:focus {
+  color: var(--eblv-brand) !important;
+}
+
+.navbar.navbar-default .navbar-brand::before {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 30px;
+  background: url('/app_static/icons/logo.svg') no-repeat center;
+  background-size: contain;
+  margin-bottom: 4px;
+}
+
+.navbar.navbar-default .navbar-toggle {
+  border-radius: 0;
+}
+
+.navbar-nav > li > a {
+  font-family: var(--eblv-font-sans);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--eblv-text) !important;
+}
+
+.navbar-nav .ub-profile-disabled {
+  text-transform: none;
+}
+
+.navbar-nav > li > a:hover,
+.navbar-nav > li > a:focus {
+  color: var(--eblv-accent) !important;
+  background: transparent !important;
+}
+
+.navbar-nav > .active > a,
+.navbar-nav > .active > a:hover,
+.navbar-nav > .active > a:focus {
+  color: var(--eblv-accent) !important;
+  background: transparent !important;
+}
+
+/* Simple Mozello-like underline for active nav items */
+.navbar-nav > .active > a {
+  box-shadow: inset 0 -3px 0 0 var(--eblv-accent);
+}
+
+/* Buttons / inputs: flat, squared */
+.btn,
+.form-control,
+.input-group .btn,
+.input-group .form-control,
+.dropdown-menu,
+.modal-content {
+  border-radius: 0 !important;
+}
+
+.form-control {
+  font-family: var(--eblv-font-sans);
+  box-shadow: none !important;
+  border-color: var(--eblv-border);
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.form-control:focus {
+  border-color: var(--eblv-accent) !important;
+  box-shadow: none !important;
+}
+
+.btn {
+  font-family: var(--eblv-font-sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  min-height: 38px;
+  padding: 8px 16px;
+  box-shadow: none !important;
+}
+
+/* Navbar form controls are heavily styled upstream; ensure Mozello sizing wins */
+.navbar .form-control,
+.navbar-form .form-control,
+.navbar .btn,
+.navbar-form .btn {
+  border-radius: 0 !important;
+  min-height: 38px !important;
+}
+
+.navbar .form-control,
+.navbar-form .form-control {
+  padding: 8px 12px !important;
+}
+
+.navbar .btn,
+.navbar-form .btn {
+  padding: 8px 16px !important;
+}
+
+.btn-primary {
+  background: var(--eblv-accent) !important;
+  border-color: var(--eblv-accent) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--eblv-accent-hover) !important;
+  border-color: var(--eblv-accent-hover) !important;
+}
+
+.btn-default {
+  background: #ffffff !important;
+  border-color: var(--eblv-accent) !important;
+  color: var(--eblv-accent) !important;
+}
+
+.btn-default:hover,
+.btn-default:focus {
+  background: #ffffff !important;
+  border-color: var(--eblv-accent-hover) !important;
+  color: var(--eblv-accent-hover) !important;
+}
+
+/* Make navbar toggle match flat Mozello style */
+.navbar.navbar-default .navbar-toggle {
+  border-color: var(--eblv-border);
+}
+
+.navbar.navbar-default .navbar-toggle .icon-bar {
+  background-color: var(--eblv-brand);
+}
+
+/* Shopping cart icon (used by injected catalog buy actions) */
+.glyphicon.eblv-icon-cart {
+  width: 38px;
+  height: 38px;
+  display: inline-block;
+  vertical-align: middle;
+  background-color: var(--eblv-accent);
+  background-image: url('/app_static/icons/cart.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+}
+
+.glyphicon.eblv-icon-cart::before {
+  content: "";
+}
+
+/* Also override common Bootstrap cart icon usage */
+.glyphicon.glyphicon-shopping-cart {
+  width: 38px;
+  height: 38px;
+  display: inline-block;
+  vertical-align: middle;
+  background-color: var(--eblv-accent);
+  background-image: url('/app_static/icons/cart.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+}
+
+.glyphicon.glyphicon-shopping-cart::before {
+  content: "";
+}
+
+/* Catalog buy badge: remove white border container; show just green cart square */
+.catalog-non-admin .catalog-buy-badge,
+.catalog-buy-badge {
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.catalog-non-admin .catalog-buy-badge:hover,
+.catalog-buy-badge:hover {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* Login page / panels: make them flat & squared like Mozello cards */
+.panel,
+.panel-heading,
+.panel-default {
+  border-radius: 0 !important;
+}
+
+.panel-body {
+  background: inherit !important;
+}
+
+.panel {
+  box-shadow: none !important;
+  border-color: var(--eblv-border) !important;
+}
+
+.panel-default > .panel-heading {
+  background: #ffffff !important;
+  border-color: var(--eblv-border) !important;
+}
+
+.panel-title {
+  font-family: var(--eblv-font-sans);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--eblv-text) !important;
+}
+
+/* Make btn-link behave like a link (our .btn baseline makes it too "buttony") */
+.btn.btn-link {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  font-weight: 600;
+  color: var(--eblv-accent) !important;
+}
+
+.btn.btn-link:hover,
+.btn.btn-link:focus {
+  color: var(--eblv-accent-hover) !important;
+  text-decoration: underline;
+}
+
+/* Keep browser autofill from turning inputs blue */
+input.form-control:-webkit-autofill,
+input.form-control:-webkit-autofill:hover,
+input.form-control:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--eblv-text);
+  transition: background-color 9999s ease-out 0s;
+  box-shadow: 0 0 0 1000px #0a8f6a1a inset !important;
+}
+
+/* Cart icon zoom animation like Mozello shopbar-cart */
+.glyphicon.eblv-icon-cart,
+.glyphicon.glyphicon-shopping-cart {
+  transition: transform 120ms ease-out;
+  will-change: transform;
+}
+
+.btn:hover .glyphicon.eblv-icon-cart,
+.btn:focus .glyphicon.eblv-icon-cart,
+.btn:hover .glyphicon.glyphicon-shopping-cart,
+.btn:focus .glyphicon.glyphicon-shopping-cart,
+.catalog-buy-badge:hover .glyphicon.eblv-icon-cart,
+.catalog-buy-badge:focus .glyphicon.eblv-icon-cart,
+.catalog-buy-badge:hover .glyphicon.glyphicon-shopping-cart,
+.catalog-buy-badge:focus .glyphicon.glyphicon-shopping-cart {
+  transform: scale(1.08);
+}
+
+.login-override {
+  padding: 35px 0;
+  margin: auto;
+}
+
+.login-override .login-actions {
+  display: flex;
+}
+
+.login-override .btn {
+  margin-right: 10px;
+}
+
+.alert {
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyphicon.eblv-icon-cart,
+  .glyphicon.glyphicon-shopping-cart {
+    transition: none;
+  }
+}

@@ -132,7 +132,7 @@ def _build_payload(state: UserCatalogState, scope: CatalogScope) -> Optional[dic
     payload = state.to_payload()
     payload["mozello_base"] = mozello_base
     payload["buy_label"] = _("Buy Online")
-    payload["cart_icon_class"] = "glyphicon-shopping-cart"
+    payload["cart_icon_class"] = "eblv-icon-cart"
     payload["allow_my_books"] = bool(state.is_authenticated)
     payload["scope_labels"] = {
         "purchased": _("My Books"),
