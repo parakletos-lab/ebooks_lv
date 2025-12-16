@@ -1,0 +1,34 @@
+# HTTP-only reverse proxy for Cloudflare-terminated HTTPS.
+# This keeps the internet-facing edge on port 80 while shielding Gunicorn from
+# slow/bad clients by buffering/handling connections at Caddy.
+
+{
+    # Disable admin API endpoint; we manage Caddy via compose only.
+    admin off
+
+    # Keep request parsing time-bounded to reduce slowloris impact.
+    servers {
+        timeouts {
+            read_header 10s
+            read_body 30s
+            idle 5m
+        }
+    }
+}
+
+:80 {
+    encode zstd gzip
+
+    header {
+        Referrer-Policy "no-referrer"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+
+    reverse_proxy calibre-web:8083
+
+    log {
+        output stdout
+        format json
+    }
+}

@@ -153,7 +153,8 @@ main() {
   ensure_env_file
   log "Ensuring required environment variables are present (interactive prompts run during init)."
   require_env_var "TZ"
-  require_env_var "EBOOKSLV_DOMAIN"
+  # EBOOKSLV_DOMAIN is only required when using the HTTPS Caddy overlay
+  # (compose.droplet.caddy.yml). The default droplet stack runs HTTP-only.
   # Future vars can be added here safely; script is re-runnable.
 
   summary_env
