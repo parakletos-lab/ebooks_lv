@@ -605,7 +605,8 @@ msgid "Saved %(count)s templates."
 msgstr ""
 
 #: app/templates/login_override.html:2 app/templates/login_override.html:9
-msgid "ebooks.lv sign in"
+#: app/templates/login_override.html:90
+msgid "Sign in"
 msgstr ""
 
 #: app/templates/login_override.html:26
@@ -652,10 +653,6 @@ msgstr ""
 
 #: app/templates/login_override.html:88
 msgid "Cancel"
-msgstr ""
-
-#: app/templates/login_override.html:90
-msgid "Sign in"
 msgstr ""
 
 #: app/templates/login_override.html:91

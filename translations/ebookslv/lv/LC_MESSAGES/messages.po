@@ -603,8 +603,9 @@ msgid "Saved %(count)s templates."
 msgstr "Saglabātas %(count)s veidnes."
 
 #: app/templates/login_override.html:2 app/templates/login_override.html:9
-msgid "ebooks.lv sign in"
-msgstr "ebooks.lv pieteikšanās"
+#: app/templates/login_override.html:90
+msgid "Sign in"
+msgstr "Pieteikties"
 
 #: app/templates/login_override.html:26
 #, python-format
@@ -651,10 +652,6 @@ msgstr "Saglabāt paroli"
 #: app/templates/login_override.html:88
 msgid "Cancel"
 msgstr "Atcelt"
-
-#: app/templates/login_override.html:90
-msgid "Sign in"
-msgstr "Pieteikties"
 
 #: app/templates/login_override.html:91
 msgid "Forgot password?"

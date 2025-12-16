@@ -1029,7 +1029,7 @@ msgstr "Rādīt jaunākās grāmatas"
 
 #: cps/render_template.py:44 cps/templates/index.xml:27
 msgid "Hot Books"
-msgstr "Karstās grāmatas"
+msgstr "Populārākās grāmatas"
 
 #: cps/render_template.py:46
 msgid "Show Hot Books"
@@ -1046,7 +1046,7 @@ msgstr "Rādīt lejupielādētās grāmatas"
 
 #: cps/render_template.py:58 cps/templates/index.xml:36 cps/web.py:439
 msgid "Top Rated Books"
-msgstr "Vislabāk vērtētās grāmatas"
+msgstr "Visaugstāk novērtētās grāmatas"
 
 #: cps/render_template.py:60 cps/templates/user_table.html:161
 msgid "Show Top Rated Books"
@@ -1092,7 +1092,7 @@ msgstr "Rādīt kategorijas sekciju"
 #: cps/templates/book_table.html:68 cps/templates/index.xml:106
 #: cps/templates/search_form.html:70 cps/web.py:1031 cps/web.py:1043
 msgid "Series"
-msgstr "Sērija"
+msgstr "Sērijas"
 
 #: cps/render_template.py:76 cps/templates/user_table.html:157
 msgid "Show Series Section"
@@ -1128,7 +1128,7 @@ msgstr "Rādīt valodas sadaļu"
 
 #: cps/render_template.py:88 cps/templates/index.xml:124
 msgid "Ratings"
-msgstr "Vērtējumi"
+msgstr "Reitings"
 
 #: cps/render_template.py:90 cps/templates/user_table.html:164
 msgid "Show Ratings Section"
@@ -3011,7 +3011,7 @@ msgstr "Grāmatas pasūtītas pēc failu formātiem"
 #: cps/templates/index.xml:142 cps/templates/layout.html:155
 #: cps/templates/search_form.html:88
 msgid "Shelves"
-msgstr "Plaukti"
+msgstr "Grāmatu plaukti"
 
 #: cps/templates/index.xml:146
 msgid "Books organized in shelves"
