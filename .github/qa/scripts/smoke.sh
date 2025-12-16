@@ -61,4 +61,29 @@ if [[ "$status_code" != 2* && "$status_code" != 3* ]]; then
   exit 1
 fi
 
+# Assert Mozello theme injection marker is present on at least the root HTML.
+html=$(curl -s "$root_url" || true)
+if ! echo "$html" | grep -q 'data-eblv-mozello-theme="1"'; then
+  echo "[smoke] ERROR: Mozello theme injection marker not found in HTML" >&2
+  exit 1
+fi
+if ! echo "$html" | grep -q 'mozello_theme\.css'; then
+  echo "[smoke] ERROR: Mozello theme CSS link not found in HTML" >&2
+  exit 1
+fi
+
+# Assert referenced static assets are reachable.
+for path in \
+  "/app_static/css/mozello_theme.css" \
+  "/app_static/icons/logo.svg" \
+  "/app_static/icons/cart.svg"; do
+  url="${QA_BASE_URL%/}${path}"
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
+  echo "[smoke] GET $url -> $code"
+  if [[ "$code" != "200" ]]; then
+    echo "[smoke] ERROR: Expected 200 for $url" >&2
+    exit 1
+  fi
+done
+
 echo "[smoke] Basic health check passed"

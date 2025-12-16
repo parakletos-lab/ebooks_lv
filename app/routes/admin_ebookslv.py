@@ -30,6 +30,11 @@ except Exception:  # pragma: no cover
     def generate_csrf():  # type: ignore
         return ""
 
+try:  # runtime dependency on Calibre-Web
+    from cps.render_template import render_title_template as _cw_render_title_template  # type: ignore
+except Exception:  # pragma: no cover - allow tests without Calibre runtime
+    _cw_render_title_template = None  # type: ignore
+
 from app.config import app_title
 from app.utils import ensure_admin, PermissionError
 from app.utils.logging import get_logger
@@ -131,12 +136,22 @@ def _require_admin():
     return _ensure_admin(prefer_redirect=True)
 
 
+def _render_admin_page(template_name: str, **context):
+    """Render admin pages with the same context Calibre-Web uses (instance + sidebar)."""
+    if _cw_render_title_template:  # type: ignore[truthy-bool]
+        try:
+            return _cw_render_title_template(template_name, **context)  # type: ignore[misc]
+        except Exception:
+            pass
+    return render_template(template_name, **context)
+
+
 @bp.route("/", methods=["GET"])  # /admin/ebookslv/
 def landing():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("ebookslv_admin.html", ub_csrf_token=generate_csrf())
+    return _render_admin_page("ebookslv_admin.html", ub_csrf_token=generate_csrf())
 
 
 @bp.route("/orders/", methods=["GET"])
@@ -144,7 +159,7 @@ def orders_page():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("orders_admin.html", ub_csrf_token=generate_csrf())
+    return _render_admin_page("orders_admin.html", ub_csrf_token=generate_csrf())
 
 
 @bp.route("/books/", methods=["GET"])
@@ -152,7 +167,7 @@ def books_page():  # pragma: no cover - thin render wrapper
     auth = _require_admin()
     if auth is not True:
         return auth
-    return render_template("ebookslv_books_admin.html")
+    return _render_admin_page("ebookslv_books_admin.html")
 
 
 @bp.route("/email-templates/", methods=["GET"])
@@ -161,7 +176,7 @@ def email_templates_page():  # pragma: no cover - render wrapper
     if auth is not True:
         return auth
     context = fetch_templates_context()
-    return render_template(
+    return _render_admin_page(
         "email_templates_admin.html",
         ub_csrf_token=generate_csrf(),
         templates_context=context,

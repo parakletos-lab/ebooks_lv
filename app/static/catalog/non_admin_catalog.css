@@ -9,9 +9,9 @@
     right: 8px;
     width: 48px;
     height: 48px;
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,7 +20,6 @@
 
 .catalog-buy-badge .glyphicon {
     font-size: 22px;
-    color: #337ab7;
 }
 
 .book.session .cover {
