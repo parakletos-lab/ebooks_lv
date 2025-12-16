@@ -45,7 +45,6 @@ SEARCH_ANCHOR = f'id="{ADMIN_ANCHOR_ID}"'
 def _nav_labels() -> dict[str, str]:
     return {
         "ebooks": _("ebooks.lv"),
-        "orders": _("Orders"),
     }
 
 
@@ -62,7 +61,6 @@ def _render_combined_html() -> str:
     labels = _nav_labels()
     return "".join([
         _render_nav_item("top_users_books", "/admin/ebookslv/", "glyphicon-book", labels["ebooks"]),
-        _render_nav_item("top_orders", "/admin/ebookslv/orders/", "glyphicon-list-alt", labels["orders"]),
     ])
 
 
@@ -71,9 +69,6 @@ LINK_HTML_JINJA = (
     '<li><a id="top_users_books" data-text="{{ _("ebooks.lv") }}" href="/admin/ebookslv/">'
     '<span class="glyphicon glyphicon-book"></span> '
     '<span class="hidden-sm">{{ _("ebooks.lv") }}</span></a></li>'
-    '<li><a id="top_orders" data-text="{{ _("Orders") }}" href="/admin/ebookslv/orders/">'
-    '<span class="glyphicon glyphicon-list-alt"></span> '
-    '<span class="hidden-sm">{{ _("Orders") }}</span></a></li>'
     '{% endif %}'
 )
 
