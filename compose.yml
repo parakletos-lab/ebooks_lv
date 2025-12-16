@@ -25,6 +25,11 @@ services:
       start_period: 25s
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "10"
     # user: "1000:1000"  # Enable if matching host UID/GID is desired
 
 volumes:

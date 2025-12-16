@@ -188,6 +188,25 @@ class _NavPatchedLoader(BaseLoader):
                     new_source = new_source.replace(float_target, float_replacement, 1)
                     LOG.debug("detail.html patched for price formatting")
 
+            # 4) Hide Discover (Random Books) for anonymous users.
+            # Upstream sidebar item has id="rand" and may be publicly visible.
+            if template == "layout.html":
+                target = "{% if current_user.check_visibility(element['visibility']) and element['public'] %}"
+                if target in new_source:
+                    replacement = (
+                        "{% if current_user.check_visibility(element['visibility']) and element['public'] "
+                        "and (element['id'] != 'rand' or current_user.is_authenticated) %}"
+                    )
+                    new_source = new_source.replace(target, replacement, 1)
+                    LOG.debug("layout.html patched to hide random discover for anonymous")
+
+            if template == "index.html":
+                target = "{% if current_user.show_detail_random() and page != \"discover\" %}"
+                if target in new_source:
+                    replacement = "{% if current_user.is_authenticated and current_user.show_detail_random() and page != \"discover\" %}"
+                    new_source = new_source.replace(target, replacement, 1)
+                    LOG.debug("index.html patched to hide random section for anonymous")
+
             return new_source, filename, uptodate
         except Exception as exc:  # pragma: no cover
             LOG.debug("loader injection failed: %s", exc)

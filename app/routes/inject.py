@@ -25,6 +25,7 @@ from app.routes.overrides.stats_notice import register_stats_notice
 from app.routes.overrides.locale_override import register_locale_override
 from app.routes.overrides.language_switch_injection import register_language_switch_injection
 from app.routes.overrides.profile_guard import register_profile_guard
+from app.routes.overrides.discover_guard import register_discover_guard
 from app.routes.overrides.mozello_sync_injection import register_mozello_sync_injection
 from app.routes.overrides.mozello_theme_injection import register_mozello_theme_injection
 
@@ -51,6 +52,7 @@ def register_all(app: Any) -> None:
     register_stats_notice(app)
     register_calibre_overrides(app)
     register_profile_guard(app)
+    register_discover_guard(app)
     register_locale_override(app)
     register_language_switch_injection(app)
     register_mozello_sync_injection(app)
