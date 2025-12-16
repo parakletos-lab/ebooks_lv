@@ -153,18 +153,87 @@ def mozello_product_redirect(mz_handle: str):
         abort(404)
 
     relative_url = books_sync.get_mz_relative_url_for_handle(handle)
-    if not relative_url:
-        LOG.info("Mozello product redirect missing relative url handle=%s", handle)
-        abort(404)
 
-    store_base = mozello_service.get_store_url(_request_language_code())
-    if not store_base:
-        LOG.warning("Mozello store URL not configured for redirect handle=%s", handle)
+    # Prefer Mozello API language-specific URLs (when available). Fall back to stored
+    # mz_relative_url (historically LV-only) to keep the link usable during API issues.
+    target_url = mozello_service.resolve_product_storefront_url(
+        handle,
+        _request_language_code(),
+        fallback_relative_url=relative_url,
+    )
+    if not target_url:
+        if not relative_url:
+            LOG.info("Mozello product redirect missing relative url handle=%s", handle)
+            abort(404)
+        LOG.warning("Mozello product redirect missing store url handle=%s", handle)
         abort(503)
-
-    normalized_relative = "/" + relative_url.lstrip("/")
-    target_url = f"{store_base.rstrip('/')}{normalized_relative}"
     return redirect(target_url)
+
+
+@bp.route("/product/<path:mz_handle>", methods=["GET"])
+def mozello_debug_product(mz_handle: str):
+    """Admin-only debug helper: fetch product JSON and show URL fields.
+
+    This is intentionally a JSON endpoint (no UI) so admins can confirm whether
+    Mozello returns different URLs per language.
+    """
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+
+    handle = (mz_handle or "").strip()
+    if handle.isdigit():
+        lookup = books_sync.get_mz_handle_for_book(int(handle))
+        if lookup:
+            handle = lookup.strip()
+    if not handle:
+        return _json_error("handle_required", 400, message="handle_required")
+
+    ok, payload = mozello_service.fetch_product(handle)
+    derived: Dict[str, Optional[str]] = {}
+    absolute: Dict[str, Optional[str]] = {}
+    if ok:
+        for lang in ("lv", "ru", "en"):
+            try:
+                derived[lang] = mozello_service.derive_relative_url_from_product(payload, preferred_language=lang)
+            except Exception:
+                derived[lang] = None
+            try:
+                store_base = mozello_service.get_store_url(lang)
+                value = derived.get(lang)
+                if value and (value.startswith("http://") or value.startswith("https://")):
+                    absolute[lang] = value
+                elif value and store_base:
+                    absolute[lang] = mozello_service._join_store_base_and_path(store_base, value)  # type: ignore[attr-defined]
+                else:
+                    absolute[lang] = None
+            except Exception:
+                absolute[lang] = None
+
+    product = (
+        payload.get("product")
+        if ok and isinstance(payload.get("product"), dict)
+        else (payload if ok and isinstance(payload, dict) else None)
+    )
+    url_field = product.get("url") if isinstance(product, dict) else None
+    full_url_field = (product.get("full_url") or product.get("fullUrl")) if isinstance(product, dict) else None
+
+    return jsonify(
+        {
+            "ok": ok,
+            "handle": handle,
+            "store_url": {
+                "lv": mozello_service.get_store_url("lv"),
+                "ru": mozello_service.get_store_url("ru"),
+                "en": mozello_service.get_store_url("en"),
+            },
+            "product_url_field": url_field,
+            "product_full_url_field": full_url_field,
+            "derived_storefront_url": derived,
+            "absolute_storefront_url": absolute,
+            "response": payload,
+        }
+    )
 
 
 @bp.route("/app_settings", methods=["GET"])

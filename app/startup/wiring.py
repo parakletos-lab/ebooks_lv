@@ -13,6 +13,7 @@ from app.routes.admin_mozello import register_blueprints as register_mozello
 from app.config import mozello_api_key
 from app.services import mozello_service
 from app.i18n import configure_translations
+from app.utils.currency import register_currency_filters
 from flask import Blueprint
 import os
 import logging
@@ -78,6 +79,7 @@ def init_app(app: Any) -> None:
     except Exception:
         log.exception("Failed seeding Mozello API key from environment")
     _prepend_template_path(app)
+    register_currency_filters(app)
     configure_translations(app)
     log.info("App startup wiring complete (legacy plugin still active).")
 

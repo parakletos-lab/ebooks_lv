@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+import os
+
 from flask import g
 from sqlalchemy import and_, false
 
@@ -174,12 +176,51 @@ def _patch_serve_book_access(app: Any) -> None:
 	LOG.debug("Patched web.serve_book to allow anonymous free-book reading")
 
 
+def _patch_default_cover_fallback() -> None:
+	"""Serve ebooks.lv logo for books without a cover.
+
+	Calibre-Web uses `cps.helper.get_cover_on_failure()` when a book has no cover.
+	We monkeypatch that function to return our `logo.svg`.
+	"""
+	try:
+		from cps import helper as cw_helper  # type: ignore
+		from flask import send_file
+	except Exception:  # pragma: no cover
+		LOG.warning("Unable to import Calibre-Web helper; default cover patch skipped")
+		return
+
+	if getattr(cw_helper, "_ebookslv_default_cover_patched", False):  # type: ignore[attr-defined]
+		return
+
+	original = getattr(cw_helper, "get_cover_on_failure", None)
+	if not callable(original):
+		LOG.warning("Calibre-Web get_cover_on_failure missing; default cover patch skipped")
+		return
+
+	logo_path = os.path.abspath(
+		os.path.join(os.path.dirname(__file__), "..", "..", "static", "icons", "logo.svg")
+	)
+
+	def _ebookslv_get_cover_on_failure():  # type: ignore[no-untyped-def]
+		try:
+			if os.path.isfile(logo_path):
+				return send_file(logo_path, mimetype="image/svg+xml")
+		except Exception:
+			LOG.exception("Failed to serve logo.svg as default cover")
+		return original()
+
+	cw_helper.get_cover_on_failure = _ebookslv_get_cover_on_failure  # type: ignore[assignment]
+	setattr(cw_helper, "_ebookslv_default_cover_patched", True)
+	LOG.debug("Patched Calibre-Web default cover fallback to logo.svg")
+
+
 def register_calibre_overrides(app: Any) -> None:  # pragma: no cover - glue code
 	if getattr(app, "_users_books_calibre_overrides", False):  # type: ignore[attr-defined]
 		return
 	_patch_common_filters()
 	_patch_read_book_access(app)
 	_patch_serve_book_access(app)
+	_patch_default_cover_fallback()
 	setattr(app, "_users_books_calibre_overrides", True)
 
 

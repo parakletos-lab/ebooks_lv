@@ -172,6 +172,22 @@ class _NavPatchedLoader(BaseLoader):
                     new_source = new_source.replace(target, replacement, 1)
                     LOG.debug("detail.html patched for free-book anonymous read")
 
+                # 3) Format Mozello price custom column and translate its label.
+                # Calibre custom columns are rendered via `{{ c.name }}` and floats via `formatfloat(2)`.
+                # For our `mz_price` column (display name "Price"), we want:
+                # - Label translated (lv/ru/en)
+                # - Value formatted like "€6,50" for lv/ru and "€6.50" for en
+                label_target = "{{ c.name }}:"
+                if label_target in new_source:
+                    label_replacement = "{% if c.name == 'Price' %}{{ _('Price') }}:{% else %}{{ c.name }}:{% endif %}"
+                    new_source = new_source.replace(label_target, label_replacement, 1)
+
+                float_target = "{{ column.value|formatfloat(2) }}"
+                if float_target in new_source:
+                    float_replacement = "{% if c.name == 'Price' %}{{ column.value|format_eur }}{% else %}{{ column.value|formatfloat(2) }}{% endif %}"
+                    new_source = new_source.replace(float_target, float_replacement, 1)
+                    LOG.debug("detail.html patched for price formatting")
+
             return new_source, filename, uptodate
         except Exception as exc:  # pragma: no cover
             LOG.debug("loader injection failed: %s", exc)

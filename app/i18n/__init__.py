@@ -32,7 +32,12 @@ def _normalize_paths(paths: Iterable[Path | str]) -> List[str]:
 
 
 def configure_translations(app, extra_roots: Iterable[Path | str] | None = None) -> None:
-    """Append first-party translation directories to Babel's search path."""
+    """Append first-party translation directories to Babel's search path.
+
+    Note: Babel merges translations from multiple directories; for conflicting
+    msgids we rely on later directories taking precedence so our overrides can
+    replace bundled Calibre-Web strings.
+    """
     try:
         babel_cfg = get_babel(app)
     except Exception:  # pragma: no cover - defensive guard

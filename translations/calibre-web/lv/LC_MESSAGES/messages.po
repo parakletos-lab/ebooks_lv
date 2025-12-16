@@ -1055,7 +1055,7 @@ msgstr "Rādīt augstāk vērtētās grāmatas"
 #: cps/render_template.py:61 cps/templates/index.xml:63
 #: cps/templates/index.xml:67 cps/web.py:772
 msgid "Read Books"
-msgstr "Lasīt grāmatas"
+msgstr "Izlasītas grāmatas"
 
 #: cps/render_template.py:63
 msgid "Show Read and Unread"
@@ -1379,7 +1379,7 @@ msgstr "Atklāj (nejaušas grāmatas)"
 
 #: cps/web.py:487
 msgid "Hot Books (Most Downloaded)"
-msgstr "Karstās grāmatas (visvairāk lejupielādētās)"
+msgstr "Populārākās grāmatas (visvairāk lejupielādētās)"
 
 #: cps/web.py:518
 #, python-format
@@ -1977,7 +1977,7 @@ msgstr "Iepriekšējais"
 #: cps/templates/basic_index.html:12 cps/templates/feed.xml:22
 #: cps/templates/layout.html:190
 msgid "Next"
-msgstr "Nākamais"
+msgstr "Izlasīta"
 
 #: cps/templates/basic_index.html:18 cps/templates/search.html:6
 msgid "No Results Found"
@@ -2780,7 +2780,7 @@ msgstr "Atzīmēt grāmatu kā lasītu vai nelasītu"
 
 #: cps/templates/detail.html:262 cps/templates/listenmp3.html:159
 msgid "Read"
-msgstr "Lasīt"
+msgstr "Izlasīta"
 
 #: cps/templates/detail.html:272 cps/templates/listenmp3.html:166
 msgid "Restore from archive"
@@ -2800,7 +2800,10 @@ msgstr ""
 
 #: cps/templates/detail.html:275
 msgid "Archive"
-msgstr "Arhīvs"
+msgstr "Arhivēta"
+
+msgid "Price"
+msgstr "Cena"
 
 #: cps/templates/detail.html:301 cps/templates/listenmp3.html:190
 #: cps/templates/search.html:16

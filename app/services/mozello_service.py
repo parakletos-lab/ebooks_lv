@@ -38,6 +38,17 @@ _CATEGORY_CACHE_LOCK = threading.Lock()
 _STORE_URL_LANGUAGES = ("lv", "ru", "en")
 
 
+@dataclass
+class _ProductUrlCacheEntry:
+    url: str
+    fetched_at: float
+
+
+_PRODUCT_URL_CACHE: Dict[tuple[str, str], _ProductUrlCacheEntry] = {}
+_PRODUCT_URL_CACHE_TTL = 600.0  # seconds
+_PRODUCT_URL_CACHE_LOCK = threading.Lock()
+
+
 def _normalize_category_path(value: str) -> str:
     parts = [segment.strip("/") for segment in value.split("/") if segment.strip("/")]
     return "/".join(parts)
@@ -289,7 +300,121 @@ def _normalize_product_language(code: Optional[str]) -> str:
     normalized = code.strip().lower()
     if not normalized:
         return "en"
+    # Handle locale-like strings (ru_RU, lv-LV) by keeping just the language part.
+    if "_" in normalized:
+        normalized = normalized.split("_", 1)[0].strip()
+    if "-" in normalized:
+        normalized = normalized.split("-", 1)[0].strip()
+    if not normalized:
+        return "en"
     return mapping.get(normalized, "en")
+
+
+def _join_store_base_and_path(store_base: str, path: str) -> str:
+    """Join a configured store base URL and a relative path without duplicating prefixes.
+
+    Example:
+      base=https://site.com/en  + /store/item/x -> https://site.com/en/store/item/x
+      base=https://site.com/en  + /en/store/item/x -> https://site.com/en/store/item/x
+    """
+    from urllib.parse import urlparse, urlunparse
+
+    base = (store_base or "").strip().rstrip("/")
+    raw_path = (path or "").strip()
+    if not base:
+        return raw_path
+    if raw_path.startswith("http://") or raw_path.startswith("https://"):
+        return raw_path
+
+    if not raw_path.startswith("/"):
+        raw_path = "/" + raw_path
+
+    parsed = urlparse(base)
+    base_prefix = (parsed.path or "").rstrip("/")
+
+    # If the incoming path already starts with the base prefix, avoid doubling it.
+    merged_path: str
+    if base_prefix and (raw_path == base_prefix or raw_path.startswith(base_prefix + "/")):
+        merged_path = raw_path
+    else:
+        merged_path = (base_prefix + raw_path) if base_prefix else raw_path
+
+    return urlunparse((parsed.scheme, parsed.netloc, merged_path, "", "", ""))
+
+
+def resolve_product_storefront_url(
+    handle: str,
+    language_code: Optional[str],
+    *,
+    fallback_relative_url: Optional[str] = None,
+    force_refresh: bool = False,
+) -> Optional[str]:
+    """Resolve the best storefront URL for a product.
+
+    Priority:
+      1) Mozello API product.full_url (language-aware when available)
+      2) fallback_relative_url (from our stored Calibre identifier)
+
+    Returns an absolute URL when possible.
+    """
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return None
+    normalized_lang = _normalize_product_language(language_code)
+
+    cache_key = (clean_handle.lower(), normalized_lang)
+    now = time.time()
+    if not force_refresh:
+        with _PRODUCT_URL_CACHE_LOCK:
+            entry = _PRODUCT_URL_CACHE.get(cache_key)
+            if entry and now - entry.fetched_at < _PRODUCT_URL_CACHE_TTL:
+                return entry.url
+
+    store_base = get_store_url(normalized_lang)
+
+    ok, payload = fetch_product(clean_handle)
+    if ok:
+        # If Mozello provides full_url, join it with the configured per-language store base.
+        # Example: store_base='https://www.e-books.lv/veikals' and full_url='/item/book-8/'.
+        try:
+            product = payload.get("product") if isinstance(payload.get("product"), dict) else payload
+            full_url_field = None
+            if isinstance(product, dict):
+                full_url_field = product.get("full_url") or product.get("fullUrl")
+            from_full = _resolve_full_url_from_field(full_url_field, normalized_lang)
+        except Exception:
+            from_full = None
+
+        if from_full:
+            if from_full.startswith("http://") or from_full.startswith("https://"):
+                final = from_full
+            else:
+                # Mozello returns full_url as a path that is relative to the language store base.
+                # Example: store_base='https://www.e-books.lv/veikals' and full_url='/item/book-8/'.
+                if not store_base:
+                    return from_full
+                final = _join_store_base_and_path(store_base, from_full)
+            with _PRODUCT_URL_CACHE_LOCK:
+                _PRODUCT_URL_CACHE[cache_key] = _ProductUrlCacheEntry(url=final, fetched_at=time.time())
+            return final
+
+        # Fallback: derive a path and join against the configured language store base.
+        derived = derive_relative_url_from_product(payload, preferred_language=normalized_lang)
+        if derived:
+            final = derived
+            if not (derived.startswith("http://") or derived.startswith("https://")):
+                if not store_base:
+                    return derived
+                final = _join_store_base_and_path(store_base, derived)
+            with _PRODUCT_URL_CACHE_LOCK:
+                _PRODUCT_URL_CACHE[cache_key] = _ProductUrlCacheEntry(url=final, fetched_at=time.time())
+            return final
+
+    if fallback_relative_url and store_base:
+        return _join_store_base_and_path(store_base, fallback_relative_url)
+    if fallback_relative_url:
+        return fallback_relative_url
+    return None
 
 
 def _resolve_api_key() -> Optional[str]:
@@ -394,6 +519,11 @@ def invalidate_cache() -> None:
     try:
         with _CATEGORY_CACHE_LOCK:
             _CATEGORY_CACHE.clear()
+    except Exception:  # pragma: no cover
+        pass
+    try:
+        with _PRODUCT_URL_CACHE_LOCK:
+            _PRODUCT_URL_CACHE.clear()
     except Exception:  # pragma: no cover
         pass
 def get_app_settings() -> Dict[str, Any]:
@@ -841,14 +971,19 @@ def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tupl
     headers = _api_headers()
     if not headers:
         return False, {"error": "api_key_missing"}
-    body = {"product": {"title": {"en": title}, "price": price or 0.0, "visible": True}}
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    # Populate URL slugs for all store languages to avoid EN/RU staying null.
+    url_multi = {lang: clean_handle for lang in _STORE_URL_LANGUAGES}
+    body = {"product": {"title": {"en": title}, "price": price or 0.0, "visible": True, "url": url_multi}}
     # Update first
     try:
         _throttle_wait()
-        r = requests.put(_api_url(f"/store/product/{handle}/"), json=body, headers=headers, timeout=15)
+        r = requests.put(_api_url(f"/store/product/{clean_handle}/"), json=body, headers=headers, timeout=15)
         if r.status_code == 404:
             # Create
-            create_body = {"product": {"handle": handle, "title": {"en": title}, "price": price or 0.0, "visible": True}}
+            create_body = {"product": {"handle": clean_handle, "title": {"en": title}, "price": price or 0.0, "visible": True, "url": url_multi}}
             _throttle_wait()
             r = requests.post(_api_url("/store/product/"), json=create_body, headers=headers, timeout=15)
         try:
@@ -857,6 +992,7 @@ def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tupl
             data = {"raw": r.text}
         if r.status_code != 200 or data.get("error") is True:
             return False, {"error": "http_error", "status": r.status_code, "details": data}
+        invalidate_cache()
         return True, data
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
@@ -900,7 +1036,8 @@ def upsert_product_basic(
         "price": price_value,
         "visible": True,
         # Keep Mozello product URL aligned with Calibre/Mozello handle.
-        "url": {selected_language: clean_handle},
+        # Populate slugs for all store languages so EN/RU do not remain null.
+        "url": {lang: clean_handle for lang in _STORE_URL_LANGUAGES},
     }
     description_clean = (description_html or "").strip()
     if description_clean:
@@ -929,6 +1066,7 @@ def upsert_product_basic(
         update_status = update_resp.status_code
         update_details = _parse_response(update_resp)
         if update_status == 200 and not (isinstance(update_details, dict) and update_details.get("error") is True):
+            invalidate_cache()
             return True, update_details or {}
         LOG.warning(
             "Mozello product update failed handle=%s status=%s lang=%s body=%s payload=%s",
@@ -1013,6 +1151,7 @@ def upsert_product_basic(
                 "create_details": create_details,
                 "language": selected_language,
             }
+        invalidate_cache()
         return True, create_details
     except Exception as exc:  # pragma: no cover - network defensive
         LOG.error("Mozello product create exception handle=%s error=%s", clean_handle, exc)

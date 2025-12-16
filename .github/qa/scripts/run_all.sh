@@ -33,6 +33,7 @@ echo "[qa] Bootstrapping deterministic QA users/orders (in-container)"
 docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_admin.py
 docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_non_admin_user.py
 docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_order_for_non_admin.py
+docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_price_for_sample_book.py
 
 echo ""
 echo "[qa] Ready"
