@@ -25,10 +25,34 @@
         X-Frame-Options "DENY"
     }
 
+    # Static assets should never mutate auth/session state. Calibre-Web may still
+    # emit Set-Cookie on these responses; stripping it prevents a race where a
+    # parallel asset request overwrites the freshly-authenticated session cookie.
+    @static_paths path /static/* /cover/*
+
     @cf_xfp {
         header Cf-Connecting-Ip *
         header_regexp xfp X-Forwarded-Proto .+
     }
+
+    reverse_proxy @static_paths @cf_xfp calibre-web:8083 {
+        header_up Host {http.request.host}
+        header_up X-Forwarded-Host {http.request.host}
+        header_up X-Scheme {http.request.header.X-Forwarded-Proto}
+        header_up X-Forwarded-For {http.request.header.Cf-Connecting-Ip}
+        header_up X-Real-IP {http.request.header.Cf-Connecting-Ip}
+        header_down -Set-Cookie
+    }
+
+    reverse_proxy @static_paths calibre-web:8083 {
+        header_up Host {http.request.host}
+        header_up X-Forwarded-Host {http.request.host}
+        header_up X-Scheme {http.request.scheme}
+        header_up X-Forwarded-For {http.request.remote.host}
+        header_up X-Real-IP {http.request.remote.host}
+        header_down -Set-Cookie
+    }
+
     reverse_proxy @cf_xfp calibre-web:8083 {
         header_up Host {http.request.host}
         header_up X-Forwarded-Host {http.request.host}
