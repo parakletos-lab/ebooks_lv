@@ -30,52 +30,68 @@
     # parallel asset request overwrites the freshly-authenticated session cookie.
     @static_paths path /static/* /cover/*
 
+    @cf_static {
+        path /static/* /cover/*
+        header Cf-Connecting-Ip *
+        header_regexp xfp X-Forwarded-Proto .+
+    }
+
+    handle @cf_static {
+        reverse_proxy calibre-web:8083 {
+            header_up Host {http.request.host}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up X-Scheme {http.request.header.X-Forwarded-Proto}
+            header_up X-Forwarded-For {http.request.header.Cf-Connecting-Ip}
+            header_up X-Real-IP {http.request.header.Cf-Connecting-Ip}
+            header_down -Set-Cookie
+        }
+    }
+
+    handle @static_paths {
+        reverse_proxy calibre-web:8083 {
+            header_up Host {http.request.host}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up X-Scheme {http.request.scheme}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Real-IP {http.request.remote.host}
+            header_down -Set-Cookie
+        }
+    }
+
     @cf_xfp {
         header Cf-Connecting-Ip *
         header_regexp xfp X-Forwarded-Proto .+
     }
 
-    reverse_proxy @static_paths @cf_xfp calibre-web:8083 {
-        header_up Host {http.request.host}
-        header_up X-Forwarded-Host {http.request.host}
-        header_up X-Scheme {http.request.header.X-Forwarded-Proto}
-        header_up X-Forwarded-For {http.request.header.Cf-Connecting-Ip}
-        header_up X-Real-IP {http.request.header.Cf-Connecting-Ip}
-        header_down -Set-Cookie
-    }
-
-    reverse_proxy @static_paths calibre-web:8083 {
-        header_up Host {http.request.host}
-        header_up X-Forwarded-Host {http.request.host}
-        header_up X-Scheme {http.request.scheme}
-        header_up X-Forwarded-For {http.request.remote.host}
-        header_up X-Real-IP {http.request.remote.host}
-        header_down -Set-Cookie
-    }
-
-    reverse_proxy @cf_xfp calibre-web:8083 {
-        header_up Host {http.request.host}
-        header_up X-Forwarded-Host {http.request.host}
-        header_up X-Scheme {http.request.header.X-Forwarded-Proto}
-        header_up X-Forwarded-For {http.request.header.Cf-Connecting-Ip}
-        header_up X-Real-IP {http.request.header.Cf-Connecting-Ip}
+    handle @cf_xfp {
+        reverse_proxy calibre-web:8083 {
+            header_up Host {http.request.host}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up X-Scheme {http.request.header.X-Forwarded-Proto}
+            header_up X-Forwarded-For {http.request.header.Cf-Connecting-Ip}
+            header_up X-Real-IP {http.request.header.Cf-Connecting-Ip}
+        }
     }
 
     @has_xfp header_regexp xfp X-Forwarded-Proto .+
-    reverse_proxy @has_xfp calibre-web:8083 {
-        header_up Host {http.request.host}
-        header_up X-Forwarded-Host {http.request.host}
-        header_up X-Scheme {http.request.header.X-Forwarded-Proto}
-        header_up X-Forwarded-For {http.request.remote.host}
-        header_up X-Real-IP {http.request.remote.host}
+    handle @has_xfp {
+        reverse_proxy calibre-web:8083 {
+            header_up Host {http.request.host}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up X-Scheme {http.request.header.X-Forwarded-Proto}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Real-IP {http.request.remote.host}
+        }
     }
 
-    reverse_proxy calibre-web:8083 {
-        header_up Host {http.request.host}
-        header_up X-Forwarded-Host {http.request.host}
-        header_up X-Scheme {http.request.scheme}
-        header_up X-Forwarded-For {http.request.remote.host}
-        header_up X-Real-IP {http.request.remote.host}
+    handle {
+        reverse_proxy calibre-web:8083 {
+            header_up Host {http.request.host}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up X-Scheme {http.request.scheme}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Real-IP {http.request.remote.host}
+        }
     }
 
     log {

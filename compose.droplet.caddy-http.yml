@@ -1,0 +1,54 @@
+## Droplet Override Compose
+# Tailored for a Droplet / generic VPS deployment using host bind mounts, env file,
+# and lightweight /healthz endpoint.
+# Usage examples:
+#   docker compose -f compose.yml -f compose.droplet.yml --env-file .env up -d
+# If you prefer local build instead of registry image, uncomment the build: section below.
+
+services:
+  calibre-web:
+    # Uncomment to build locally instead of pulling a tagged image:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # image: calibre-web-server:local
+    environment:
+      TZ: ${TZ:-Europe/Riga}
+      MOZELLO_WEBHOOK_DUMP_PATH: /app/config/webhook_dumps
+    ports:
+      - "127.0.0.1:18083:8083"
+    expose:
+      - "8083"
+    volumes:
+      - /opt/calibre/config:/app/config
+      - /opt/calibre/library:/app/library
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: calibre-web-caddy
+    restart: unless-stopped
+    depends_on:
+      calibre-web:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile.http:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  caddy_data:
+  caddy_config:
