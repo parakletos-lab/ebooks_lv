@@ -10,6 +10,7 @@ from app.db.models import MozelloOrder
 from app.db.repositories import users_books_repo
 from app.db.repositories.users_books_repo import OrderExistsError as RepoOrderExistsError
 from app.services import books_sync, mozello_service, password_reset_service, email_delivery
+from app.services import shelves_service
 from app.services.calibre_users_service import (
     CalibreUnavailableError,
     UserAlreadyExistsError,
@@ -474,6 +475,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
     book_ids_for_token: List[int] = []
     book_ids_seen: Set[int] = set()
     initial_password: Optional[str] = None
+    wishlist_created = False
 
     for handle in handles:
         handle_key = handle.lower()
@@ -556,6 +558,21 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
                     summary["user_created"] += 1
                     if not initial_password:
                         initial_password = ensure_resp.get("password")
+
+                    if not wishlist_created and existing_user and existing_user.get("id") is not None:
+                        try:
+                            shelves_service.ensure_wishlist_shelf_for_user(
+                                int(existing_user.get("id")),
+                                user_locale=(existing_user.get("locale") if isinstance(existing_user, dict) else None),
+                            )
+                            wishlist_created = True
+                        except Exception as exc:  # pragma: no cover - defensive
+                            LOG.warning(
+                                "Wishlist shelf creation failed email=%s user_id=%s error=%s",
+                                email_norm,
+                                existing_user.get("id") if isinstance(existing_user, dict) else None,
+                                exc,
+                            )
                 else:
                     summary["user_linked"] += 1
             except UserAlreadyExistsError:

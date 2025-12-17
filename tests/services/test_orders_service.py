@@ -66,6 +66,14 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
     monkeypatch.setattr(orders_service, "lookup_user_by_email", fake_lookup_user)
     monkeypatch.setattr(orders_service, "create_user_for_order", fake_create_user)
 
+    wishlist_calls: List[Dict[str, object]] = []
+
+    def fake_ensure_wishlist(user_id: int, *, user_locale=None):
+        wishlist_calls.append({"user_id": user_id, "user_locale": user_locale})
+        return {"status": "created", "shelf_id": 1, "name": "Vēlmju saraksts"}
+
+    monkeypatch.setattr(orders_service.shelves_service, "ensure_wishlist_shelf_for_user", fake_ensure_wishlist)
+
     email_calls: List[Dict[str, object]] = []
 
     def fake_send_purchase_email(**kwargs):
@@ -103,6 +111,8 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
     assert summary["books_included"] == 2
     assert summary["email_queued"] is True
     assert summary["initial_token_issued"] is True
+
+    assert wishlist_calls == [{"user_id": 77, "user_locale": "lv"}]
 
     assert len(email_calls) == 1
     call = email_calls[0]

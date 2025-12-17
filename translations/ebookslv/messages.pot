@@ -1125,3 +1125,7 @@ msgstr ""
 msgid "Add operations complete."
 msgstr ""
 
+#: app/services/shelves_service.py:57
+msgid "Wishlist"
+msgstr ""
+

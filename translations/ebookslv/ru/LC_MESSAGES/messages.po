@@ -1140,3 +1140,7 @@ msgstr "Перед добавлением выберите хотя бы одн�
 msgid "Add operations complete."
 msgstr "Операции добавления завершены."
 
+#: app/services/shelves_service.py:57
+msgid "Wishlist"
+msgstr "Список желаний"
+

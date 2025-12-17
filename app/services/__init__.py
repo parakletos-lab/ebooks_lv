@@ -24,6 +24,9 @@ from .email_delivery import (
     send_book_purchase_email,
     BookDeliveryItem,
 )
+from .shelves_service import (
+    ensure_wishlist_shelf_for_user,
+)
 from . import books_sync, auth_link_service, password_reset_service
 
 __all__ = [
@@ -48,4 +51,5 @@ __all__ = [
     "TemplateValidationError",
     "send_book_purchase_email",
     "BookDeliveryItem",
+    "ensure_wishlist_shelf_for_user",
 ]

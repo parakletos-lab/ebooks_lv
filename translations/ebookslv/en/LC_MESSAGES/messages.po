@@ -1141,3 +1141,7 @@ msgstr "Select at least one user and one book before adding."
 msgid "Add operations complete."
 msgstr "Add operations complete."
 
+#: app/services/shelves_service.py:57
+msgid "Wishlist"
+msgstr "Wishlist"
+
