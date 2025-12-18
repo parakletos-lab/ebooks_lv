@@ -34,6 +34,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    padding-left: 8px;
 }
 
 .catalog-buy-button .glyphicon {
