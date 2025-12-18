@@ -36,6 +36,14 @@
         if (!booksNav) {
             return;
         }
+
+        // If server-side template injection already added scope nav items,
+        // do not rebuild/mutate the sidebar (prevents visible jump).
+        const existingFree = document.getElementById('nav_freebooks');
+        const existingMy = document.getElementById('nav_mybooks');
+        if (existingFree && (!allowMyBooks || existingMy)) {
+            return;
+        }
         const booksLink = booksNav.querySelector('a');
         if (booksLink && allBooksHref) {
             booksLink.setAttribute('href', allBooksHref);
@@ -88,6 +96,55 @@
         if (myNav) myNav.classList.remove('active');
         if (freeNav) freeNav.classList.remove('active');
         booksNav.classList.add('active');
+    };
+
+
+    const ensureScopeHeader = () => {
+        const path = window.location.pathname || '';
+        const isMyBooks = path.startsWith('/catalog/my-books');
+        const isFree = path.startsWith('/catalog/free-books');
+        if (!isMyBooks && !isFree) {
+            return;
+        }
+
+        // Avoid injecting a second title on scoped drill-down book lists
+        // (e.g. /catalog/free-books/author/stored/123) which already have a specific header.
+        const scopeRoot = isMyBooks ? '/catalog/my-books' : '/catalog/free-books';
+        const subPath = path.slice(scopeRoot.length);
+        const drillDownPrefixes = [
+            '/author/',
+            '/series/',
+            '/publisher/',
+            '/category/',
+            '/language/',
+            '/ratings/',
+            '/formats/',
+        ];
+        if (drillDownPrefixes.some((p) => subPath.startsWith(p))) {
+            return;
+        }
+
+        const container = document.querySelector('.discover.load-more');
+        if (!container) {
+            return;
+        }
+
+        if (container.querySelector('h2.eblv-scope-title')) {
+            return;
+        }
+
+        const titleText = isMyBooks ? myLabel : freeLabel;
+        const h2 = document.createElement('h2');
+        h2.className = 'eblv-scope-title';
+        h2.textContent = titleText;
+
+        const existingH2 = container.querySelector(':scope > h2');
+        if (existingH2) {
+            existingH2.style.display = 'none';
+            existingH2.insertAdjacentElement('beforebegin', h2);
+        } else {
+            container.insertAdjacentElement('afterbegin', h2);
+        }
     };
 
 
@@ -312,4 +369,5 @@
     decorateDetailPage();
     decorateDetailModal();
     ensureScopeNav();
+    ensureScopeHeader();
 })();

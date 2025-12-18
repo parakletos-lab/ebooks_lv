@@ -186,6 +186,38 @@ class _NavPatchedLoader(BaseLoader):
             # 4) Hide Discover (Random Books) for anonymous users.
             # Upstream sidebar item has id="rand" and may be publicly visible.
             if template == "layout.html":
+                # 4a) Inject "Free" and "My Books" into the sidebar for non-admin users and
+                # rewrite the "Books" link to point at /catalog/all-books.
+                # This avoids client-side nav rebuilding (layout shift/jump on navigation).
+                sidebar_item = (
+                    '<li id="nav_{{element[\'id\']}}" {% if page == element[\'page\'] %}class="active"{% endif %}>'
+                    '<a href="{{url_for(element[\'link\'], data=element[\'page\'], sort_param=\'stored\')}}">'
+                    '<span class="glyphicon {{element[\'glyph\']}}"></span> {{_(element[\'text\'])}}'
+                    '</a></li>'
+                )
+                if sidebar_item in new_source:
+                    injected_prefix = (
+                        '{% if g.catalog_state is defined and g.catalog_state and not g.catalog_state.is_admin and element[\'id\'] == "new" %}'
+                        '<li id="nav_new" {% if request.path.startswith("/catalog/all-books") %}class="active"{% endif %}>'
+                        '<a href="{{ url_for(\'catalog_scope.catalog_scope_all\') }}">'
+                        '<span class="glyphicon {{element[\'glyph\']}}"></span> {{_(element[\'text\'])}}'
+                        '</a></li>'
+                        '<li id="nav_freebooks" {% if request.path.startswith("/catalog/free-books") %}class="active"{% endif %}>'
+                        '<a href="{{ url_for(\'catalog_scope.catalog_scope_free\') }}">'
+                        '<span class="glyphicon glyphicon-gift"></span> {{ _("Free") }}'
+                        '</a></li>'
+                        '{% if current_user.is_authenticated and not current_user.is_anonymous %}'
+                        '<li id="nav_mybooks" {% if request.path.startswith("/catalog/my-books") %}class="active"{% endif %}>'
+                        '<a href="{{ url_for(\'catalog_scope.catalog_scope_purchased\') }}">'
+                        '<span class="glyphicon glyphicon-heart"></span> {{ _("My Books") }}'
+                        '</a></li>'
+                        '{% endif %}'
+                        '{% else %}'
+                    )
+                    replacement = injected_prefix + sidebar_item + '{% endif %}'
+                    new_source = new_source.replace(sidebar_item, replacement, 1)
+                    LOG.debug("layout.html patched to inject scope nav items")
+
                 target = "{% if current_user.check_visibility(element['visibility']) and element['public'] %}"
                 if target in new_source:
                     replacement = (
