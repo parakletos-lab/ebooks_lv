@@ -7,20 +7,6 @@
     }
   }
 
-  function ensureStyle() {
-    if (document.getElementById("ub-lang-style")) return;
-    var style = document.createElement("style");
-    style.id = "ub-lang-style";
-    style.textContent = [
-      ".ub-lang-switch { display: flex; align-items: center; height: 50px; gap: 12px; padding: 0 6px; }",
-      ".ub-lang-option { background: transparent; border: none; padding: 0 6px 6px; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; line-height: 20px; color: inherit; text-transform: uppercase; }",
-      ".ub-lang-option.active { color: var(--cw-primary, #0f6958); border-bottom: 2px solid currentColor; }",
-      ".ub-lang-option:focus { outline: none; box-shadow: none; }",
-      ".ub-profile-disabled { pointer-events: none; cursor: default; color: #777; }"
-    ].join("\n");
-    document.head.appendChild(style);
-  }
-
   function getConfig() {
     var el = document.getElementById("ub-config");
     if (!el) return null;
@@ -58,10 +44,12 @@
     if (profileToggle) {
       if (cfg.isAnonymous) {
         profileToggle.setAttribute("data-toggle", "dropdown");
-        profileToggle.style.cursor = "pointer";
+        profileToggle.classList.add("ub-cursor-pointer");
+        profileToggle.classList.remove("ub-cursor-default");
       } else {
         profileToggle.removeAttribute("data-toggle");
-        profileToggle.style.cursor = "default";
+        profileToggle.classList.add("ub-cursor-default");
+        profileToggle.classList.remove("ub-cursor-pointer");
       }
     }
   }
@@ -102,7 +90,7 @@
 
     var li = document.createElement("li");
     li.id = "ub-lang-switch";
-    li.className = "ub-lang-switch navbar-text";
+    li.className = "ub-lang-switch";
 
     var options = [
       { code: "lv", label: "LAT" },
@@ -164,7 +152,6 @@
   function init() {
     var cfg = getConfig();
     if (!cfg) return;
-    ensureStyle();
     hideTasksLink(cfg);
     disableProfileLink(cfg);
     renderLanguageSwitch(cfg);

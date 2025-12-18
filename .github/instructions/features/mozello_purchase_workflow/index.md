@@ -10,7 +10,7 @@ For tests:
 - Use scripts/dev_rebuild.sh
 - Check docker logs if needed
 - Use Playwright MCP for in browser functionality tests
-- Use admin user credentials: admin/admin123
+- Use admin user credentials: admin/AdminTest123!
 
 | Task ID | Description | Status | Details |
 | --- | --- | --- | --- |

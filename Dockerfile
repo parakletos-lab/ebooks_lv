@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 #######################################################################
 # Calibre-Web + Integrated App Layer Image
 #
@@ -27,7 +25,7 @@
 ############################
 # Stage: base (deps layer)
 ############################
-FROM python:3.11-slim AS base
+FROM public.ecr.aws/docker/library/python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -52,7 +50,7 @@ RUN pip install --upgrade pip setuptools wheel \
 ############################
 # Stage: runtime
 ############################
-FROM python:3.11-slim AS runtime
+FROM public.ecr.aws/docker/library/python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

@@ -19,6 +19,9 @@
 14. If adding a new env var, document it here and implement accessor in `app.config`.
 	- `APP_TITLE` sets the Calibre-Web UI title applied via the ebooks.lv admin "Set default settings" action.
 	- `EBOOKSLV_DOMAIN` is required only when using the HTTPS Caddy overlay (compose.droplet.caddy.yml) so Caddy can request and renew HTTPS certificates for the public hostname.
+	- `EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD` when set enables dev-only startup bootstrap to force-set the Calibre admin password.
+	- `EBOOKSLV_ADMIN_EMAIL` email of the admin account to target for password bootstrap (default: admin@example.org).
+	- `EBOOKSLV_ADMIN_PASSWORD` password to set during bootstrap (default: AdminTest123!).
 
 15. After adding or editing any admin UI page (templates/routes): rebuild container (`docker compose up -d --build calibre-web-server`) and verify page source has its hidden CSRF `<input>` before testing API actions (prevents stale template/CSRF misses).
 

@@ -130,7 +130,7 @@
     const ts = new Date().toLocaleTimeString();
     const line = document.createElement('div');
     if(severity === 'error'){
-      line.style.color = '#ff8585';
+      line.classList.add('mz-log-line-error');
     }
     line.textContent = formatMessage(strings.logLine, {
       timestamp: ts,
@@ -351,7 +351,7 @@
 
   async function exportAll(){
     disableAll(true);
-    progWrap.style.display = 'flex';
+    progWrap.classList.remove('mz-hidden');
     try {
       const calibreMissing = rows.filter(r => !r.orphan && !r.mz_handle);
       const total = calibreMissing.length;
@@ -365,7 +365,7 @@
     } catch(e){
       log('exportAllError', 'error', { reason: e && e.message ? e.message : '' });
     } finally {
-      progWrap.style.display = 'none';
+      progWrap.classList.add('mz-hidden');
       disableAll(false);
     }
   }

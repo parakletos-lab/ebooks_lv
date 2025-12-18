@@ -1,0 +1,49 @@
+/* Shared ebooks.lv UI styles (safe across admin/non-admin) */
+
+/* Language switch */
+.ub-lang-switch {
+  display: flex !important;
+  align-items: center;
+  height: 50px;
+  gap: 0;
+  padding: 0 6px;
+}
+
+.ub-lang-option {
+  background: transparent;
+  border: none;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  line-height: 16px;
+  color: inherit;
+  padding: 6px 0;
+  margin: 0 6px;
+  text-transform: uppercase;
+}
+
+.ub-lang-option.active {
+  color: var(--cw-primary, #0f6958);
+  border-bottom: 1px solid currentColor;
+}
+
+.ub-lang-option:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Disabled profile action (shown for anonymous users) */
+.ub-profile-disabled {
+  pointer-events: none;
+  cursor: default;
+  color: #777;
+}
+
+/* JS helpers (avoid inline style mutations) */
+.ub-cursor-pointer {
+  cursor: pointer;
+}
+.ub-cursor-default {
+  cursor: default;
+}

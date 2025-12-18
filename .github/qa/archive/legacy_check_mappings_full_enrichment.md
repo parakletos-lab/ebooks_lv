@@ -10,7 +10,7 @@ Original content preserved below.
 Objective: Ensure each mapping JSON object now contains `email` and `title` keys (non-empty when source data exists) and UI table renders those values.
 
 Manual Steps (to be automated via Chrome DevTools MCP):
-1. Login as admin (username `admin`, password from credentials.env `admin123`).
+1. Login as admin (username `admin`, password from credentials.env `AdminTest123!`).
 2. Navigate to `/admin/users_books`.
 3. Open network panel, trigger refresh by clicking `#ub-reload-mappings`.
 4. Inspect XHR `GET /admin/users_books/mappings_full` response JSON:

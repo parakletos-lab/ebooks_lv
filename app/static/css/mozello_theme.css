@@ -8,6 +8,8 @@
 :root {
   --eblv-font-sans: Poppins, Arial, Helvetica, sans-serif;
 
+  --cw-primary: #0f6958;
+
   /* Mozello-like accent (green) */
   --eblv-accent: #0a8f6a;
   --eblv-accent-hover: #087a5b;
@@ -59,8 +61,8 @@ body {
   justify-content: center;
   height: auto;
   line-height: 1.1;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .navbar.navbar-default .navbar-brand:hover,
@@ -73,7 +75,7 @@ body {
   display: block;
   width: 30px;
   height: 30px;
-  background: url('/app_static/icons/logo.svg') no-repeat center;
+  background: url("/app_static/icons/logo.svg") no-repeat center;
   background-size: contain;
   margin-bottom: 4px;
 }
@@ -204,7 +206,7 @@ body {
   display: inline-block;
   vertical-align: middle;
   background-color: var(--eblv-accent);
-  background-image: url('/app_static/icons/cart.svg');
+  background-image: url("/app_static/icons/cart.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 18px 18px;
@@ -221,7 +223,7 @@ body {
   display: inline-block;
   vertical-align: middle;
   background-color: var(--eblv-accent);
-  background-image: url('/app_static/icons/cart.svg');
+  background-image: url("/app_static/icons/cart.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 18px 18px;
@@ -326,14 +328,32 @@ input.form-control:-webkit-autofill:focus {
 
 .login-override .login-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
-.login-override .btn {
-  margin-right: 10px;
+.login-override .ub-btn-outline {
+  background: transparent;
+  border: 1px solid var(--eblv-accent);
+  color: var(--eblv-accent);
+}
+
+.login-override .ub-btn-outline:hover,
+.login-override .ub-btn-outline:focus {
+  background: transparent;
+  color: var(--cw-primary);
+  border-color: var(--cw-primary);
+  text-decoration: none;
+}
+
+.login-override .alert {
+  margin: 0;
 }
 
 .alert {
   border-radius: 0;
+  margin: 30px 0; /* Test override for better spacing on login page */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -341,4 +361,9 @@ input.form-control:-webkit-autofill:focus {
   .glyphicon.glyphicon-shopping-cart {
     transition: none;
   }
+}
+
+.navigation li a,
+.navigation li a:hover {
+  border-radius: 0 !important;
 }

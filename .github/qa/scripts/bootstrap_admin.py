@@ -3,7 +3,7 @@
 
 Env (optional):
   QA_ADMIN_USERNAME (default: admin)
-  QA_ADMIN_PASSWORD (default: admin123)
+    QA_ADMIN_PASSWORD (default: AdminTest123!)
   QA_ADMIN_EMAIL (default: admin@example.org)
 
 Output JSON: {status,created,updated,username,email,role}
@@ -37,7 +37,7 @@ def main() -> int:
     session = _get_session()
 
     username = (os.environ.get("QA_ADMIN_USERNAME") or "admin").strip()
-    password = os.environ.get("QA_ADMIN_PASSWORD") or "admin123"
+    password = os.environ.get("QA_ADMIN_PASSWORD") or "AdminTest123!"
     email = (os.environ.get("QA_ADMIN_EMAIL") or "admin@example.org").strip()
 
     try:

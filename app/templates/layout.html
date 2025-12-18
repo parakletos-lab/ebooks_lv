@@ -2,13 +2,7 @@
 
 {% block header %}
   {{ super() }}
-  <style id="ub-lang-style">
-    .ub-lang-switch { display: flex; align-items: center; height: 50px; gap: 12px; padding: 0 6px; }
-    .ub-lang-option { background: transparent; border: none; padding: 0 6px 6px; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; line-height: 20px; color: inherit; text-transform: uppercase; }
-    .ub-lang-option.active { color: var(--cw-primary, #0f6958); border-bottom: 2px solid currentColor; }
-    .ub-lang-option:focus { outline: none; box-shadow: none; }
-    .ub-profile-disabled { pointer-events: none; cursor: default; color: #777; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='css/ub_shared.css') }}" />
 {% endblock %}
 
 {% block js %}

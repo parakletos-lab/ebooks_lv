@@ -82,13 +82,13 @@
           </label>
         </div>
 
-        <div class="btn-toolbar login-actions">
+        <div class="login-actions">
           {% if token_context %}
             <button type="submit" name="action" value="complete_reset" class="btn btn-success">{{ _('Save password') }}</button>
-            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn btn-link pull-right">{{ _('Cancel') }}</a>
+            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn ub-btn-outline">{{ _('Cancel') }}</a>
           {% else %}
             <button type="submit" name="action" value="login" class="btn btn-primary">{{ _('Sign in') }}</button>
-            <button type="submit" name="action" value="forgot" class="btn btn-link" formnovalidate>{{ _('Forgot password?') }}</button>
+            <button type="submit" name="action" value="forgot" class="btn ub-btn-outline" formnovalidate>{{ _('Forgot password?') }}</button>
           {% endif %}
         </div>
       </form>

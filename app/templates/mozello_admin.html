@@ -11,16 +11,16 @@
   </div>
   <div class="panel-body">
     <form id="mz-settings-form" class="form">
-      <div class="form-group" style="max-width:600px;">
-        <div class="email-template-card-header" style="margin-bottom:6px;">
-          <label for="mz-store-url-lv" style="margin:0;">{{ _('Mozello Store URL') }}</label>
+      <div class="form-group mz-admin-max-600">
+        <div class="email-template-card-header mz-card-header-tight">
+          <label for="mz-store-url-lv" class="mz-label-no-margin">{{ _('Mozello Store URL') }}</label>
           <div class="email-template-tabs" id="mz-store-url-tabs">
             <button type="button" class="email-template-tab is-active" data-lang="lv">LV</button>
             <button type="button" class="email-template-tab" data-lang="ru">RU</button>
             <button type="button" class="email-template-tab" data-lang="en">EN</button>
           </div>
         </div>
-        <div class="email-template-editor-panes" id="mz-store-url-panes" style="margin-top:0;">
+        <div class="email-template-editor-panes mz-editor-panes-tight" id="mz-store-url-panes">
           <div class="email-template-pane is-active" data-lang="lv">
             <input type="url" class="form-control" id="mz-store-url-lv" placeholder="https://example.mozello.com/store/" />
           </div>
@@ -32,7 +32,7 @@
           </div>
         </div>
       </div>
-      <div class="form-group" style="max-width:600px;">
+      <div class="form-group mz-admin-max-600">
         <label for="mz-api-key">{{ _('Mozello API Key') }}</label>
         <input type="text" class="form-control" id="mz-api-key" autocomplete="off" />
       </div>
@@ -49,7 +49,7 @@
     <h3 class="panel-title">{{ _('Mozello Notification Settings') }}</h3>
   </div>
   <div class="panel-body">
-    <p class="text-muted" style="margin-top:-4px;">
+    <p class="text-muted ub-card-lead">
       {{ _('Manage subscribed webhook events. API key and store URL are configured above.') }}
     </p>
     <form id="mz-form" class="form">
@@ -59,9 +59,9 @@
       </div>
       <div class="form-group">
         <label>{{ _('Events') }}</label>
-        <div id="mz-events-box" style="border:1px solid #ddd; padding:6px; max-width:420px; background:#fafafa;">
+        <div id="mz-events-box" class="mz-events-box">
           {% for ev in allowed %}
-          <label style="display:block; font-weight:400;">
+          <label class="mz-event-label">
             <input type="checkbox" value="{{ ev }}"> {{ ev }}
           </label>
           {% endfor %}
@@ -75,8 +75,8 @@
   <button type="button" id="mz-reset" class="btn btn-default">{{ _('Reset URL') }}</button>
     </form>
     <hr />
-    <h4 style="margin-top:0;">{{ _('Current Settings') }}</h4>
-    <pre id="mz-current" style="background:#1e1e1e; color:#e6e6e6; padding:8px; max-width:600px; font-size:11px;">{{ _('(loading)') }}</pre>
+    <h4 class="mz-h4-tight">{{ _('Current Settings') }}</h4>
+    <pre id="mz-current" class="mz-current-pre">{{ _('(loading)') }}</pre>
   </div>
 </div>
 

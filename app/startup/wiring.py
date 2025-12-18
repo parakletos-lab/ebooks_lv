@@ -10,14 +10,21 @@ from app.db import init_engine_once
 from app.db.models import MozelloConfig  # ensure model imported so metadata includes table
 from app.routes.inject import register_all as register_routes
 from app.routes.admin_mozello import register_blueprints as register_mozello
-from app.config import mozello_api_key
+from app.config import (
+    mozello_api_key,
+    admin_bootstrap_enabled,
+    admin_bootstrap_email,
+    admin_bootstrap_password,
+)
 from app.services import mozello_service
+from app.services import calibre_users_service
 from app.i18n import configure_translations
 from app.utils.currency import register_currency_filters
+from app.utils.logging import get_logger
 from flask import Blueprint
 import os
-import logging
-log = logging.getLogger("app.startup")
+
+LOG = get_logger("app.startup")
 
 
 def _prepend_template_path(app):
@@ -42,7 +49,7 @@ def _prepend_template_path(app):
         )
         app.register_blueprint(bp)
         setattr(app, '_app_templates_bp', bp)
-        log.debug(
+        LOG.debug(
             "Registered _app_templates blueprint for override dir %s with static /app_static (%s)",
             override_dir,
             static_dir,
@@ -53,19 +60,39 @@ def _prepend_template_path(app):
     if isinstance(searchpath, list):
         if override_dir not in searchpath:
             searchpath.insert(0, override_dir)
-            log.debug("Prepended override dir to jinja searchpath: %s", override_dir)
+            LOG.debug("Prepended override dir to jinja searchpath: %s", override_dir)
         if repo_root not in searchpath:
             searchpath.append(repo_root)
-            log.debug("Appended repo root to jinja searchpath: %s", repo_root)
+            LOG.debug("Appended repo root to jinja searchpath: %s", repo_root)
+
+
+def _maybe_bootstrap_admin_password() -> None:
+    if not admin_bootstrap_enabled():
+        return
+    email = admin_bootstrap_email()
+    password = admin_bootstrap_password()
+    if not email or not password:
+        LOG.warning("Admin password bootstrap skipped (missing email/password)")
+        return
+    try:
+        info = calibre_users_service.lookup_user_by_email(email)
+        if not info or not info.get("id"):
+            LOG.warning("Admin password bootstrap skipped (user not found) email=%s", email)
+            return
+        user_id = int(info["id"])  # type: ignore[arg-type]
+        calibre_users_service.update_user_password(user_id=user_id, plaintext_password=password)
+        LOG.info("Admin password bootstrap applied email=%s", email)
+    except Exception:
+        LOG.exception("Admin password bootstrap failed email=%s", email)
 
 
 def init_app(app: Any) -> None:
-    log.debug("init_app starting")
+    LOG.debug("init_app starting")
     init_engine_once()
-    log.debug("DB engine initialized")
+    LOG.debug("DB engine initialized")
     register_routes(app)
     register_mozello(app)
-    log.debug("Routes registered (users_books + mozello)")
+    LOG.debug("Routes registered (users_books + mozello)")
     # Bootstrap Mozello API key from environment if present and DB empty
     try:
         env_key = mozello_api_key()
@@ -73,14 +100,16 @@ def init_app(app: Any) -> None:
             current = mozello_service._get_api_key_raw()  # type: ignore[attr-defined]
             if not current:
                 mozello_service.update_settings(env_key, None, None)
-                log.info("Mozello API key seeded from environment.")
+                LOG.info("Mozello API key seeded from environment.")
             else:
-                log.debug("Mozello API key already stored; environment value ignored.")
+                LOG.debug("Mozello API key already stored; environment value ignored.")
     except Exception:
-        log.exception("Failed seeding Mozello API key from environment")
+        LOG.exception("Failed seeding Mozello API key from environment")
+
+    _maybe_bootstrap_admin_password()
     _prepend_template_path(app)
     register_currency_filters(app)
     configure_translations(app)
-    log.info("App startup wiring complete (legacy plugin still active).")
+    LOG.info("App startup wiring complete (legacy plugin still active).")
 
 __all__ = ["init_app"]

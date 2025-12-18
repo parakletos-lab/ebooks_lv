@@ -38,7 +38,7 @@ docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app
 echo ""
 echo "[qa] Ready"
 echo "URL: ${QA_BASE_URL%/}/"
-echo "Admin: ${QA_ADMIN_USERNAME:-admin} / ${QA_ADMIN_PASSWORD:-admin123}"
+echo "Admin: ${QA_ADMIN_USERNAME:-admin} / ${QA_ADMIN_PASSWORD:-AdminTest123!}"
 echo "User:  ${QA_USER_USERNAME:-qa_user} / ${QA_USER_PASSWORD:-qa_user123}"
 echo ""
 echo "Docs:"

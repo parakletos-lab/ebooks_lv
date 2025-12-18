@@ -250,8 +250,7 @@ instance = instance|default(title) %}
       usersBox.innerHTML = "";
       if (!users.length) {
         const empty = document.createElement("div");
-        empty.className = "text-muted";
-        empty.style.fontSize = "11px";
+        empty.className = "text-muted ub-micro";
         empty.textContent = t("noUsers");
         usersBox.appendChild(empty);
         return;
@@ -275,7 +274,7 @@ instance = instance|default(title) %}
           u.user_id +
           "</span>" +
           (name && name !== email
-            ? ' <span class="text-muted" style="font-size:10px;">(' +
+            ? ' <span class="ub-small">(' +
               escapeHtml(name) +
               ")</span>"
             : "") +
@@ -290,8 +289,7 @@ instance = instance|default(title) %}
       booksBox.innerHTML = "";
       if (!books.length) {
         const empty = document.createElement("div");
-        empty.className = "text-muted";
-        empty.style.fontSize = "11px";
+        empty.className = "text-muted ub-micro";
         empty.textContent = t("noBooks");
         booksBox.appendChild(empty);
         return;
@@ -320,14 +318,14 @@ instance = instance|default(title) %}
       const term = filterUsers.value.trim().toLowerCase();
       Array.from(usersBox.querySelectorAll("label")).forEach((l) => {
         const t = l.textContent.toLowerCase();
-        l.style.display = term && t.indexOf(term) === -1 ? "none" : "";
+        l.classList.toggle("ub-hidden", Boolean(term) && t.indexOf(term) === -1);
       });
     }
     function applyBookFilter() {
       const term = filterBooks.value.trim().toLowerCase();
       Array.from(booksBox.querySelectorAll("label")).forEach((l) => {
         const t = l.textContent.toLowerCase();
-        l.style.display = term && t.indexOf(term) === -1 ? "none" : "";
+        l.classList.toggle("ub-hidden", Boolean(term) && t.indexOf(term) === -1);
       });
     }
     filterUsers.addEventListener("input", applyUserFilter);

@@ -4,7 +4,7 @@ Purpose: Verify that the integrated app layer injects ebooks.lv admin navigation
 
 ## Preconditions
 - Container running locally (see Build & Run below)
-- Admin credentials: admin / admin123 (adjust if changed)
+- Admin credentials: admin / AdminTest123! (adjust if changed)
 - Non-admin user exists (or create one through Calibre-Web UI)
 
 ## Steps (Admin Should See Link)

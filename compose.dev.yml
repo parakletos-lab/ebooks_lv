@@ -12,6 +12,9 @@ services:
       CALIBRE_WEB_DEBUG: "1"
       CALIBRE_DBPATH: /app/config
       CALIBRE_LIBRARY_PATH: /app/library
+      EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD: "1"
+      EBOOKSLV_ADMIN_EMAIL: admin@example.org
+      EBOOKSLV_ADMIN_PASSWORD: "AdminTest123!"
     volumes:
       - ./config:/app/config
       - ./library:/app/library

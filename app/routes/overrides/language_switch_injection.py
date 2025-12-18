@@ -71,6 +71,7 @@ def _should_skip(response: Response) -> Tuple[bool, str]:
 def _build_snippet() -> str:
     switch_url = url_for("language_switch.switch_language")
     script_src = url_for("_app_templates.static", filename="js/ub_lang_switch.js")
+    css_href = url_for("_app_templates.static", filename="css/ub_shared.css")
     try:
         from flask import request  # type: ignore
         login_url = url_for("web.login", next=(getattr(request, "full_path", "/") or "/").rstrip("?"))
@@ -80,22 +81,14 @@ def _build_snippet() -> str:
     active_lang = _active_language()
     is_admin = "1" if _is_admin() else "0"
     is_anon = "1" if _is_anonymous() else "0"
-    style = (
-        '<style id="ub-lang-style">'
-        '.ub-lang-switch { display: flex; align-items: center; height: 50px; gap: 12px; padding: 0 6px; }'
-        '.ub-lang-option { background: transparent; border: none; padding: 0 6px 6px; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; line-height: 20px; color: inherit; text-transform: uppercase; }'
-        '.ub-lang-option.active { color: var(--cw-primary, #0f6958); border-bottom: 2px solid currentColor; }'
-        '.ub-lang-option:focus { outline: none; box-shadow: none; }'
-        '.ub-profile-disabled { pointer-events: none; cursor: default; color: #777; }'
-        "</style>"
-    )
+    css_link = f'<link rel="stylesheet" href="{css_href}" />'
     config_div = (
         f'<div id="ub-config" data-is-admin="{is_admin}" data-is-anon="{is_anon}" '
         f'data-switch-url="{switch_url}" data-active-lang="{active_lang}" '
         f'data-login-url="{login_url}" data-login-label="{login_label}" hidden></div>'
     )
     script_tag = f'<script src="{script_src}"></script>'
-    return style + config_div + script_tag
+    return css_link + config_div + script_tag
 
 
 def _inject(response: Response) -> Response:

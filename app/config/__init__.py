@@ -148,3 +148,43 @@ def mozello_api_base() -> str:
     return os.getenv("MOZELLO_API_BASE", "https://api.mozello.com/v1")
 
 __all__.append("mozello_api_base")
+
+
+def admin_bootstrap_enabled() -> bool:
+    """Whether to force-set the Calibre admin password on startup.
+
+    Environment Variable: EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD
+
+    Default is False to avoid unintended password overrides in production.
+    """
+
+    return env_bool("EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD", default=False)
+
+
+__all__.append("admin_bootstrap_enabled")
+
+
+def admin_bootstrap_email() -> str:
+    """Admin email to target for bootstrap password changes.
+
+    Environment Variable: EBOOKSLV_ADMIN_EMAIL
+    Default: admin@example.org
+    """
+
+    return (os.getenv("EBOOKSLV_ADMIN_EMAIL") or "admin@example.org").strip()
+
+
+__all__.append("admin_bootstrap_email")
+
+
+def admin_bootstrap_password() -> str:
+    """Admin password to apply during bootstrap.
+
+    Environment Variable: EBOOKSLV_ADMIN_PASSWORD
+    Default: AdminTest123!
+    """
+
+    return os.getenv("EBOOKSLV_ADMIN_PASSWORD", "AdminTest123!")
+
+
+__all__.append("admin_bootstrap_password")
