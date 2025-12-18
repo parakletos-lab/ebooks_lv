@@ -3047,7 +3047,7 @@ msgstr "Pārlūkot"
 
 #: cps/templates/layout.html:161 cps/templates/stats.html:3
 msgid "About"
-msgstr "& Par"
+msgstr "Par sistēmu"
 
 #: cps/templates/layout.html:202
 msgid "Book Details"

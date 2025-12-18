@@ -304,11 +304,11 @@ msgstr "Сбросить пароль"
 
 #: app/templates/ebookslv_admin.html:2
 msgid "ebooks.lv Admin"
-msgstr "Администрация ebooks.lv"
+msgstr "Администрация"
 
 #: app/templates/ebookslv_admin.html:10
 msgid "ebooks.lv Administration"
-msgstr "Администрация ebooks.lv"
+msgstr "Администрация"
 
 #: app/templates/ebookslv_admin.html:14
 msgid "Central hub for ebooks.lv custom admin tools."
@@ -366,11 +366,11 @@ msgstr "Не удалось применить настройки: %(reason)s"
 
 #: app/templates/ebookslv_books_admin.html:2
 msgid "ebooks.lv Books"
-msgstr "Книги ebooks.lv"
+msgstr "Книги"
 
 #: app/templates/ebookslv_books_admin.html:9
 msgid "ebooks.lv Books Sync"
-msgstr "Синхронизация книг ebooks.lv"
+msgstr "Синхронизация книг"
 
 #: app/templates/ebookslv_books_admin.html:12
 msgid "Reload Calibre Books"
@@ -381,6 +381,14 @@ msgid "Load Mozello Products"
 msgstr "Загрузить товары Mozello"
 
 #: app/templates/ebookslv_books_admin.html:14
+msgid "Sync Prices from Mozello"
+msgstr "Синхронизировать цены из Mozello"
+
+#: app/templates/ebookslv_books_admin.html:15
+msgid "Push Prices to Mozello"
+msgstr "Отправить цены в Mozello"
+
+#: app/templates/ebookslv_books_admin.html:16
 msgid "Export All to Store"
 msgstr "Экспортировать всё в магазин"
 
@@ -394,8 +402,8 @@ msgid "Title"
 msgstr "Название"
 
 #: app/templates/ebookslv_books_admin.html:26
-msgid "mz_price"
-msgstr "mz_price"
+msgid "Price"
+msgstr "Цена"
 
 #: app/templates/ebookslv_books_admin.html:27
 msgid "Sync / State"

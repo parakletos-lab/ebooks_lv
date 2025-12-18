@@ -32,11 +32,10 @@ def _normalize_paths(paths: Iterable[Path | str]) -> List[str]:
 
 
 def configure_translations(app, extra_roots: Iterable[Path | str] | None = None) -> None:
-    """Append first-party translation directories to Babel's search path.
+    """Register first-party translation directories in Babel's search path.
 
-    Note: Babel merges translations from multiple directories; for conflicting
-    msgids we rely on later directories taking precedence so our overrides can
-    replace bundled Calibre-Web strings.
+    Note: Flask-Babel's translation directory handling is order-sensitive.
+    To ensure our overrides win, we place our translation roots *first*.
     """
     try:
         babel_cfg = get_babel(app)
@@ -49,19 +48,24 @@ def configure_translations(app, extra_roots: Iterable[Path | str] | None = None)
         candidates.extend(extra_roots)
 
     desired = _normalize_paths(candidates)
-    current = list(getattr(babel_cfg, "translation_directories", []))
-    appended: List[str] = []
-    for directory in desired:
-        if directory not in current:
-            current.append(directory)
-            appended.append(directory)
+    existing = list(getattr(babel_cfg, "translation_directories", []))
 
-    if not appended:
+    # Prepend our desired roots, keeping stable order, and preserving any
+    # pre-existing translation directories after them.
+    merged: List[str] = []
+    for directory in desired:
+        if directory not in merged:
+            merged.append(directory)
+    for directory in existing:
+        if directory not in merged:
+            merged.append(directory)
+
+    if merged == existing:
         return
 
-    babel_cfg.translation_directories = current
-    app.config["BABEL_TRANSLATION_DIRECTORIES"] = ";".join(current)
-    LOG.info("Registered %s custom translation directories", len(appended))
+    babel_cfg.translation_directories = merged
+    app.config["BABEL_TRANSLATION_DIRECTORIES"] = ";".join(merged)
+    LOG.info("Registered %s custom translation directories", len(desired))
 
 
 __all__ = ["configure_translations"]

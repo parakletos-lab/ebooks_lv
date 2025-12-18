@@ -302,11 +302,11 @@ msgstr "Atiestatiet paroli"
 
 #: app/templates/ebookslv_admin.html:2
 msgid "ebooks.lv Admin"
-msgstr "ebooks.lv administrācija"
+msgstr "Administrācija"
 
 #: app/templates/ebookslv_admin.html:10
 msgid "ebooks.lv Administration"
-msgstr "ebooks.lv administrācija"
+msgstr "Administrācija"
 
 #: app/templates/ebookslv_admin.html:14
 msgid "Central hub for ebooks.lv custom admin tools."
@@ -364,11 +364,11 @@ msgstr "Neizdevās pielietot noklusējumus: %(reason)s"
 
 #: app/templates/ebookslv_books_admin.html:2
 msgid "ebooks.lv Books"
-msgstr "ebooks.lv grāmatas"
+msgstr "Grāmatas"
 
 #: app/templates/ebookslv_books_admin.html:9
 msgid "ebooks.lv Books Sync"
-msgstr "ebooks.lv grāmatu sinhronizācija"
+msgstr "Grāmatu sinhronizācija"
 
 #: app/templates/ebookslv_books_admin.html:12
 msgid "Reload Calibre Books"
@@ -379,6 +379,14 @@ msgid "Load Mozello Products"
 msgstr "Ielādēt Mozello produktus"
 
 #: app/templates/ebookslv_books_admin.html:14
+msgid "Sync Prices from Mozello"
+msgstr "Sinhronizēt cenas no Mozello"
+
+#: app/templates/ebookslv_books_admin.html:15
+msgid "Push Prices to Mozello"
+msgstr "Nosūtīt cenas uz Mozello"
+
+#: app/templates/ebookslv_books_admin.html:16
 msgid "Export All to Store"
 msgstr "Eksportēt visu uz veikalu"
 
@@ -392,8 +400,8 @@ msgid "Title"
 msgstr "Nosaukums"
 
 #: app/templates/ebookslv_books_admin.html:26
-msgid "mz_price"
-msgstr "mz_price"
+msgid "Price"
+msgstr "Cena"
 
 #: app/templates/ebookslv_books_admin.html:27
 msgid "Sync / State"
@@ -943,7 +951,7 @@ msgstr "Pasūtījums dzēsts"
 
 #: app/templates/stats.html:3
 msgid "About"
-msgstr "Par"
+msgstr "Par sistēmu"
 
 #: app/templates/stats.html:7
 msgid "Library Statistics"

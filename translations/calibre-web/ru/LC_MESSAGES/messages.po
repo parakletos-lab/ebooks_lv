@@ -23,3 +23,12 @@ msgstr "В архиве"
 
 msgid "Price"
 msgstr "Цена"
+
+msgid "Downloaded Books"
+msgstr "Скачанные книги"
+
+msgid "Archived Books"
+msgstr "Архивированные книги"
+
+msgid "Books List"
+msgstr "Список книг"

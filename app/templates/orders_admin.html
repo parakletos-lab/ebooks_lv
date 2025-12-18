@@ -229,7 +229,8 @@
   }
 
   function renderActionsCell(row){
-    return `<button type="button" class="btn btn-xs btn-danger orders-btn-delete" data-order="${row.id}">${escapeHtml(translations.delete)}</button>`;
+    const label = escapeHtml(translations.delete);
+    return `<button type="button" class="btn btn-xs btn-danger orders-btn-delete" data-order="${row.id}" title="${label}" aria-label="${label}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>`;
   }
 
   function escapeHtml(str){

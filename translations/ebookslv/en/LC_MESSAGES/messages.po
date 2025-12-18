@@ -307,11 +307,11 @@ msgstr "Reset your password"
 
 #: app/templates/ebookslv_admin.html:2
 msgid "ebooks.lv Admin"
-msgstr "ebooks.lv Admin"
+msgstr "Admin"
 
 #: app/templates/ebookslv_admin.html:10
 msgid "ebooks.lv Administration"
-msgstr "ebooks.lv Administration"
+msgstr "Administration"
 
 #: app/templates/ebookslv_admin.html:14
 msgid "Central hub for ebooks.lv custom admin tools."
@@ -367,11 +367,11 @@ msgstr "Failed to apply defaults: %(reason)s"
 
 #: app/templates/ebookslv_books_admin.html:2
 msgid "ebooks.lv Books"
-msgstr "ebooks.lv Books"
+msgstr "Books"
 
 #: app/templates/ebookslv_books_admin.html:9
 msgid "ebooks.lv Books Sync"
-msgstr "ebooks.lv Books Sync"
+msgstr "Books Sync"
 
 #: app/templates/ebookslv_books_admin.html:12
 msgid "Reload Calibre Books"
@@ -382,6 +382,14 @@ msgid "Load Mozello Products"
 msgstr "Load Mozello Products"
 
 #: app/templates/ebookslv_books_admin.html:14
+msgid "Sync Prices from Mozello"
+msgstr "Sync Prices from Mozello"
+
+#: app/templates/ebookslv_books_admin.html:15
+msgid "Push Prices to Mozello"
+msgstr "Push Prices to Mozello"
+
+#: app/templates/ebookslv_books_admin.html:16
 msgid "Export All to Store"
 msgstr "Export All to Store"
 
@@ -395,8 +403,8 @@ msgid "Title"
 msgstr "Title"
 
 #: app/templates/ebookslv_books_admin.html:26
-msgid "mz_price"
-msgstr "mz_price"
+msgid "Price"
+msgstr "Price"
 
 #: app/templates/ebookslv_books_admin.html:27
 msgid "Sync / State"
