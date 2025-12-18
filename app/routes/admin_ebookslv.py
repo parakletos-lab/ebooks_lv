@@ -608,7 +608,15 @@ def api_books_export_all():
     if auth is not True:
         return auth
     rows = books_sync.list_calibre_books()
-    to_export = [r for r in rows if not r.get("mz_handle")]
+    def _has_positive_price(value: Any) -> bool:
+        if value is None:
+            return False
+        try:
+            return float(value) > 0.0
+        except Exception:
+            return False
+
+    to_export = [r for r in rows if (not r.get("mz_handle")) and _has_positive_price(r.get("mz_price"))]
     total = len(to_export)
     success = 0
     failures: List[Dict[str, str]] = []
@@ -657,7 +665,7 @@ def api_books_export_all():
                     cover_success += 1
             success += 1
         else:
-            failures.append({"book_id": r["book_id"], "error": resp.get("error")})
+                failures.append({"book_id": r["book_id"], "error": resp.get("error") if isinstance(resp, dict) else "unknown"})
     summary = {"total": total, "success": success, "failed": len(failures), "failures": failures, "cover_attempts": cover_attempts, "cover_success": cover_success}
     return jsonify({"summary": summary, "rows": rows})
 

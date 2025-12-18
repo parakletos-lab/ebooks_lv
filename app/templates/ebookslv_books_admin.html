@@ -152,6 +152,11 @@
       if(r.orphan){
         tr.className = 'orphan-row';
       }
+      const priceValue = r.mz_price;
+      const missingPrice = (!r.orphan) && (priceValue == null || Number(priceValue) <= 0);
+      if(missingPrice){
+        tr.classList.add('mz-price-missing-row');
+      }
       const fallbackTitle = r.orphan ? strings.orphanPlaceholder : '';
       tr.innerHTML = `
         <td>${r.book_id ?? '—'}</td>
@@ -167,17 +172,14 @@
 
   function renderSyncCell(r){
     if(r.mz_handle){
-      const urlBadge = r.mz_relative_url ? `<span class="mz-cat-badge" title="${escapeHtml(strings.mozelloUrlTooltip)}">${escapeHtml(r.mz_relative_url)}</span>` : '';
       const handlePath = encodeURIComponent(r.mz_handle);
-      const handleLabel = escapeHtml(r.mz_handle);
-      const link = `<a class="btn btn-default btn-xs mz-handle-btn" href="/mozello/books/${handlePath}" target="_blank" rel="noopener noreferrer">${handleLabel}</a>`;
+      const mkLang = (lang, label) => `<a class="btn btn-default btn-xs mz-lang-btn" href="/mozello/books/${handlePath}?lang=${lang}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      const actions = `<div class="mz-handle-actions">${mkLang('lv','LV')} ${mkLang('ru','RU')} ${mkLang('en','EN')}</div>`;
       if(r.orphan){
         const orphanLabel = `<span class="label label-danger">${escapeHtml(strings.orphanBadge)}</span>`;
-        const extras = [link, urlBadge].filter(Boolean).join(' ');
-        return `${orphanLabel}<div class="mz-handle-actions">${extras}</div>`;
+        return `${orphanLabel}${actions}`;
       }
-      const extras = urlBadge ? `<div class="mz-handle-actions">${urlBadge}</div>` : '';
-      return `${link}${extras}`;
+      return actions;
     }
     const buttonLabel = escapeHtml(strings.exportButton);
     return `<button class="btn btn-primary btn-xs" data-export="${r.book_id}">${buttonLabel}</button>`;
@@ -186,7 +188,7 @@
   function renderDeleteCell(r){
     if(r.mz_handle || r.orphan){
       const label = escapeHtml(strings.deleteIconLabel);
-      return `<button class="btn btn-danger btn-xs" data-del="${r.mz_handle || ''}" title="${label}" aria-label="${label}">×</button>`;
+      return `<button class="btn btn-danger btn-xs" data-del="${r.mz_handle || ''}" title="${label}" aria-label="${label}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>`;
     }
     return '';
   }
@@ -353,7 +355,7 @@
     disableAll(true);
     progWrap.classList.remove('mz-hidden');
     try {
-      const calibreMissing = rows.filter(r => !r.orphan && !r.mz_handle);
+      const calibreMissing = rows.filter(r => !r.orphan && !r.mz_handle && r.mz_price != null && Number(r.mz_price) > 0);
       const total = calibreMissing.length;
       progText.textContent = `0/${total}`;
       log('exportAllStart', { total });

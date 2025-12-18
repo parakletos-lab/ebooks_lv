@@ -52,6 +52,14 @@ LOG = get_logger("mozello.routes")
 
 
 def _request_language_code() -> Optional[str]:
+    try:
+        override = request.args.get("lang")
+        if isinstance(override, str):
+            override_clean = override.strip().lower()
+            if override_clean in ("lv", "ru", "en"):
+                return override_clean
+    except Exception:
+        pass
     try:  # pragma: no cover
         from flask_babel import get_locale  # type: ignore
 

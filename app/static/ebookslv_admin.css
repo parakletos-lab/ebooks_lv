@@ -31,6 +31,14 @@
 .orphan-row {
   background: #ffecec;
 }
+
+/* Highlight books missing price (mz_price empty/0) */
+#mz-books-table.table-striped > tbody > tr.mz-price-missing-row > td {
+  background: #fff2f2;
+}
+#mz-books-table.table-striped > tbody > tr.mz-price-missing-row > td.mz-col {
+  background: #fff2f2;
+}
 .mz-log {
   background: #1e1e1e;
   color: #e6e6e6;

@@ -1195,6 +1195,7 @@ def update_product_price(handle: str, price: float | None) -> Tuple[bool, Dict[s
             data = {"raw": resp.text}
         if resp.status_code != 200 or data.get("error") is True:
             return False, {"error": "http_error", "status": resp.status_code, "details": data}
+        invalidate_cache()
         return True, data
     except Exception as exc:  # pragma: no cover - network defensive
         LOG.warning("update_product_price failed handle=%s: %s", clean_handle, exc)
@@ -1218,6 +1219,7 @@ def delete_product(handle: str) -> Tuple[bool, Dict[str, Any]]:
             data = {"raw": r.text}
         if r.status_code != 200 or data.get("error") is True:
             return False, {"error": "http_error", "status": r.status_code, "details": data}
+        invalidate_cache()
         return True, {"status": "deleted"}
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
