@@ -144,6 +144,80 @@ _REWRITE_TOP_LEVEL_PAGES = {
 _ATTR_REWRITE_RE = re.compile(r"(?P<attr>href|data-back)=(?P<q>['\"])(?P<url>/[^'\"]*)(?P=q)")
 
 
+def _inject_scope_header(response: Response, payload: dict[str, Any], scope: CatalogScope) -> None:
+    """Ensure scoped pages render the correct title on first paint.
+
+    The non-admin JS previously hid the default "Books" header and inserted a new
+    title (Free / My Books), which could briefly show the original title before
+    JS executed.
+
+    We avoid flicker by rewriting (or injecting) the scoped title server-side.
+    """
+
+    if scope not in {CatalogScope.FREE, CatalogScope.PURCHASED}:
+        return
+
+    body_text = response.get_data(as_text=True)
+    if not body_text:
+        return
+
+    # If already injected (or rendered by a previous pass), do nothing.
+    if "eblv-scope-title" in body_text:
+        return
+
+    scope_labels = payload.get("scope_labels") or {}
+    title_text = (
+        (scope_labels.get("free") or "Free")
+        if scope == CatalogScope.FREE
+        else (scope_labels.get("purchased") or "My Books")
+    )
+
+    # Match the main content container used on the books list pages.
+    # Calibre-Web typically renders a <h2> inside this container with the generic
+    # title (e.g. "Books"), which we rewrite to scoped text.
+    container_and_h2_re = re.compile(
+        r"(?P<prefix><div[^>]*class=(['\"])(?=[^'\"]*\bdiscover\b)(?=[^'\"]*\bload-more\b)[^'\"]*\2[^>]*>\s*)"
+        r"(?P<open><h2(?P<h2attrs>[^>]*)>)(?P<title>.*?)(?P<close></h2>)",
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    def _rewrite_h2(match: re.Match[str]) -> str:
+        prefix = match.group("prefix")
+        attrs = match.group("h2attrs") or ""
+        close_tag = match.group("close")
+
+        # Ensure the title has our class so the JS sees it and becomes a no-op.
+        if "class=" in attrs:
+            attrs = re.sub(
+                r"class=(['\"])([^'\"]*)(\1)",
+                lambda m: f"class={m.group(1)}{m.group(2)} eblv-scope-title{m.group(3)}",
+                attrs,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+        else:
+            attrs = attrs + ' class="eblv-scope-title"'
+        return f"{prefix}<h2{attrs}>{title_text}{close_tag}"
+
+    rewritten = container_and_h2_re.sub(_rewrite_h2, body_text, count=1)
+    if rewritten != body_text:
+        response.set_data(rewritten)
+        return
+
+    # Fallback: no h2 found; inject one at the start of the container.
+    container_open_re = re.compile(
+        r"(<div[^>]*class=(['\"])(?=[^'\"]*\bdiscover\b)(?=[^'\"]*\bload-more\b)[^'\"]*\2[^>]*>)",
+        re.IGNORECASE,
+    )
+    injected = container_open_re.sub(
+        rf"\1<h2 class=\"eblv-scope-title\">{title_text}</h2>",
+        body_text,
+        count=1,
+    )
+    if injected != body_text:
+        response.set_data(injected)
+
+
 def _inject_scope_sidebar_nav(response: Response, payload: dict[str, Any]) -> None:
     """Inject scoped nav items into the left sidebar before JS runs.
 
@@ -575,6 +649,12 @@ def register_catalog_access(app: Any) -> None:
             return response
         if not _should_inject(response):
             return response
+
+        # Ensure scoped pages show the correct title immediately (avoid flicker).
+        try:
+            _inject_scope_header(response, payload, getattr(g, "catalog_scope", CatalogScope.ALL))
+        except Exception:
+            LOG.debug("Scope header injection failed", exc_info=True)
 
         # Make sidebar stable on first paint (avoid client-side nav rebuild/jump).
         try:
