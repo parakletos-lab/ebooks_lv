@@ -435,6 +435,20 @@ def get_mz_cover_picture_uids_for_handle(handle: str) -> List[str]:
     return get_mz_cover_picture_uids_for_book(bid)
 
 
+def set_mz_cover_picture_uids_for_handle(handle: str, uids: Optional[List[str]]) -> bool:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return False
+    book_id = info.get("book_id")
+    if book_id is None:
+        return False
+    try:
+        bid = int(book_id)
+    except Exception:
+        return False
+    return set_mz_cover_picture_uids(bid, uids)
+
+
 def clear_mz_cover_picture_uids_for_handle(handle: str) -> bool:
     info = lookup_book_by_handle(handle)
     if not info:
@@ -447,6 +461,78 @@ def clear_mz_cover_picture_uids_for_handle(handle: str) -> bool:
     except Exception:
         return False
     return set_mz_cover_picture_uids(bid, None)
+
+
+def get_mz_pictures_for_book(book_id: int) -> List[Dict[str, str]]:
+    """Return Mozello pictures list (uid+url) stored for this book.
+
+    Stored in Calibre identifiers as type 'mz_pictures' (JSON list).
+    """
+    conn = _connect_rw()
+    raw = _get_identifier(conn, book_id, "mz_pictures")
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        return []
+    if not isinstance(parsed, list):
+        return []
+    out: List[Dict[str, str]] = []
+    for entry in parsed:
+        if not isinstance(entry, dict):
+            continue
+        uid = entry.get("uid")
+        url = entry.get("url")
+        if isinstance(uid, str) and uid.strip() and isinstance(url, str) and url.strip():
+            out.append({"uid": uid.strip(), "url": url.strip()})
+    return out
+
+
+def set_mz_pictures(book_id: int, pictures: Optional[List[Dict[str, Any]]]) -> bool:
+    """Persist Mozello pictures list (uid+url) for later display.
+
+    Only stores uid+url, discarding any other keys.
+    """
+    cleaned: List[Dict[str, str]] = []
+    for entry in (pictures or []):
+        if not isinstance(entry, dict):
+            continue
+        uid = entry.get("uid")
+        url = entry.get("url")
+        if isinstance(uid, str) and uid.strip() and isinstance(url, str) and url.strip():
+            cleaned.append({"uid": uid.strip(), "url": url.strip()})
+    if not cleaned:
+        return _set_identifier(book_id, "mz_pictures", None)
+    return _set_identifier(book_id, "mz_pictures", json.dumps(cleaned, separators=(",", ":"), ensure_ascii=False))
+
+
+def get_mz_pictures_for_handle(handle: str) -> List[Dict[str, str]]:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return []
+    book_id = info.get("book_id")
+    if book_id is None:
+        return []
+    try:
+        bid = int(book_id)
+    except Exception:
+        return []
+    return get_mz_pictures_for_book(bid)
+
+
+def set_mz_pictures_for_handle(handle: str, pictures: Optional[List[Dict[str, Any]]]) -> bool:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return False
+    book_id = info.get("book_id")
+    if book_id is None:
+        return False
+    try:
+        bid = int(book_id)
+    except Exception:
+        return False
+    return set_mz_pictures(bid, pictures)
 
 
 __all__ = [
@@ -468,7 +554,12 @@ __all__ = [
     "get_mz_cover_picture_uids_for_book",
     "set_mz_cover_picture_uids",
     "get_mz_cover_picture_uids_for_handle",
+    "set_mz_cover_picture_uids_for_handle",
     "clear_mz_cover_picture_uids_for_handle",
+    "get_mz_pictures_for_book",
+    "set_mz_pictures",
+    "get_mz_pictures_for_handle",
+    "set_mz_pictures_for_handle",
 ]
 
 

@@ -92,6 +92,9 @@ def test_add_product_picture_invalidates_cache(monkeypatch):
 def test_replace_tracked_cover_pictures_deletes_only_tracked(monkeypatch):
     calls = {"deleted": [], "uploaded": 0}
 
+    def fake_list(handle):
+        return True, {"error": False, "pictures": []}
+
     def fake_delete(handle, uid):
         calls["deleted"].append(uid)
         return True, {"error": False}
@@ -100,6 +103,7 @@ def test_replace_tracked_cover_pictures_deletes_only_tracked(monkeypatch):
         calls["uploaded"] += 1
         return True, {"error": False, "picture": {"uid": "uid-new"}}
 
+    monkeypatch.setattr(mozello_service, "list_product_pictures", fake_list)
     monkeypatch.setattr(mozello_service, "delete_product_picture", fake_delete)
     monkeypatch.setattr(mozello_service, "add_product_picture", fake_add)
 
@@ -113,3 +117,32 @@ def test_replace_tracked_cover_pictures_deletes_only_tracked(monkeypatch):
     assert calls["uploaded"] == 1
     assert resp["removed_uids"] == ["uid-old", "uid-old-2"]
     assert resp["uploaded_uid"] == "uid-new"
+
+
+def test_replace_tracked_cover_pictures_derives_uid_when_upload_response_missing(monkeypatch):
+    # Simulate Mozello upload response without uid; service should diff pictures to find the new one.
+    state = {"stage": "before"}
+
+    def fake_list(handle):
+        if state["stage"] == "before":
+            return True, {"error": False, "pictures": [{"uid": "uid-extra"}, {"uid": "uid-old-cover"}]}
+        return True, {"error": False, "pictures": [{"uid": "uid-extra"}, {"uid": "uid-new-cover"}]}
+
+    def fake_delete(handle, uid):
+        return True, {"error": False}
+
+    def fake_add(handle, b64_image, filename=None):
+        state["stage"] = "after"
+        return True, {"error": False}
+
+    monkeypatch.setattr(mozello_service, "list_product_pictures", fake_list)
+    monkeypatch.setattr(mozello_service, "delete_product_picture", fake_delete)
+    monkeypatch.setattr(mozello_service, "add_product_picture", fake_add)
+
+    ok, resp = mozello_service.replace_tracked_cover_pictures(
+        "book-1",
+        tracked_picture_uids=["uid-old-cover"],
+        cover_b64="Zm9v",
+    )
+    assert ok is True
+    assert resp["uploaded_uid"] == "uid-new-cover"

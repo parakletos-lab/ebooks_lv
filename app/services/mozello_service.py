@@ -1404,6 +1404,15 @@ def replace_tracked_cover_pictures(
     clean_handle = (handle or "").strip()
     if not clean_handle:
         return False, {"error": "handle_required"}
+
+    before_uids: Set[str] = set()
+    ok_before, before_payload = list_product_pictures(clean_handle)
+    if ok_before and isinstance(before_payload, dict):
+        pics = before_payload.get("pictures") or []
+        if isinstance(pics, list):
+            for p in pics:
+                if isinstance(p, dict) and isinstance(p.get("uid"), str) and p.get("uid").strip():
+                    before_uids.add(p.get("uid").strip())
     removed: List[str] = []
     failures: List[Dict[str, Any]] = []
     for uid in [u.strip() for u in (tracked_picture_uids or []) if isinstance(u, str) and u.strip()]:
@@ -1427,6 +1436,21 @@ def replace_tracked_cover_pictures(
             uploaded_uid = pic.get("uid")
         elif isinstance(up_resp.get("uid"), str):
             uploaded_uid = up_resp.get("uid")
+
+    # Some Mozello responses omit the uid for picture upload; derive it by diffing lists.
+    if not uploaded_uid:
+        ok_after, after_payload = list_product_pictures(clean_handle)
+        if ok_after and isinstance(after_payload, dict):
+            after_uids: Set[str] = set()
+            pics = after_payload.get("pictures") or []
+            if isinstance(pics, list):
+                for p in pics:
+                    if isinstance(p, dict) and isinstance(p.get("uid"), str) and p.get("uid").strip():
+                        after_uids.add(p.get("uid").strip())
+            baseline_remaining = before_uids - set(removed)
+            candidates = sorted(after_uids - baseline_remaining)
+            if len(candidates) == 1:
+                uploaded_uid = candidates[0]
 
     out: Dict[str, Any] = {"removed_uids": removed, "upload_response": up_resp}
     if uploaded_uid:

@@ -350,6 +350,26 @@ def mozello_webhook():
             return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
         book_info = books_sync.lookup_book_by_handle(product_handle)
         preferred_language = book_info.get("language_code") if isinstance(book_info, dict) else None
+
+        # Persist Mozello pictures list (uid+url) for later use.
+        raw_pictures = product_data.get("pictures")
+        stored_pictures = False
+        if isinstance(raw_pictures, list):
+            stored_pictures = books_sync.set_mz_pictures_for_handle(product_handle, raw_pictures)
+
+        # If we don't yet know which Mozello picture is the Calibre cover, default to the first Mozello picture.
+        # This is used only to track which picture to replace on future Calibre->Mozello exports.
+        cover_seeded = False
+        try:
+            existing_cover = books_sync.get_mz_cover_picture_uids_for_handle(product_handle)
+        except Exception:
+            existing_cover = []
+        if not existing_cover and isinstance(raw_pictures, list) and raw_pictures:
+            first = raw_pictures[0] if isinstance(raw_pictures[0], dict) else None
+            first_uid = (first.get("uid") if isinstance(first, dict) else None)
+            if isinstance(first_uid, str) and first_uid.strip():
+                cover_seeded = bool(books_sync.set_mz_cover_picture_uids_for_handle(product_handle, [first_uid.strip()]))
+
         relative_url = mozello_service.derive_relative_url_from_product(
             product_data,
             preferred_language=preferred_language,
@@ -380,6 +400,8 @@ def mozello_webhook():
             response_payload["mz_relative_url"] = relative_url
         response_payload["relative_url_stored"] = bool(stored_relative)
         response_payload["price_stored"] = bool(stored_price)
+        response_payload["pictures_stored"] = bool(stored_pictures)
+        response_payload["cover_seeded"] = bool(cover_seeded)
         return jsonify(response_payload)
 
     if event_upper != "PAYMENT_CHANGED":
