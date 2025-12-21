@@ -976,7 +976,11 @@ def upsert_product_minimal(handle: str, title: str, price: float | None) -> Tupl
         return False, {"error": "handle_required"}
     # Populate URL slugs for all store languages to avoid EN/RU staying null.
     url_multi = {lang: clean_handle for lang in _STORE_URL_LANGUAGES}
-    body = {"product": {"title": {"en": title}, "price": price or 0.0, "visible": True, "url": url_multi}}
+    # Non-destructive updates: keep existing multilanguage text keys unless explicitly overwritten.
+    body = {
+        "product": {"title": {"en": title}, "price": price or 0.0, "visible": True, "url": url_multi},
+        "options": {"text_update_mode": "merge"},
+    }
     # Update first
     try:
         _throttle_wait()
@@ -1043,7 +1047,8 @@ def upsert_product_basic(
     if description_clean:
         product_obj["description"] = {selected_language: description_clean}
 
-    update_payload: Dict[str, Any] = {"product": product_obj}
+    # Non-destructive updates: keep existing multilanguage text keys unless explicitly overwritten.
+    update_payload: Dict[str, Any] = {"product": product_obj, "options": {"text_update_mode": "merge"}}
     create_payload: Optional[Dict[str, Any]] = None
 
     def _parse_response(resp: requests.Response) -> Dict[str, Any]:
@@ -1311,8 +1316,120 @@ def add_product_picture(handle: str, b64_image: str, filename: str | None = None
             data = {"raw": r.text}
         if r.status_code != 200 or data.get("error") is True:
             return False, {"error": "http_error", "status": r.status_code, "details": data}
+        invalidate_cache()
         return True, data
     except Exception as exc:  # pragma: no cover
         return False, {"error": str(exc)}
 
 __all__.append("add_product_picture")
+
+
+def list_product_pictures(handle: str) -> Tuple[bool, Dict[str, Any]]:
+    """List picture uids for a product.
+
+    Endpoint: GET /store/product/<handle>/pictures/
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    try:
+        _throttle_wait()
+        r = requests.get(_api_url(f"/store/product/{clean_handle}/pictures/"), headers=headers, timeout=15)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code == 404:
+            return False, {"error": "not_found"}
+        if r.status_code != 200 or (isinstance(data, dict) and data.get("error") is True):
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        return True, data if isinstance(data, dict) else {"pictures": []}
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+
+def delete_product_picture(handle: str, picture_uid: str) -> Tuple[bool, Dict[str, Any]]:
+    """Delete a single product picture by uid.
+
+    Endpoint: DELETE /store/product/<handle>/picture/<picture-uid>/
+    """
+    headers = _api_headers()
+    if not headers:
+        return False, {"error": "api_key_missing"}
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    uid = (picture_uid or "").strip()
+    if not uid:
+        return False, {"error": "picture_uid_required"}
+    try:
+        _throttle_wait()
+        r = requests.delete(_api_url(f"/store/product/{clean_handle}/picture/{uid}/"), headers=headers, timeout=15)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        if r.status_code == 404:
+            # Treat as already-gone.
+            return True, {"status": "not_found"}
+        if r.status_code != 200 or (isinstance(data, dict) and data.get("error") is True):
+            return False, {"error": "http_error", "status": r.status_code, "details": data}
+        invalidate_cache()
+        return True, data if isinstance(data, dict) else {"status": "deleted"}
+    except Exception as exc:  # pragma: no cover
+        return False, {"error": str(exc)}
+
+
+def replace_tracked_cover_pictures(
+    handle: str,
+    *,
+    tracked_picture_uids: List[str],
+    cover_b64: str,
+    filename: str = "calibre-cover.jpg",
+) -> Tuple[bool, Dict[str, Any]]:
+    """Non-destructive cover sync.
+
+    Deletes ONLY picture uids we previously tracked as "Calibre cover".
+    Leaves all other Mozello pictures untouched.
+
+    Returns dict with keys: removed_uids, uploaded_uid (optional), upload_response.
+    """
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    removed: List[str] = []
+    failures: List[Dict[str, Any]] = []
+    for uid in [u.strip() for u in (tracked_picture_uids or []) if isinstance(u, str) and u.strip()]:
+        ok_del, del_resp = delete_product_picture(clean_handle, uid)
+        if ok_del:
+            removed.append(uid)
+        else:
+            failures.append({"uid": uid, "error": del_resp.get("error") if isinstance(del_resp, dict) else "unknown", "details": del_resp})
+    ok_up, up_resp = add_product_picture(clean_handle, cover_b64, filename=filename)
+    if not ok_up:
+        payload: Dict[str, Any] = {"error": "cover_upload_failed", "removed_uids": removed, "upload": up_resp}
+        if failures:
+            payload["delete_failures"] = failures
+        return False, payload
+
+    # Try to extract picture uid from response.
+    uploaded_uid: str | None = None
+    if isinstance(up_resp, dict):
+        pic = up_resp.get("picture")
+        if isinstance(pic, dict) and isinstance(pic.get("uid"), str):
+            uploaded_uid = pic.get("uid")
+        elif isinstance(up_resp.get("uid"), str):
+            uploaded_uid = up_resp.get("uid")
+
+    out: Dict[str, Any] = {"removed_uids": removed, "upload_response": up_resp}
+    if uploaded_uid:
+        out["uploaded_uid"] = uploaded_uid
+    if failures:
+        out["delete_failures"] = failures
+    return True, out
+
+
+__all__.extend(["list_product_pictures", "delete_product_picture", "replace_tracked_cover_pictures"])

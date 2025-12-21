@@ -12,7 +12,7 @@ fi
 QA_BASE_URL="${QA_BASE_URL:-http://localhost:8083}"
 
 echo "[qa] Starting dev compose"
-docker compose -f compose.yml -f compose.dev.yml up -d --build
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml up -d --build
 
 echo "[qa] Waiting for healthz"
 healthz_url="${QA_BASE_URL%/}/healthz"
@@ -30,10 +30,10 @@ if [[ "$code" != "200" ]]; then
 fi
 
 echo "[qa] Bootstrapping deterministic QA users/orders (in-container)"
-docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_admin.py
-docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_non_admin_user.py
-docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_order_for_non_admin.py
-docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_price_for_sample_book.py
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_admin.py
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_non_admin_user.py
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_order_for_non_admin.py
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_price_for_sample_book.py
 
 echo ""
 echo "[qa] Ready"

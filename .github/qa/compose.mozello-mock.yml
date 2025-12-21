@@ -1,0 +1,16 @@
+services:
+  mozello-mock:
+    image: python:3.11-slim
+    container_name: mozello-mock
+    restart: unless-stopped
+    working_dir: /mock
+    command: ["python", "-u", "/mock/server.py"]
+    volumes:
+      - ./.github/qa/mozello_mock:/mock:ro
+    ports:
+      - "9090:9090"
+
+  calibre-web:
+    environment:
+      # Point Mozello API calls to local mock server (in compose network).
+      MOZELLO_API_BASE: http://mozello-mock:9090/v1

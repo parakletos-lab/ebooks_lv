@@ -592,12 +592,21 @@ def api_books_export_one(book_id: int):
     else:
         target["mz_relative_url"] = None
         books_sync.clear_mz_relative_url_for_handle(handle)
-    # Attempt cover upload (best-effort; ignore failures but surface flag)
+    # Attempt cover sync (best-effort; non-destructive: delete ONLY tracked cover uids)
     cover_uploaded = False
     ok_cov, b64 = books_sync.get_cover_base64(book_id)
     if ok_cov and b64:
-        ok_pic, pic_resp = mozello_service.add_product_picture(handle, b64, filename="cover.jpg")
-        cover_uploaded = ok_pic
+        tracked = books_sync.get_mz_cover_picture_uids_for_book(book_id)
+        ok_cover, cover_resp = mozello_service.replace_tracked_cover_pictures(
+            handle,
+            tracked_picture_uids=tracked,
+            cover_b64=b64,
+        )
+        cover_uploaded = ok_cover
+        if ok_cover and isinstance(cover_resp, dict):
+            new_uid = cover_resp.get("uploaded_uid")
+            if isinstance(new_uid, str) and new_uid.strip():
+                books_sync.set_mz_cover_picture_uids(book_id, [new_uid.strip()])
     return jsonify({"row": target, "status": "exported", "cover_uploaded": cover_uploaded})
 
 
@@ -686,6 +695,7 @@ def api_books_delete(handle: str):
         return _json_error(code, 502, message=message, details=resp if isinstance(resp, dict) else None)
     removed_handle = books_sync.clear_mz_handle(handle)
     books_sync.clear_mz_relative_url_for_handle(handle)
+    books_sync.clear_mz_cover_picture_uids_for_handle(handle)
     return jsonify({"status": resp.get("status", "deleted"), "removed_local": removed_handle})
 
 

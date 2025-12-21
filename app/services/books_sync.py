@@ -5,7 +5,7 @@ identifier. Provides minimal read helpers plus identifier insert/delete.
 """
 from __future__ import annotations
 from typing import Dict, Iterable, List, Optional, Tuple, Set
-import os, sqlite3, base64
+import os, sqlite3, base64, json
 from app.utils.logging import get_logger
 
 LOG = get_logger("books_sync")
@@ -391,6 +391,64 @@ def clear_mz_relative_url_for_handle(handle: str) -> bool:
     return set_mz_relative_url_for_handle(handle, None)
 
 
+def get_mz_cover_picture_uids_for_book(book_id: int) -> List[str]:
+    """Return Mozello picture uid(s) previously uploaded as Calibre cover for this book.
+
+    Stored in Calibre identifiers as type 'mz_cover_uids' (JSON list).
+    """
+    conn = _connect_rw()
+    raw = _get_identifier(conn, book_id, "mz_cover_uids")
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return [str(v).strip() for v in parsed if isinstance(v, str) and v.strip()]
+    except Exception:
+        pass
+    # Backward-compatible: allow single uid stored as plain string
+    cleaned = raw.strip()
+    return [cleaned] if cleaned else []
+
+
+def set_mz_cover_picture_uids(book_id: int, uids: Optional[List[str]]) -> bool:
+    cleaned: List[str] = []
+    for u in (uids or []):
+        if isinstance(u, str) and u.strip():
+            cleaned.append(u.strip())
+    if not cleaned:
+        return _set_identifier(book_id, "mz_cover_uids", None)
+    return _set_identifier(book_id, "mz_cover_uids", json.dumps(cleaned, separators=(",", ":")))
+
+
+def get_mz_cover_picture_uids_for_handle(handle: str) -> List[str]:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return []
+    book_id = info.get("book_id")
+    if book_id is None:
+        return []
+    try:
+        bid = int(book_id)
+    except Exception:
+        return []
+    return get_mz_cover_picture_uids_for_book(bid)
+
+
+def clear_mz_cover_picture_uids_for_handle(handle: str) -> bool:
+    info = lookup_book_by_handle(handle)
+    if not info:
+        return False
+    book_id = info.get("book_id")
+    if book_id is None:
+        return False
+    try:
+        bid = int(book_id)
+    except Exception:
+        return False
+    return set_mz_cover_picture_uids(bid, None)
+
+
 __all__ = [
     "list_calibre_books",
     "set_mz_handle",
@@ -407,6 +465,10 @@ __all__ = [
     "set_mz_relative_url_for_handle",
     "get_mz_relative_url_for_handle",
     "clear_mz_relative_url_for_handle",
+    "get_mz_cover_picture_uids_for_book",
+    "set_mz_cover_picture_uids",
+    "get_mz_cover_picture_uids_for_handle",
+    "clear_mz_cover_picture_uids_for_handle",
 ]
 
 

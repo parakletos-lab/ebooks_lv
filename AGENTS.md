@@ -3,7 +3,7 @@
 
 0. Go straight to implementation and do not ask questions unless instructed. I want all changes to be tested (in browser by using Playwright MCP in case of UI changes) and working.
 1. Never touch core "/calibre-web" without approval.
-2. Use service layer (no raw SQL). 
+2. Use service layer.
 3. Invalidate cache after every mutation.
 4. Use config accessors (not raw os.environ in logic).
 5. Don’t fabricate IDs; allow‑list is authoritative.
