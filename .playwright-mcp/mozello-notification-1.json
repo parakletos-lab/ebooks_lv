@@ -1,0 +1,8 @@
+{
+  "event": "PAYMENT_CHANGED",
+  "order": {
+    "payment_status": "paid",
+    "test": true,
+    "ts": 1766308199897
+  }
+}

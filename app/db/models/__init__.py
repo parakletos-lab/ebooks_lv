@@ -6,6 +6,7 @@ from .users_books import (  # noqa: F401
 	UserFilter,
 	Base,
 	MozelloConfig,
+	MozelloNotificationLog,
 	MozelloOrder,
 	EmailTemplate,
 	ResetPasswordToken,
@@ -16,6 +17,7 @@ __all__ = [
 	"MozelloOrder",
 	"Base",
 	"MozelloConfig",
+	"MozelloNotificationLog",
 	"EmailTemplate",
 	"ResetPasswordToken",
 ]

@@ -407,10 +407,6 @@ msgstr "Cena"
 msgid "Sync / State"
 msgstr "Sinhr./statuss"
 
-#: app/templates/ebookslv_books_admin.html:28
-msgid "Mozello Title"
-msgstr "Mozello nosaukums"
-
 #: app/templates/ebookslv_books_admin.html:29
 #: app/templates/ebookslv_books_admin.html:47
 #: app/templates/orders_admin.html:77 app/templates/users_books_admin.html:156
@@ -735,6 +731,38 @@ msgstr "Pašreizējie iestatījumi"
 msgid "(loading)"
 msgstr "(ielādē...)"
 
+#: app/templates/mozello_admin.html:62
+msgid "Notifications Log"
+msgstr "Paziņojumu žurnāls"
+
+#: app/templates/mozello_admin.html:64
+msgid "Clear"
+msgstr "Notīrīt"
+
+#: app/templates/mozello_admin.html:67
+msgid "Log notifications"
+msgstr "Reģistrēt paziņojumus"
+
+#: app/templates/mozello_admin.html:74
+msgid "Received"
+msgstr "Saņemts"
+
+#: app/templates/mozello_admin.html:75
+msgid "Event"
+msgstr "Notikums"
+
+#: app/templates/mozello_admin.html:76
+msgid "Outcome"
+msgstr "Rezultāts"
+
+#: app/templates/mozello_admin.html:77
+msgid "JSON"
+msgstr "JSON"
+
+#: app/templates/mozello_admin.html:83
+msgid "No notifications logged yet."
+msgstr "Vēl nav reģistrētu paziņojumu."
+
 #: app/templates/mozello_admin.html:66
 #, python-format
 msgid "Error loading settings: %(reason)s"
@@ -758,6 +786,21 @@ msgstr "Mozello iestatījumi saglabāti."
 #, python-format
 msgid "Failed to save Mozello settings: %(reason)s"
 msgstr "Neizdevās saglabāt Mozello iestatījumus: %(reason)s"
+
+#: app/templates/mozello_admin.html:73
+#, python-format
+msgid "Failed to load notifications log: %(reason)s"
+msgstr "Neizdevās ielādēt paziņojumu žurnālu: %(reason)s"
+
+#: app/templates/mozello_admin.html:74
+#, python-format
+msgid "Failed to update notifications log: %(reason)s"
+msgstr "Neizdevās atjaunināt paziņojumu žurnālu: %(reason)s"
+
+#: app/templates/mozello_admin.html:75
+#, python-format
+msgid "Failed to clear notifications log: %(reason)s"
+msgstr "Neizdevās notīrīt paziņojumu žurnālu: %(reason)s"
 
 #: app/templates/mozello_admin.html:71
 #, python-format

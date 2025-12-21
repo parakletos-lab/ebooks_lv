@@ -758,6 +758,10 @@ def _ensure_schema_migrations():  # pragma: no cover (best-effort, simple)
             if "store_url_ru" not in cols:
                 LOG.info("Applying schema migration: adding mozello_config.store_url_ru column")
                 s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url_ru VARCHAR(500)"))
+            if "notifications_log_enabled" not in cols:
+                LOG.info("Applying schema migration: adding mozello_config.notifications_log_enabled column")
+                # SQLite doesn't have a native boolean type; store as INTEGER 0/1.
+                s.execute(text("ALTER TABLE mozello_config ADD COLUMN notifications_log_enabled INTEGER DEFAULT 0"))
             if "store_url_en" not in cols:
                 LOG.info("Applying schema migration: adding mozello_config.store_url_en column")
                 s.execute(text("ALTER TABLE mozello_config ADD COLUMN store_url_en VARCHAR(500)"))

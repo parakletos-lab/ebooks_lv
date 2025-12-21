@@ -409,10 +409,6 @@ msgstr "Цена"
 msgid "Sync / State"
 msgstr "Синхрониз./состояние"
 
-#: app/templates/ebookslv_books_admin.html:28
-msgid "Mozello Title"
-msgstr "Название Mozello"
-
 #: app/templates/ebookslv_books_admin.html:29
 #: app/templates/ebookslv_books_admin.html:47
 #: app/templates/orders_admin.html:77 app/templates/users_books_admin.html:156
@@ -737,6 +733,38 @@ msgstr "Текущие настройки"
 msgid "(loading)"
 msgstr "(загрузка)"
 
+#: app/templates/mozello_admin.html:62
+msgid "Notifications Log"
+msgstr "Журнал уведомлений"
+
+#: app/templates/mozello_admin.html:64
+msgid "Clear"
+msgstr "Очистить"
+
+#: app/templates/mozello_admin.html:67
+msgid "Log notifications"
+msgstr "Записывать уведомления"
+
+#: app/templates/mozello_admin.html:74
+msgid "Received"
+msgstr "Получено"
+
+#: app/templates/mozello_admin.html:75
+msgid "Event"
+msgstr "Событие"
+
+#: app/templates/mozello_admin.html:76
+msgid "Outcome"
+msgstr "Результат"
+
+#: app/templates/mozello_admin.html:77
+msgid "JSON"
+msgstr "JSON"
+
+#: app/templates/mozello_admin.html:83
+msgid "No notifications logged yet."
+msgstr "Пока нет записанных уведомлений."
+
 #: app/templates/mozello_admin.html:66
 #, python-format
 msgid "Error loading settings: %(reason)s"
@@ -760,6 +788,21 @@ msgstr "Настройки Mozello сохранены."
 #, python-format
 msgid "Failed to save Mozello settings: %(reason)s"
 msgstr "Не удалось сохранить настройки Mozello: %(reason)s"
+
+#: app/templates/mozello_admin.html:73
+#, python-format
+msgid "Failed to load notifications log: %(reason)s"
+msgstr "Не удалось загрузить журнал уведомлений: %(reason)s"
+
+#: app/templates/mozello_admin.html:74
+#, python-format
+msgid "Failed to update notifications log: %(reason)s"
+msgstr "Не удалось обновить журнал уведомлений: %(reason)s"
+
+#: app/templates/mozello_admin.html:75
+#, python-format
+msgid "Failed to clear notifications log: %(reason)s"
+msgstr "Не удалось очистить журнал уведомлений: %(reason)s"
 
 #: app/templates/mozello_admin.html:71
 #, python-format

@@ -95,6 +95,8 @@ class MozelloConfig(Base):
     store_url_ru = Column(String(500), nullable=True)
     store_url_en = Column(String(500), nullable=True)
     notifications_wanted = Column(Text, nullable=True)  # JSON array
+    # Admin diagnostics feature: log accepted webhook payloads when enabled (0/1).
+    notifications_log_enabled = Column(Integer, nullable=False, default=0)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     ALLOWED_EVENTS = [
@@ -208,3 +210,31 @@ class ResetPasswordToken(Base):
 
 
 __all__.append("ResetPasswordToken")
+
+
+class MozelloNotificationLog(Base):
+    """Audit log of accepted Mozello webhook notifications."""
+
+    __tablename__ = "mozello_notifications_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    received_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False, index=True)
+    event = Column(String(64), nullable=False, index=True)
+    outcome = Column(String(500), nullable=False, default="")
+    payload_json = Column(Text, nullable=False, default="")
+
+    __table_args__ = (
+        Index("ix_mozello_notifications_log_event_received", "event", "received_at"),
+    )
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "received_at": self.received_at.isoformat() if self.received_at else None,
+            "event": self.event,
+            "outcome": self.outcome,
+            "payload_json": self.payload_json,
+        }
+
+
+__all__.append("MozelloNotificationLog")

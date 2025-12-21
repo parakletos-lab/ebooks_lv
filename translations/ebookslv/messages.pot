@@ -399,10 +399,6 @@ msgstr ""
 msgid "Sync / State"
 msgstr ""
 
-#: app/templates/ebookslv_books_admin.html:28
-msgid "Mozello Title"
-msgstr ""
-
 #: app/templates/ebookslv_books_admin.html:29
 #: app/templates/ebookslv_books_admin.html:47
 #: app/templates/orders_admin.html:77 app/templates/users_books_admin.html:156
@@ -727,6 +723,38 @@ msgstr ""
 msgid "(loading)"
 msgstr ""
 
+#: app/templates/mozello_admin.html:62
+msgid "Notifications Log"
+msgstr ""
+
+#: app/templates/mozello_admin.html:64
+msgid "Clear"
+msgstr ""
+
+#: app/templates/mozello_admin.html:67
+msgid "Log notifications"
+msgstr ""
+
+#: app/templates/mozello_admin.html:74
+msgid "Received"
+msgstr ""
+
+#: app/templates/mozello_admin.html:75
+msgid "Event"
+msgstr ""
+
+#: app/templates/mozello_admin.html:76
+msgid "Outcome"
+msgstr ""
+
+#: app/templates/mozello_admin.html:77
+msgid "JSON"
+msgstr ""
+
+#: app/templates/mozello_admin.html:83
+msgid "No notifications logged yet."
+msgstr ""
+
 #: app/templates/mozello_admin.html:66
 #, python-format
 msgid "Error loading settings: %(reason)s"
@@ -749,6 +777,21 @@ msgstr ""
 #: app/templates/mozello_admin.html:70
 #, python-format
 msgid "Failed to save Mozello settings: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:73
+#, python-format
+msgid "Failed to load notifications log: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:74
+#, python-format
+msgid "Failed to update notifications log: %(reason)s"
+msgstr ""
+
+#: app/templates/mozello_admin.html:75
+#, python-format
+msgid "Failed to clear notifications log: %(reason)s"
 msgstr ""
 
 #: app/templates/mozello_admin.html:71

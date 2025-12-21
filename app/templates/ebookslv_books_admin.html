@@ -27,7 +27,6 @@
             <th>{{ _('Title') }}</th>
             <th>{{ _('Price') }}</th>
             <th class="mz-col">{{ _('Sync / State') }}</th>
-            <th class="mz-col">{{ _('Mozello Title') }}</th>
             <th class="mz-col">{{ _('Delete') }}</th>
           </tr>
         </thead>
@@ -163,7 +162,6 @@
         <td>${escapeHtml(r.title ?? fallbackTitle ?? '')}</td>
         <td>${r.mz_price != null ? r.mz_price : ''}</td>
         <td class="mz-col">${renderSyncCell(r)}</td>
-        <td class="mz-col">${escapeHtml(r.mozello_title || '')}</td>
         <td class="mz-col">${renderDeleteCell(r)}</td>`;
       frag.appendChild(tr);
     });

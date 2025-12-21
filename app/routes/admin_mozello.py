@@ -40,6 +40,7 @@ except Exception:  # pragma: no cover
 
 from app.services import (
     mozello_service,
+    mozello_notifications_log_service,
     orders_service,
     OrderValidationError,
     CalibreUnavailableError,
@@ -323,16 +324,29 @@ def mozello_webhook():
     data = payload if isinstance(payload, dict) else {}
     order_data = data.get("order") if isinstance(data.get("order"), dict) else None
 
+    def _maybe_log(outcome: str) -> None:
+        try:
+            mozello_notifications_log_service.append_log(
+                event=event_upper,
+                outcome=outcome,
+                payload_raw=mozello_notifications_log_service.coerce_payload_to_text(raw),
+            )
+        except Exception:
+            # Never break webhook processing due to logging.
+            LOG.debug("Mozello notifications log append failed", exc_info=True)
+
     _dump_webhook_event(event_upper, data or {}, raw)
 
     if event_upper == "PRODUCT_CHANGED":
         product_data = data.get("product") if isinstance(data.get("product"), dict) else None
         if not product_data:
             LOG.warning("Mozello webhook PRODUCT_CHANGED missing product payload")
+            _maybe_log("Rejected: PRODUCT_CHANGED missing product payload")
             return jsonify({"status": "rejected", "reason": "product_missing"}), 400
         product_handle = (product_data.get("handle") or "").strip()
         if not product_handle:
             LOG.warning("Mozello webhook PRODUCT_CHANGED missing product handle")
+            _maybe_log("Rejected: PRODUCT_CHANGED missing product handle")
             return jsonify({"status": "rejected", "reason": "handle_missing"}), 400
         book_info = books_sync.lookup_book_by_handle(product_handle)
         preferred_language = book_info.get("language_code") if isinstance(book_info, dict) else None
@@ -351,6 +365,12 @@ def mozello_webhook():
         if product_data.get("sale_price") is not None:
             price_value = product_data.get("sale_price")
         stored_price = books_sync.set_mz_price_for_handle(product_handle, price_value)
+
+        if stored_relative or stored_price:
+            _maybe_log(f"Book '{product_handle}' was updated")
+        else:
+            _maybe_log(f"Product '{product_handle}' received; no local book updated")
+
         response_payload = {
             "status": "ok",
             "event": event_upper,
@@ -364,10 +384,12 @@ def mozello_webhook():
 
     if event_upper != "PAYMENT_CHANGED":
         LOG.debug("Mozello webhook ignoring event=%s", event_upper)
+        _maybe_log(f"Ignored event '{event_upper}'")
         return jsonify({"status": "ignored", "reason": "event_ignored", "event": event_upper}), 200
 
     if not isinstance(order_data, dict):
         LOG.warning("Mozello webhook missing order payload event=%s", event_upper)
+        _maybe_log("Rejected: PAYMENT_CHANGED missing order payload")
         return jsonify({"status": "rejected", "reason": "order_missing"}), 400
 
     payment_status = str(order_data.get("payment_status") or "").strip().lower()
@@ -377,6 +399,7 @@ def mozello_webhook():
             payment_status,
             order_data.get("order_id"),
         )
+        _maybe_log(f"Ignored order payment_status='{payment_status or ''}'")
         return jsonify({
             "status": "ignored",
             "reason": "payment_status",
@@ -391,6 +414,7 @@ def mozello_webhook():
             order_data.get("order_id"),
             exc,
         )
+        _maybe_log(f"Rejected order: {str(exc)}")
         return jsonify({"status": "rejected", "reason": str(exc)}), 400
     except CalibreUnavailableError as exc:
         LOG.error(
@@ -399,15 +423,61 @@ def mozello_webhook():
             order_data.get("email"),
             exc,
         )
+        _maybe_log("Retry: Calibre unavailable")
         return jsonify({"status": "retry", "reason": "calibre_unavailable"}), 503
     except Exception as exc:  # pragma: no cover - defensive
         LOG.exception(
             "Mozello webhook processing failure order_id=%s",
             order_data.get("order_id"),
         )
+        _maybe_log("Error: internal_error")
         return jsonify({"status": "error", "reason": "internal_error"}), 500
 
+    order_id = order_data.get("order_id")
+    _maybe_log(f"Paid order processed (order_id={order_id})")
+
     return jsonify({"status": "ok", "result": result})
+
+
+@bp.route("/notifications_log", methods=["GET"])
+def mozello_get_notifications_log():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    try:
+        limit_raw = request.args.get("limit")
+        limit = int(limit_raw) if isinstance(limit_raw, str) and limit_raw.strip().isdigit() else 50
+    except Exception:
+        limit = 50
+    return jsonify(mozello_notifications_log_service.get_state(limit=limit))
+
+
+@bp.route("/notifications_log", methods=["PUT"])
+@_maybe_exempt
+def mozello_update_notifications_log_settings():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    data: Dict[str, Any] = request.get_json(silent=True) or {}
+    enabled = bool(data.get("enabled"))
+    try:
+        new_value = mozello_notifications_log_service.set_enabled(enabled)
+    except Exception as exc:
+        return _json_error("mozello_settings_error", 503, message=str(exc))
+    return jsonify({"enabled": bool(new_value)})
+
+
+@bp.route("/notifications_log", methods=["DELETE"])
+@_maybe_exempt
+def mozello_clear_notifications_log():
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    try:
+        deleted = mozello_notifications_log_service.clear_logs()
+    except Exception as exc:
+        return _json_error("mozello_settings_error", 503, message=str(exc))
+    return jsonify({"cleared": deleted})
 
 def register_blueprints(app):
     if not getattr(app, "_mozello_admin_bp", None):
