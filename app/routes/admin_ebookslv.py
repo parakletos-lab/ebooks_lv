@@ -592,17 +592,17 @@ def api_books_export_one(book_id: int):
     else:
         target["mz_relative_url"] = None
         books_sync.clear_mz_relative_url_for_handle(handle)
-    # Attempt cover sync (best-effort; non-destructive: delete ONLY tracked cover uids)
+    # Attempt cover sync (best-effort; preserve tracked cover uids if present)
     cover_uploaded = False
     ok_cov, b64 = books_sync.get_cover_base64(book_id)
     if ok_cov and b64:
         tracked = books_sync.get_mz_cover_picture_uids_for_book(book_id)
-        ok_cover, cover_resp = mozello_service.replace_tracked_cover_pictures(
+        ok_cover, cover_resp = mozello_service.ensure_cover_picture_present(
             handle,
             tracked_picture_uids=tracked,
             cover_b64=b64,
         )
-        cover_uploaded = ok_cover
+        cover_uploaded = ok_cover and isinstance(cover_resp, dict) and cover_resp.get("status") == "uploaded"
         if ok_cover and isinstance(cover_resp, dict):
             new_uid = cover_resp.get("uploaded_uid")
             if isinstance(new_uid, str) and new_uid.strip():
@@ -665,13 +665,23 @@ def api_books_export_all():
                 books_sync.set_mz_relative_url_for_handle(handle, relative_url)
             else:
                 books_sync.clear_mz_relative_url_for_handle(handle)
-            # Cover upload (best-effort per book)
+            # Cover upload (best-effort per book, and track uploaded uid)
             ok_cov, b64 = books_sync.get_cover_base64(r["book_id"])  # type: ignore
             if ok_cov and b64:
                 cover_attempts += 1
-                ok_pic, _ = mozello_service.add_product_picture(handle, b64, filename="cover.jpg")
-                if ok_pic:
-                    cover_success += 1
+                tracked = books_sync.get_mz_cover_picture_uids_for_book(r["book_id"])  # type: ignore
+                ok_cover, cover_resp = mozello_service.ensure_cover_picture_present(
+                    handle,
+                    tracked_picture_uids=tracked,
+                    cover_b64=b64,
+                    filename="cover.jpg",
+                )
+                if ok_cover and isinstance(cover_resp, dict):
+                    new_uid = cover_resp.get("uploaded_uid")
+                    if isinstance(new_uid, str) and new_uid.strip():
+                        books_sync.set_mz_cover_picture_uids(r["book_id"], [new_uid.strip()])  # type: ignore
+                    if cover_resp.get("status") == "uploaded":
+                        cover_success += 1
             success += 1
         else:
                 failures.append({"book_id": r["book_id"], "error": resp.get("error") if isinstance(resp, dict) else "unknown"})

@@ -1460,4 +1460,107 @@ def replace_tracked_cover_pictures(
     return True, out
 
 
-__all__.extend(["list_product_pictures", "delete_product_picture", "replace_tracked_cover_pictures"])
+def ensure_cover_picture_present(
+    handle: str,
+    *,
+    tracked_picture_uids: List[str],
+    cover_b64: str,
+    filename: str = "calibre-cover.jpg",
+) -> Tuple[bool, Dict[str, Any]]:
+    """Ensure the Calibre cover exists in Mozello product pictures.
+
+    Rules:
+    - If `tracked_picture_uids` is present and Mozello already has any of them,
+      we DO NOT delete/recreate/update pictures. We treat cover as present.
+    - If `tracked_picture_uids` is present but none are found in Mozello,
+      we upload the cover once (best-effort) and return its new uid.
+
+    Note on ordering:
+    - Mozello uses the first picture as the main cover. Mozello API does not
+      expose an explicit reorder endpoint; we rely on Mozello ordering behavior
+      (usually newest-first). We verify the uploaded uid position best-effort.
+    """
+
+    clean_handle = (handle or "").strip()
+    if not clean_handle:
+        return False, {"error": "handle_required"}
+    if not cover_b64:
+        return False, {"error": "cover_required"}
+
+    tracked_clean = [u.strip() for u in (tracked_picture_uids or []) if isinstance(u, str) and u.strip()]
+
+    ok_before, before_payload = list_product_pictures(clean_handle)
+    before_pictures: List[Dict[str, Any]] = []
+    if ok_before and isinstance(before_payload, dict):
+        pics = before_payload.get("pictures") or []
+        if isinstance(pics, list):
+            before_pictures = [p for p in pics if isinstance(p, dict)]
+
+    if tracked_clean:
+        # If we cannot list remote pictures, we cannot safely determine whether
+        # the cover is missing. In that case, skip uploading to avoid duplicates.
+        if not ok_before:
+            return True, {"status": "skipped", "reason": "list_failed"}
+
+        existing_uids = {
+            p.get("uid").strip() for p in before_pictures if isinstance(p.get("uid"), str) and p.get("uid").strip()
+        }
+        for uid in tracked_clean:
+            if uid in existing_uids:
+                return True, {"status": "present", "existing_uid": uid}
+
+    # Upload cover (either first time, or tracked cover is missing remotely).
+    before_uids: Set[str] = set()
+    if ok_before:
+        for p in before_pictures:
+            if isinstance(p.get("uid"), str) and p.get("uid").strip():
+                before_uids.add(p.get("uid").strip())
+
+    ok_up, up_resp = add_product_picture(clean_handle, cover_b64, filename=filename)
+    if not ok_up:
+        return False, {"error": "cover_upload_failed", "upload": up_resp}
+
+    uploaded_uid: str | None = None
+    if isinstance(up_resp, dict):
+        pic = up_resp.get("picture")
+        if isinstance(pic, dict) and isinstance(pic.get("uid"), str):
+            uploaded_uid = pic.get("uid")
+        elif isinstance(up_resp.get("uid"), str):
+            uploaded_uid = up_resp.get("uid")
+
+    # Some Mozello responses omit the uid for picture upload; derive it by diffing lists.
+    after_pictures: List[Dict[str, Any]] = []
+    ok_after, after_payload = list_product_pictures(clean_handle)
+    if ok_after and isinstance(after_payload, dict):
+        pics = after_payload.get("pictures") or []
+        if isinstance(pics, list):
+            after_pictures = [p for p in pics if isinstance(p, dict)]
+    if not uploaded_uid and ok_after:
+        after_uids: Set[str] = set()
+        for p in after_pictures:
+            if isinstance(p.get("uid"), str) and p.get("uid").strip():
+                after_uids.add(p.get("uid").strip())
+        candidates = sorted(after_uids - before_uids)
+        if len(candidates) == 1:
+            uploaded_uid = candidates[0]
+
+    is_first: bool | None = None
+    if uploaded_uid and after_pictures:
+        first_uid = after_pictures[0].get("uid")
+        if isinstance(first_uid, str):
+            is_first = first_uid.strip() == uploaded_uid
+
+    out: Dict[str, Any] = {"status": "uploaded", "upload_response": up_resp}
+    if uploaded_uid:
+        out["uploaded_uid"] = uploaded_uid
+    if is_first is not None:
+        out["is_first"] = is_first
+    return True, out
+
+
+__all__.extend([
+    "list_product_pictures",
+    "delete_product_picture",
+    "replace_tracked_cover_pictures",
+    "ensure_cover_picture_present",
+])

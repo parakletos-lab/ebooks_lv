@@ -146,3 +146,79 @@ def test_replace_tracked_cover_pictures_derives_uid_when_upload_response_missing
     )
     assert ok is True
     assert resp["uploaded_uid"] == "uid-new-cover"
+
+
+def test_ensure_cover_picture_present_does_not_upload_when_tracked_exists(monkeypatch):
+    calls = {"uploaded": 0}
+
+    def fake_list(handle):
+        return True, {"error": False, "pictures": [{"uid": "uid-cover"}, {"uid": "uid-other"}]}
+
+    def fake_add(handle, b64_image, filename=None):
+        calls["uploaded"] += 1
+        return True, {"error": False, "picture": {"uid": "uid-new"}}
+
+    monkeypatch.setattr(mozello_service, "list_product_pictures", fake_list)
+    monkeypatch.setattr(mozello_service, "add_product_picture", fake_add)
+
+    ok, resp = mozello_service.ensure_cover_picture_present(
+        "book-1",
+        tracked_picture_uids=["uid-cover"],
+        cover_b64="Zm9v",
+    )
+    assert ok is True
+    assert resp["status"] == "present"
+    assert calls["uploaded"] == 0
+
+
+def test_ensure_cover_picture_present_uploads_when_tracked_missing(monkeypatch):
+    state = {"stage": "before"}
+    calls = {"uploaded": 0}
+
+    def fake_list(handle):
+        if state["stage"] == "before":
+            return True, {"error": False, "pictures": [{"uid": "uid-other"}]}
+        return True, {"error": False, "pictures": [{"uid": "uid-new"}, {"uid": "uid-other"}]}
+
+    def fake_add(handle, b64_image, filename=None):
+        calls["uploaded"] += 1
+        state["stage"] = "after"
+        return True, {"error": False, "picture": {"uid": "uid-new"}}
+
+    monkeypatch.setattr(mozello_service, "list_product_pictures", fake_list)
+    monkeypatch.setattr(mozello_service, "add_product_picture", fake_add)
+
+    ok, resp = mozello_service.ensure_cover_picture_present(
+        "book-1",
+        tracked_picture_uids=["uid-missing"],
+        cover_b64="Zm9v",
+    )
+    assert ok is True
+    assert calls["uploaded"] == 1
+    assert resp["status"] == "uploaded"
+    assert resp["uploaded_uid"] == "uid-new"
+    assert resp["is_first"] is True
+
+
+def test_ensure_cover_picture_present_skips_upload_if_list_failed_and_tracked_present(monkeypatch):
+    calls = {"uploaded": 0}
+
+    def fake_list(handle):
+        return False, {"error": "http_error"}
+
+    def fake_add(handle, b64_image, filename=None):
+        calls["uploaded"] += 1
+        return True, {"error": False, "picture": {"uid": "uid-new"}}
+
+    monkeypatch.setattr(mozello_service, "list_product_pictures", fake_list)
+    monkeypatch.setattr(mozello_service, "add_product_picture", fake_add)
+
+    ok, resp = mozello_service.ensure_cover_picture_present(
+        "book-1",
+        tracked_picture_uids=["uid-cover"],
+        cover_b64="Zm9v",
+    )
+    assert ok is True
+    assert resp["status"] == "skipped"
+    assert resp["reason"] == "list_failed"
+    assert calls["uploaded"] == 0
