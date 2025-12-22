@@ -34,6 +34,7 @@ docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-m
 docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_non_admin_user.py
 docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_order_for_non_admin.py
 docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_price_for_sample_book.py
+docker compose -f compose.yml -f compose.dev.yml -f .github/qa/compose.mozello-mock.yml exec -T calibre-web python /app/.github/qa/scripts/bootstrap_mz_pictures_for_sample_book.py
 
 echo ""
 echo "[qa] Ready"

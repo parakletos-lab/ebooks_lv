@@ -28,6 +28,8 @@ from app.routes.overrides.profile_guard import register_profile_guard
 from app.routes.overrides.discover_guard import register_discover_guard
 from app.routes.overrides.mozello_sync_injection import register_mozello_sync_injection
 from app.routes.overrides.mozello_theme_injection import register_mozello_theme_injection
+from app.routes.overrides.mz_pictures_gallery_injection import register_mz_pictures_gallery_injection
+from app.routes.overrides.mozello_csp_img_src_injection import register_mozello_csp_img_src_injection
 
 def _ensure_nav_injection(app: Any) -> None:
     """Register both loader and response nav injection handlers."""
@@ -57,6 +59,8 @@ def register_all(app: Any) -> None:
     register_language_switch_injection(app)
     register_mozello_sync_injection(app)
     register_mozello_theme_injection(app)
+    register_mozello_csp_img_src_injection(app)
+    register_mz_pictures_gallery_injection(app)
     _ensure_nav_injection(app)
 
 __all__ = ["register_all"]

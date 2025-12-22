@@ -359,3 +359,34 @@ input.form-control:-webkit-autofill:focus {
 .navigation li a:hover {
   border-radius: 0 !important;
 }
+
+/* Book details: Mozello-like extra pictures gallery under the main cover */
+.ub-mz-gallery {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ub-mz-gallery__tile {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0;
+
+  /* Match Calibre-Web cover styling (see calibre-web/cps/static/css/style.css) */
+  border: 1px solid #fff;
+  box-sizing: border-box;
+  -webkit-box-shadow: 0 5px 8px -6px #777;
+  -moz-box-shadow: 0 5px 8px -6px #777;
+  box-shadow: 0 5px 8px -6px #777;
+  background: #fff;
+}
+
+.ub-mz-gallery__img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  border-radius: 0;
+  cursor: pointer;
+}

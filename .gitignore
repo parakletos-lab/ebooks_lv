@@ -23,6 +23,7 @@ ENV/
 
 # Test / build
 .pytest_cache/
+.playwright-mcp/
 
 # Editor / OS
 *.swp
