@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict, Any, Set, Iterable
 import hmac, hashlib, base64, json, time, threading
 from datetime import datetime
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlsplit
 from sqlalchemy import text
 import requests
 from app import config
@@ -512,6 +512,55 @@ def get_store_url(language_code: Optional[str] = None) -> Optional[str]:
         cleaned_env = env_value.strip()
         return cleaned_env.rstrip("/") if cleaned_env else None
     return None
+
+
+def _normalize_url_for_match(value: Optional[str]) -> Optional[str]:
+    if not value or not isinstance(value, str):
+        return None
+    raw = value.strip()
+    if not raw:
+        return None
+    try:
+        parts = urlsplit(raw)
+    except Exception:  # pragma: no cover - defensive
+        return raw.rstrip("/").lower() or None
+
+    scheme = (parts.scheme or "").lower()
+    netloc = (parts.netloc or "").lower()
+    path = (parts.path or "").rstrip("/")
+
+    if scheme and netloc:
+        normalized = f"{scheme}://{netloc}{path}".rstrip("/")
+        return normalized or None
+
+    # If URL parsing fails to produce scheme/netloc (e.g. relative), fall back to a best-effort string compare.
+    return raw.rstrip("/").lower() or None
+
+
+def infer_language_from_origin_url(origin_url: Optional[str]) -> Optional[str]:
+    """Infer storefront language by matching Mozello order origin_url to configured store URLs.
+
+    Returns a language code (lv/ru/en) when origin_url matches (or includes) a configured store URL.
+    """
+    origin_norm = _normalize_url_for_match(origin_url)
+    if not origin_norm:
+        return None
+
+    best_language: Optional[str] = None
+    best_length = -1
+
+    for lang in _STORE_URL_LANGUAGES:
+        store_url = get_store_url(lang)
+        store_norm = _normalize_url_for_match(store_url)
+        if not store_norm:
+            continue
+
+        if origin_norm.startswith(store_norm) or store_norm in origin_norm:
+            if len(store_norm) > best_length:
+                best_language = lang
+                best_length = len(store_norm)
+
+    return best_language
 
 
 def invalidate_cache() -> None:
