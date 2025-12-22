@@ -69,21 +69,50 @@ def _js(value: Any) -> str:
 		return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
-def _build_snippet(extra_urls: List[str]) -> bytes:
+def _build_snippet(book_id: int, extra_urls: List[str]) -> bytes:
 		script = Template(
 				"""
+<script type="application/json" data-ub-mz-gallery-data="1" data-$marker="1">$data</script>
 <script data-$marker="1">
 (function() {
 	'use strict';
 
-	var urls = $urls;
-	if (!Array.isArray(urls) || urls.length === 0) { return; }
+	function getUrls(root) {
+		root = root || document;
+		var dataEl = root.querySelector('[data-ub-mz-gallery-data="1"]');
+		if (!dataEl) { return []; }
+		try {
+			var parsed = JSON.parse((dataEl.textContent || '').trim() || '{}');
+			var urls = parsed && parsed.urls;
+			return Array.isArray(urls) ? urls.filter(Boolean) : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
+	function removeGallery(root) {
+		root = root || document;
+		var existing = root.querySelector('[data-ub-mz-gallery="1"]');
+		if (existing && existing.parentElement) {
+			existing.parentElement.removeChild(existing);
+		}
+	}
 
 	function ensureGallery(root) {
 		root = root || document;
+		var urls = getUrls(root);
+		if (!urls.length) {
+			removeGallery(root);
+			return;
+		}
+
 		var cover = root.querySelector('#detailcover');
-		if (!cover) { return; }
-		if (root.querySelector('[data-ub-mz-gallery="1"]')) { return; }
+		if (!cover) {
+			return;
+		}
+		if (root.querySelector('[data-ub-mz-gallery="1"]')) {
+			return;
+		}
 
 		var coverContainer = cover.closest('.cover') || cover.parentElement;
 		if (!coverContainer || !coverContainer.parentElement) { return; }
@@ -169,7 +198,7 @@ def _build_snippet(extra_urls: List[str]) -> bytes:
 	// When rendered into the modal via AJAX, ensure we bind after it is shown.
 	if (window.jQuery && typeof window.jQuery === 'function' && window.jQuery.fn && window.jQuery.fn.modal) {
 		window.jQuery('#bookDetailsModal').on('shown.bs.modal', function() {
-			ensureGallery(document);
+			ensureGallery(this);
 		});
 	}
 })();
@@ -177,15 +206,17 @@ def _build_snippet(extra_urls: List[str]) -> bytes:
 """
 		)
 
-		rendered = script.substitute(marker=MARKER, urls=_js(extra_urls))
+		data = _js({"book_id": book_id, "urls": extra_urls})
+		rendered = script.substitute(marker=MARKER, data=data)
 		return rendered.encode("utf-8")
 
 
-def _inject(response: Response, extra_urls: List[str]) -> Response:
+
+def _inject(response: Response, book_id: int, extra_urls: List[str]) -> Response:
 		body = response.get_data(as_text=False)
 		if not body:
 				return response
-		snippet = _build_snippet(extra_urls)
+		snippet = _build_snippet(book_id, extra_urls)
 		lower_body = body.lower()
 		closing = lower_body.rfind(b"</body>")
 		if closing == -1:
@@ -288,7 +319,7 @@ def register_mz_pictures_gallery_injection(app: Any) -> None:  # pragma: no cove
 				external_sources = _extract_external_img_sources(extra_urls)
 				_extend_csp_img_src(resp, external_sources)
 
-				return _inject(resp, extra_urls)
+				return _inject(resp, book_id, extra_urls)
 
 		# Ensure this hook runs LAST (Flask runs after_request in reverse order).
 		# Calibre-Web sets CSP in an after_request hook; if ours runs before it,
