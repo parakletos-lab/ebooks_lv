@@ -83,6 +83,7 @@ Object keyed by language codes (e.g. `{ "en": "Memory", "lv": "Atmiņa" }`) or a
    - Then (optional) add pictures: POST picture endpoints with base64 image data.
 2. Update product price/visibility:
    - PUT `/store/product/<handle>/` body `{ "product": { "price": 12.34 } }` (only changed fields + required variant handles if touching variants).
+   - Note: Per Mozello docs, update payload excludes `pictures` and `variant_pictures`, so picture ordering cannot be set via `PUT /store/product/<handle>/`.
 3. Batch upsert (mixed create/update):
    - POST `/store/products/batch_update/` body `{ "products": [ { handle|sku, ... } ] }`.
      * If `handle` exists → update; missing handle but `sku` unique → update by SKU; new handle → create.
@@ -124,6 +125,7 @@ Request body:
 Notes:
 - `data` is base64-encoded binary image content (JPEG/PNG as supported by Mozello).
 - Multiple POSTs can be issued to attach multiple pictures; Mozello assigns each a `uid`.
+- Ordering: Mozello API does not document a way to reorder existing product pictures. The only supported operations are add (POST) and delete (DELETE), so ordering can only be influenced indirectly via add/delete sequence.
 
 Delete product picture:
 DELETE `/store/product/<product-handle>/picture/<picture-handle>/`

@@ -1,8 +1,7 @@
 """DEPRECATED: patch_calibre_init no longer used (minimal wrapper handles init)."""
+from __future__ import annotations
 
 __all__: list[str] = []
-
-from __future__ import annotations
 
 import sys
 import os
