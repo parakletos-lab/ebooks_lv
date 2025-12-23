@@ -310,6 +310,17 @@ def _apply_locale_from_auth_token(token_ctx: Optional[TokenDisplay], raw_token: 
     This is a best-effort UX improvement: it does not authenticate the token;
     it only uses the embedded email to pick a language for the login UI.
     """
+    # If the visitor explicitly switched language (e.g. via the nav selector),
+    # do not override their choice just because an auth token is present.
+    try:
+        from app.routes.language_switch import EXPLICIT_LOCALE_KEY
+
+        if session.get(EXPLICIT_LOCALE_KEY):
+            return
+    except Exception:
+        # Defensive: never fail the login flow due to a locale hint.
+        pass
+
     candidate_email = token_ctx.email if token_ctx and token_ctx.email else None
     if not candidate_email:
         candidate_email = _extract_token_email(raw_token)

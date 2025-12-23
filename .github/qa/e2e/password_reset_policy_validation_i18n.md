@@ -40,6 +40,7 @@ docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web \
 ## Checks (LV)
 
 1. Click `LAT` language switch.
+   - Expect `LAT` to be the active selection (highlighted).
 2. Confirm the page title/header are Latvian.
 3. Type `abc` into “Jauna parole” and blur (click into confirmation field).
 4. Expect a single joined message (red), starting with:
@@ -50,6 +51,7 @@ docker compose -f compose.yml -f compose.dev.yml exec -T calibre-web \
 ## Checks (RU)
 
 1. Click `RUS` language switch.
+   - Expect `RUS` to be the active selection (highlighted).
 2. Type `abc` into the new password field and blur.
 3. Expect a single joined message (red), starting with:
    - `Пароль должен:`

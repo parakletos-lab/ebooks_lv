@@ -30,6 +30,9 @@ LOG = get_logger("language_switch")
 bp = Blueprint("language_switch", __name__)
 
 
+EXPLICIT_LOCALE_KEY = "ub_preferred_locale_explicit"
+
+
 def _maybe_exempt(func):  # type: ignore
     if csrf:  # type: ignore
         try:
@@ -49,6 +52,7 @@ def switch_language():  # pragma: no cover - integration tested via Flask client
         return jsonify({"error": "unsupported_language", "supported": SUPPORTED_LANGUAGES}), 400
 
     session[SESSION_LOCALE_KEY] = normalized
+    session[EXPLICIT_LOCALE_KEY] = True
     session.modified = True
 
     user_id = get_current_user_id()
@@ -73,4 +77,4 @@ def register_language_switch(app):  # pragma: no cover - glue code
     LOG.debug("Language switch blueprint registered")
 
 
-__all__ = ["register_language_switch", "bp"]
+__all__ = ["register_language_switch", "bp", "EXPLICIT_LOCALE_KEY"]
