@@ -454,6 +454,18 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
     existing_user = lookup_user_by_email(email_norm)
     moz_customer_name = (order_payload.get("name") or "").strip() or None
 
+    origin_language_hint = mozello_service.infer_language_from_origin_url(order_payload.get("origin_url"))
+    first_book_language_hint: Optional[str] = None
+    if not origin_language_hint:
+        for handle in handles:
+            handle_key = handle.lower()
+            book_info = book_map.get(handle_key)
+            lang = book_info.get("language_code") if isinstance(book_info, dict) else None
+            if isinstance(lang, str) and lang.strip():
+                first_book_language_hint = lang.strip()
+                break
+    order_language_hint = origin_language_hint or first_book_language_hint
+
     summary: Dict[str, Any] = {
         "email": email_norm,
         "mozello_order_id": order_payload.get("order_id"),
@@ -482,7 +494,7 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
         book_info = book_map.get(handle_key)
         calibre_user_id = existing_user.get("id") if existing_user else None
         calibre_book_id = book_info.get("book_id") if book_info else None
-        language_hint = book_info.get("language_code") if book_info else None
+        language_hint = order_language_hint or (book_info.get("language_code") if book_info else None)
         book_id_int: Optional[int] = None
         if calibre_book_id is not None:
             try:
@@ -630,15 +642,17 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
 
     if existing_user and books_for_email:
         try:
+            user_locale = existing_user.get("locale") if isinstance(existing_user, dict) else None
+            email_language_hint = user_locale or order_language_hint
             email_result = email_delivery.send_book_purchase_email(
                 recipient_email=email_norm,
                 user_name=existing_user.get("name") or existing_user.get("email") or email_norm,
                 books=books_for_email,
                 shop_url=mozello_service.get_store_url(
-                    existing_user.get("locale") if isinstance(existing_user, dict) else None
+                    email_language_hint
                 ),
                 auth_token=auth_token,
-                preferred_language=existing_user.get("locale") if isinstance(existing_user, dict) else None,
+                preferred_language=email_language_hint,
             )
             summary["email_queued"] = True
             summary["email_language"] = email_result.get("language")

@@ -96,6 +96,12 @@ def _stub_user(email: str) -> SimpleNamespace:
     )
 
 
+def _stub_user_with_locale(email: str, locale: str) -> SimpleNamespace:
+    user = _stub_user(email)
+    setattr(user, "locale", locale)
+    return user
+
+
 def test_standard_login_success_sets_session(monkeypatch, client):
     monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
 
@@ -275,6 +281,25 @@ def test_auth_token_redirects_when_session_matches(monkeypatch, client):
 
     assert resp.status_code == 302
     assert resp.headers["Location"].endswith("/book/10")
+
+
+def test_auth_token_sets_session_locale_for_login_page(monkeypatch, client):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": None, "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    monkeypatch.setattr(
+        login_override,
+        "_fetch_user_by_email",
+        lambda _email: _stub_user_with_locale(_email, "ru"),
+    )
+
+    resp = client.get("/login?auth=token-abc", follow_redirects=False)
+
+    assert resp.status_code == 200
+    with client.session_transaction() as sess:
+        assert sess[login_override.SESSION_LOCALE_KEY] == "ru"
 
 
 def test_auth_token_redirects_when_session_matches_even_if_pending_missing(monkeypatch, client):

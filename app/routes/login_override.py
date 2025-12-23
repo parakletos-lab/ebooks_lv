@@ -299,6 +299,26 @@ def _remember_me_enabled(raw_value: Optional[str]) -> bool:
     return lowered in {"1", "true", "yes", "on"}
 
 
+def _apply_locale_from_auth_token(token_ctx: Optional[TokenDisplay], raw_token: Optional[str]) -> None:
+    """Set session locale from the user referenced by the auth token.
+
+    This is a best-effort UX improvement: it does not authenticate the token;
+    it only uses the embedded email to pick a language for the login UI.
+    """
+    candidate_email = token_ctx.email if token_ctx and token_ctx.email else None
+    if not candidate_email:
+        candidate_email = _extract_token_email(raw_token)
+    token_email = normalize_email(candidate_email)
+    if not token_email:
+        return
+    user = _fetch_user_by_email(token_email)
+    if not user:
+        return
+    locale = normalize_language_choice(getattr(user, "locale", None))
+    if locale:
+        session[SESSION_LOCALE_KEY] = locale
+
+
 def _send_reset_email(normalized_email: str, next_url: str) -> Optional[str]:
     user = calibre_users_service.lookup_user_by_email(normalized_email)
     if not user:
@@ -400,6 +420,10 @@ def login_page():  # pragma: no cover - integration tested via Flask client
     next_url = _sanitize_next(next_raw)
     auth_token = request.values.get("auth")
     token_ctx, token_error = _build_token_context(auth_token)
+
+    # Prefer the token user's locale when rendering the login page.
+    _apply_locale_from_auth_token(token_ctx, auth_token)
+
     if token_ctx and token_ctx.email:
         email_value = token_ctx.email
     else:

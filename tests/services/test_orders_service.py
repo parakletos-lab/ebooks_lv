@@ -123,3 +123,83 @@ def test_process_webhook_order_triggers_token_and_email(monkeypatch, request_con
 
     token_record = reset_passwords_repo.get_token(email=email_address, token_type="initial")
     assert token_record is not None
+
+
+def test_process_webhook_order_prefers_origin_url_language(monkeypatch, request_context):
+    email_address = "customer@example.com"
+
+    def fake_lookup_books(handles_iterable):
+        mapping: Dict[str, Dict[str, object]] = {}
+        for idx, handle in enumerate(handles_iterable, start=1):
+            key = handle.strip().lower()
+            mapping[key] = {
+                "book_id": 200 + idx,
+                "title": handle.title(),
+                "language_code": "lv",  # would be used only as fallback
+            }
+        return mapping
+
+    monkeypatch.setattr(orders_service.books_sync, "lookup_books_by_handles", fake_lookup_books)
+
+    def fake_get_store_url(lang=None):
+        if lang == "ru":
+            return "https://www.e-books.lv/magazin"
+        if lang == "lv":
+            return "https://www.e-books.lv/veikals"
+        if lang == "en":
+            return "https://www.e-books.lv/shop"
+        return "https://www.e-books.lv/shop"
+
+    monkeypatch.setattr(orders_service.mozello_service, "get_store_url", fake_get_store_url)
+
+    existing_user: Optional[Dict[str, object]] = None
+
+    def fake_lookup_user(_email: str):
+        return existing_user
+
+    def fake_create_user(order_id: int, **kwargs):
+        nonlocal existing_user
+        # The key assertion for this test: language comes from origin_url (ru), not book language.
+        assert kwargs.get("preferred_language") == "ru"
+        existing_user = {
+            "id": 88,
+            "email": email_address,
+            "name": "reader@example.com",
+            "locale": "ru",
+        }
+        users_books_repo.update_links(order_id, calibre_user_id=existing_user["id"])
+        return {"status": "created", "user": existing_user, "password": "Temp123!Pass"}
+
+    monkeypatch.setattr(orders_service, "lookup_user_by_email", fake_lookup_user)
+    monkeypatch.setattr(orders_service, "create_user_for_order", fake_create_user)
+    monkeypatch.setattr(orders_service.shelves_service, "ensure_wishlist_shelf_for_user", lambda *_a, **_k: {"status": "created"})
+
+    email_calls: List[Dict[str, object]] = []
+
+    def fake_send_purchase_email(**kwargs):
+        email_calls.append(kwargs)
+        return {"language": "ru", "book_count": len(kwargs.get("books", [])), "queued": True}
+
+    monkeypatch.setattr(orders_service.email_delivery, "send_book_purchase_email", fake_send_purchase_email)
+
+    payload = {
+        "payment_status": "paid",
+        "email": email_address,
+        "order_id": "moz-ru-001",
+        "name": "Customer Example",
+        "origin_url": "https://www.e-books.lv/magazin/",  # trailing slash should still match
+        "cart": [
+            {"product_handle": "alpha"},
+            {"product_handle": "beta"},
+        ],
+    }
+
+    result = orders_service.process_webhook_order(payload)
+    summary = result["summary"]
+    assert summary["user_created"] == 1
+    assert summary["email_queued"] is True
+
+    assert len(email_calls) == 1
+    call = email_calls[0]
+    assert call["preferred_language"] == "ru"
+    assert call["shop_url"].rstrip("/") == "https://www.e-books.lv/magazin"
