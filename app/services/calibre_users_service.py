@@ -48,6 +48,10 @@ class UserNotFoundError(RuntimeError):
     """Raised when Calibre cannot locate the requested user."""
 
 
+class DisplayNameUpdateError(RuntimeError):
+    """Raised when updating the user's display name fails."""
+
+
 def _ensure_runtime() -> None:
     if ub is None or getattr(ub, "session", None) is None:
         raise CalibreUnavailableError("Calibre-Web session not available")
@@ -262,6 +266,34 @@ def update_user_password(user_id: int, plaintext_password: str) -> Dict[str, Opt
         LOG.error("Failed updating Calibre password user_id=%s: %s", user_id, exc)
         raise PasswordResetError("update_password_failed") from exc
     return {"id": user.id, "email": user.email, "name": user.name}
+
+
+def update_user_display_name(user_id: int, display_name: str) -> Dict[str, Optional[str]]:
+    """Persist a new display name for an existing Calibre user."""
+    _ensure_runtime()
+    cleaned = (display_name or "").strip()
+    if not cleaned:
+        raise ValueError("display_name_required")
+    sess = _session()
+    if not sess:
+        raise CalibreUnavailableError("Calibre session unavailable")
+    user = sess.query(ub.User).filter(ub.User.id == user_id).one_or_none()
+    if not user:
+        raise UserNotFoundError("user_not_found")
+    user.name = cleaned
+    try:
+        sess.commit()
+    except Exception as exc:  # pragma: no cover
+        sess.rollback()
+        LOG.error("Failed updating display name user_id=%s: %s", user_id, exc)
+        raise DisplayNameUpdateError("update_name_failed") from exc
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "locale": getattr(user, "locale", None),
+        "default_language": getattr(user, "default_language", None),
+    }
 
 
 def trigger_password_reset_email(user_id: int) -> str:

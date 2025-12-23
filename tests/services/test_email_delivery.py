@@ -5,8 +5,10 @@ from typing import List
 
 import pytest  # type: ignore[import-not-found]
 from flask import Flask
+from flask_babel import Babel  # type: ignore
 
 from app.db.engine import init_engine_once, reset_for_tests
+from app.i18n import configure_translations
 from app.services import email_delivery, email_templates_service
 
 
@@ -23,6 +25,8 @@ def in_memory_db(monkeypatch):
 def request_context():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "email-secret"
+    Babel(app)
+    configure_translations(app)
     with app.test_request_context("/", base_url="https://ebooks.test/"):
         yield
 

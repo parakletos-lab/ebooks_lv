@@ -537,28 +537,79 @@ def _normalize_url_for_match(value: Optional[str]) -> Optional[str]:
     return raw.rstrip("/").lower() or None
 
 
+def _canonical_url_for_match(value: Optional[str]) -> Optional[str]:
+    """Return a canonical URL key suitable for matching.
+
+    Canonical form ignores scheme and strips a leading 'www.' from hostname.
+    Example: https://www.e-books.lv/magazin/ -> e-books.lv/magazin
+    """
+    normalized = _normalize_url_for_match(value)
+    if not normalized:
+        return None
+    try:
+        parts = urlsplit(normalized)
+    except Exception:  # pragma: no cover
+        stripped = normalized
+        if stripped.startswith("www."):
+            stripped = stripped[4:]
+        return stripped
+
+    host = (parts.netloc or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = (parts.path or "").strip("/")
+    if path:
+        return f"{host}/{path}".strip("/") or None
+    return host.strip("/") or None
+
+
+def get_store_url_strict(language_code: Optional[str] = None) -> Optional[str]:
+    """Return configured Mozello store base URL strictly for a language.
+
+    Unlike get_store_url(), this does not fall back to env/legacy defaults.
+    Used for language inference where ambiguous fallbacks are undesirable.
+    """
+    _seed_store_url_from_env()
+    cfg = _get_singleton(create=False)
+    if not cfg:
+        return None
+    attr = _store_url_attr_for_language(language_code)
+    if not attr:
+        return None
+    return _clean_store_url(getattr(cfg, attr, None))
+
+
 def infer_language_from_origin_url(origin_url: Optional[str]) -> Optional[str]:
     """Infer storefront language by matching Mozello order origin_url to configured store URLs.
 
     Returns a language code (lv/ru/en) when origin_url matches (or includes) a configured store URL.
     """
     origin_norm = _normalize_url_for_match(origin_url)
-    if not origin_norm:
+    origin_key = _canonical_url_for_match(origin_url)
+    if not origin_norm and not origin_key:
         return None
 
     best_language: Optional[str] = None
     best_length = -1
 
     for lang in _STORE_URL_LANGUAGES:
-        store_url = get_store_url(lang)
+        store_url = get_store_url_strict(lang)
         store_norm = _normalize_url_for_match(store_url)
-        if not store_norm:
+        store_key = _canonical_url_for_match(store_url)
+        if not store_norm and not store_key:
             continue
 
-        if origin_norm.startswith(store_norm) or store_norm in origin_norm:
-            if len(store_norm) > best_length:
+        matched = False
+        if origin_norm and store_norm and (origin_norm.startswith(store_norm) or store_norm in origin_norm):
+            matched = True
+        if origin_key and store_key and (origin_key.startswith(store_key) or store_key in origin_key):
+            matched = True
+
+        if matched:
+            candidate_len = len(store_key or store_norm or "")
+            if candidate_len > best_length:
                 best_language = lang
-                best_length = len(store_norm)
+                best_length = candidate_len
 
     return best_language
 

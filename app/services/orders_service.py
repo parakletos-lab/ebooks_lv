@@ -14,6 +14,7 @@ from app.services import shelves_service
 from app.services.calibre_users_service import (
     CalibreUnavailableError,
     UserAlreadyExistsError,
+    update_user_display_name,
     create_user_for_email,
     lookup_user_by_email,
     lookup_users_by_emails,
@@ -452,7 +453,25 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
 
     book_map = books_sync.lookup_books_by_handles(seen_handles) if seen_handles else {}
     existing_user = lookup_user_by_email(email_norm)
-    moz_customer_name = (order_payload.get("name") or "").strip() or None
+    moz_name_raw = order_payload.get("name")
+    moz_customer_name = moz_name_raw.strip() if isinstance(moz_name_raw, str) and moz_name_raw.strip() else None
+
+    # Best-effort: if user already exists but has email as display name, apply the Mozello provided name.
+    if (
+        existing_user
+        and moz_customer_name
+        and isinstance(existing_user, dict)
+        and existing_user.get("id") is not None
+        and normalize_email(existing_user.get("name")) == normalize_email(existing_user.get("email"))
+        and normalize_email(moz_customer_name) != normalize_email(existing_user.get("email"))
+    ):
+        try:
+            update_user_display_name(int(existing_user["id"]), moz_customer_name)
+            refreshed = lookup_user_by_email(email_norm)
+            if refreshed:
+                existing_user = refreshed
+        except Exception:
+            LOG.debug("Failed updating user display name from Mozello order", exc_info=True)
 
     origin_language_hint = mozello_service.infer_language_from_origin_url(order_payload.get("origin_url"))
     first_book_language_hint: Optional[str] = None
@@ -643,7 +662,8 @@ def process_webhook_order(order_payload: Dict[str, Any]) -> Dict[str, Any]:
     if existing_user and books_for_email:
         try:
             user_locale = existing_user.get("locale") if isinstance(existing_user, dict) else None
-            email_language_hint = user_locale or order_language_hint
+            # Purchase email language should follow the detected order language first.
+            email_language_hint = order_language_hint or user_locale
             email_result = email_delivery.send_book_purchase_email(
                 recipient_email=email_norm,
                 user_name=existing_user.get("name") or existing_user.get("email") or email_norm,

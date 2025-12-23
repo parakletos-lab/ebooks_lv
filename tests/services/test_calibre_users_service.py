@@ -114,14 +114,14 @@ def test_apply_language_preference_accepts_latvian_variants():
 
     assert normalized == "lv"
     assert user.locale == "lv"
-    assert user.default_language == "lav"
+    assert user.default_language == "all"
 
     user_two = SimpleNamespace(locale=None, default_language=None)
     normalized_two = calibre_users_service._apply_language_preference(user_two, "LV-lv")
 
     assert normalized_two == "lv"
     assert user_two.locale == "lv"
-    assert user_two.default_language == "lav"
+    assert user_two.default_language == "all"
 
 
 def test_normalize_language_preference_handles_unknown():

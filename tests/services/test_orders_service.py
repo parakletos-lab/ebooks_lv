@@ -141,6 +141,8 @@ def test_process_webhook_order_prefers_origin_url_language(monkeypatch, request_
 
     monkeypatch.setattr(orders_service.books_sync, "lookup_books_by_handles", fake_lookup_books)
 
+    monkeypatch.setattr(orders_service.mozello_service, "infer_language_from_origin_url", lambda *_a, **_k: "ru")
+
     def fake_get_store_url(lang=None):
         if lang == "ru":
             return "https://www.e-books.lv/magazin"
@@ -203,3 +205,46 @@ def test_process_webhook_order_prefers_origin_url_language(monkeypatch, request_
     call = email_calls[0]
     assert call["preferred_language"] == "ru"
     assert call["shop_url"].rstrip("/") == "https://www.e-books.lv/magazin"
+
+
+def test_process_webhook_order_email_language_prefers_order_hint(monkeypatch, request_context):
+    email_address = "customer@example.com"
+
+    def fake_lookup_books(handles_iterable):
+        return {
+            "alpha": {"book_id": 301, "title": "Alpha", "language_code": "lv"},
+        }
+
+    monkeypatch.setattr(orders_service.books_sync, "lookup_books_by_handles", fake_lookup_books)
+    monkeypatch.setattr(orders_service.mozello_service, "infer_language_from_origin_url", lambda *_a, **_k: "ru")
+    monkeypatch.setattr(orders_service.mozello_service, "get_store_url", lambda *_a, **_k: "https://shop.example.com")
+
+    # User exists with locale=en, but order hint says ru → email should be ru.
+    monkeypatch.setattr(
+        orders_service,
+        "lookup_user_by_email",
+        lambda _email: {"id": 55, "email": email_address, "name": email_address, "locale": "en"},
+    )
+    monkeypatch.setattr(orders_service, "update_user_display_name", lambda *_a, **_k: {"ok": True})
+
+    email_calls: List[Dict[str, object]] = []
+
+    def fake_send_purchase_email(**kwargs):
+        email_calls.append(kwargs)
+        return {"language": kwargs.get("preferred_language"), "queued": True}
+
+    monkeypatch.setattr(orders_service.email_delivery, "send_book_purchase_email", fake_send_purchase_email)
+
+    payload = {
+        "payment_status": "paid",
+        "email": email_address,
+        "order_id": "moz-ru-002",
+        "name": "Druid",
+        "origin_url": "https://www.e-books.lv/magazin/",
+        "cart": [{"product_handle": "alpha"}],
+    }
+
+    result = orders_service.process_webhook_order(payload)
+    assert result["summary"]["email_queued"] is True
+    assert len(email_calls) == 1
+    assert email_calls[0]["preferred_language"] == "ru"
