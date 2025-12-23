@@ -61,6 +61,30 @@ If they still cannot reset:
 - Confirm their email is correct in the order record.
 - If needed, use **Create User** on their order row to ensure the account exists.
 
+#### Password rules (important for browser-generated passwords)
+
+If a customer uses a browser “suggested password” and it gets rejected, the rejection comes from Calibre-Web’s **User Password policy** settings.
+
+Where to configure:
+- `/admin/config` → **Edit Basic Configuration** → **User Password policy** section.
+
+Settings that control validation:
+- **User Password policy** (on/off). If OFF, Calibre-Web accepts any password (no policy checks).
+- **Minimum password length** (`config_password_min_length`).
+- **Enforce number** (`config_password_number`).
+- **Enforce lowercase characters** (`config_password_lower`).
+- **Enforce uppercase characters** (`config_password_upper`).
+- **Enforce special characters** (`config_password_special`).
+
+Recommended settings to accept typical browser-generated passwords:
+- Keep **User Password policy = ON**
+- Set **Minimum password length** to `12` (or `10` if you prefer)
+- Enable **Enforce number / lowercase / uppercase**
+- Disable **Enforce special characters** (many browsers don’t always include symbols in their suggested password)
+
+If you want “accept anything the browser suggests” with the least surprises:
+- Set **User Password policy = OFF**
+
 ### 2.4 Revoke access (remove a purchased book from a user)
 
 1. Open `/admin/ebookslv/orders/`.

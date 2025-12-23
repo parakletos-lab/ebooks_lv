@@ -1,4 +1,3 @@
-
 msgid ""
 msgstr ""
 "Project-Id-Version:  ebooks_lv-app\n"
@@ -8,8 +7,8 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: lv\n"
 "Language-Team: lv <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11 ? 0 : n % "
-"10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 "
+">= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -219,6 +218,50 @@ msgstr "Mozello sinhronizācija neizdevās."
 msgid "Passwords do not match."
 msgstr "Paroles nesakrīt."
 
+msgid "Password doesn't comply with password validation rules"
+msgstr "Parole neatbilst paroles validācijas noteikumiem"
+
+msgid "Password must:"
+msgstr "Parolei jābūt:"
+
+#, python-format
+msgid "be at least {min} characters"
+msgstr "vismaz {min} rakstzīmes garai"
+
+msgid "include a number"
+msgstr "jāietver cipars"
+
+msgid "include a lowercase letter"
+msgstr "jāietver mazais burts"
+
+msgid "include an uppercase letter"
+msgstr "jāietver lielais burts"
+
+msgid "include a letter"
+msgstr "jāietver burts"
+
+msgid "include a special character"
+msgstr "jāietver speciālā rakstzīme"
+
+#, python-format
+msgid "Password must be at least {min} characters."
+msgstr "Parolei jābūt vismaz {min} rakstzīmes garai."
+
+msgid "Password must include a number."
+msgstr "Parolei jāietver cipars."
+
+msgid "Password must include a lowercase letter."
+msgstr "Parolei jāietver mazais burts."
+
+msgid "Password must include an uppercase letter."
+msgstr "Parolei jāietver lielais burts."
+
+msgid "Password must include a letter."
+msgstr "Parolei jāietver burts."
+
+msgid "Password must include a special character."
+msgstr "Parolei jāietver speciālā rakstzīme."
+
 #: app/routes/login_override.py:345
 msgid "Reset link is no longer valid."
 msgstr "Atiestatīšanas saite vairs nav derīga."
@@ -274,8 +317,8 @@ msgstr "Mozello"
 
 #: app/routes/overrides/stats_notice.py:75 app/templates/stats.html:27
 msgid ""
-"This application includes Calibre-web as an unmodified submodule, "
-"licensed under GPLv3."
+"This application includes Calibre-web as an unmodified submodule, licensed "
+"under GPLv3."
 msgstr "Šī lietotne ietver Calibre-web nemainītā apakšmodulī ar GPLv3 licenci."
 
 #: app/services/email_delivery.py:207
@@ -319,8 +362,8 @@ msgstr "Pielietot noklusējuma iestatījumus"
 #: app/templates/ebookslv_admin.html:20
 msgid "Review Mozello orders, link Calibre books and provision user accounts."
 msgstr ""
-"Pārskatiet Mozello pasūtījumus, sasaitējiet Calibre grāmatas un "
-"izveidojiet lietotāju kontus."
+"Pārskatiet Mozello pasūtījumus, sasaitējiet Calibre grāmatas un izveidojiet "
+"lietotāju kontus."
 
 #: app/templates/ebookslv_admin.html:21 app/templates/ebookslv_admin.html:26
 #: app/templates/ebookslv_admin.html:31 app/templates/ebookslv_admin.html:36
@@ -336,8 +379,12 @@ msgid "Books"
 msgstr "Grāmatas"
 
 #: app/templates/ebookslv_admin.html:30
-msgid "Sync Calibre books with Mozello store (export products, sync prices, delete products)."
-msgstr "Sinhronizējiet Calibre grāmatas ar Mozello veikalu (eksportējiet produktus, sinhronizējiet cenas, dzēsiet produktus)."
+msgid ""
+"Sync Calibre books with Mozello store (export products, sync prices, delete "
+"products)."
+msgstr ""
+"Sinhronizējiet Calibre grāmatas ar Mozello veikalu (eksportējiet produktus, "
+"sinhronizējiet cenas, dzēsiet produktus)."
 
 #: app/templates/ebookslv_admin.html:34
 #: app/templates/email_templates_admin.html:2
@@ -693,8 +740,7 @@ msgstr "Mozello paziņojumu iestatījumi"
 
 #: app/templates/mozello_admin.html:32
 msgid ""
-"Manage subscribed webhook events. API key and store URL are configured "
-"above."
+"Manage subscribed webhook events. API key and store URL are configured above."
 msgstr ""
 "Pārvaldiet abonētos webhook notikumus. API atslēga un veikala URL ir "
 "iestatīti augstāk."
@@ -928,7 +974,8 @@ msgstr "Nederīgs datums: lūdzu, izvēlieties derīgu kalendāra dienu."
 
 #: app/templates/orders_admin.html:84
 msgid "Invalid date range: start must be on or before end."
-msgstr "Nederīgs perioda diapazons: sākumam jābūt pirms vai vienādam ar beigām."
+msgstr ""
+"Nederīgs perioda diapazons: sākumam jābūt pirms vai vienādam ar beigām."
 
 #: app/templates/orders_admin.html:85
 #, python-format
@@ -1043,15 +1090,15 @@ msgstr "(Administrators)"
 #: app/templates/users_books_admin.html:21
 msgid ""
 "Create and view allow-list mappings between Calibre users and books. 1) "
-"Select one or more users (left) and books (middle) 2) Click \"Add "
-"Selected Mappings\". The bottom table lists all existing mappings (email "
-"→ book title) with delete actions."
+"Select one or more users (left) and books (middle) 2) Click \"Add Selected "
+"Mappings\". The bottom table lists all existing mappings (email → book "
+"title) with delete actions."
 msgstr ""
 "Izveidojiet un pārskatiet atļauto sarakstu sasaistes starp Calibre "
-"lietotājiem un grāmatām. 1) Atlasiet vismaz vienu lietotāju (pa kreisi) "
-"un grāmatas (vidū) 2) Nospiediet \"Pievienot izvēlētās sasaistes\". "
-"Apakšējā tabula rāda visas esošās sasaistes (e-pasts → grāmatas "
-"nosaukums) ar dzēšanas darbībām."
+"lietotājiem un grāmatām. 1) Atlasiet vismaz vienu lietotāju (pa kreisi) un "
+"grāmatas (vidū) 2) Nospiediet \"Pievienot izvēlētās sasaistes\". Apakšējā "
+"tabula rāda visas esošās sasaistes (e-pasts → grāmatas nosaukums) ar "
+"dzēšanas darbībām."
 
 #: app/templates/users_books_admin.html:28
 msgid "Users (Non-Admin)"
@@ -1065,11 +1112,6 @@ msgstr "Filtrēt pēc e-pasta vai vārda"
 #: app/templates/users_books_admin.html:89
 msgid "Select All"
 msgstr "Atzīmēt visus"
-
-#: app/templates/users_books_admin.html:56
-#: app/templates/users_books_admin.html:96
-msgid "Clear"
-msgstr "Notīrīt"
 
 #: app/templates/users_books_admin.html:60
 #, python-format
@@ -1194,4 +1236,3 @@ msgstr "Pievienošanas darbības pabeigtas."
 #: app/services/shelves_service.py:57
 msgid "Wishlist"
 msgstr "Vēlmju saraksts"
-

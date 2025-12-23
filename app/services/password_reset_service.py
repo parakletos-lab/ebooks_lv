@@ -32,6 +32,10 @@ class PendingResetNotFoundError(PasswordResetError):
     """Raised when no reset/initial token exists for the email."""
 
 
+class PasswordPolicyError(PasswordResetError):
+    """Raised when the new password violates password policy."""
+
+
 @dataclass(frozen=True)
 class PendingReset:
     email: str
@@ -168,7 +172,12 @@ def complete_password_change(*, email: str, new_password: str) -> Dict[str, Opti
     if not user or not user.get("id"):
         raise PendingResetNotFoundError("user_not_found")
 
-    updated = calibre_users_service.update_user_password(int(user["id"]), new_password)
+    try:
+        updated = calibre_users_service.update_user_password(int(user["id"]), new_password)
+    except getattr(calibre_users_service, "PasswordValidationError", RuntimeError) as exc:
+        # Surface Calibre-Web's localized message (e.g. "Password doesn't comply...")
+        # so the login page can render it instead of a 500.
+        raise PasswordPolicyError(str(exc) or "password_policy_failed") from exc
     _delete_token(normalized, _INITIAL)
     _delete_token(normalized, _RESET)
     return updated
@@ -197,4 +206,5 @@ __all__ = [
     "PendingReset",
     "PasswordResetError",
     "PendingResetNotFoundError",
+    "PasswordPolicyError",
 ]

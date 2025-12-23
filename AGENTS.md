@@ -40,5 +40,6 @@
 23. When adding UI strings, update `translations/ebookslv/messages.pot` and all locale PO files.
 24. For local UI checks use Playwright MCP against http://localhost:8083 (admin@example.org / AdminTest123!).
 25. After adding/modifying UI add e2e test to ".github/qa" folder; quick-run local QA via `bash .github/qa/scripts/run_all.sh`. All UI e2e tests should be done in browser. Use Playwright MCP for in browser e2e testing.
+26. Use "os._exit(0)" at the end of testing python scripts to exit after or they will hang indefinitely.
 ---
 Add more rules if needed

@@ -67,11 +67,26 @@
         {% if token_context %}
         <div class="form-group">
           <label for="new-password">{{ _('New password') }}</label>
-          <input id="new-password" name="new_password" type="password" class="form-control" autocomplete="new-password">
+          <input
+            id="new-password"
+            name="new_password"
+            type="password"
+            class="form-control"
+            autocomplete="new-password"
+            data-policy-enabled="{{ '1' if config.config_password_policy else '0' }}"
+            data-min-length="{{ config.config_password_min_length or 0 }}"
+            data-require-number="{{ '1' if config.config_password_number else '0' }}"
+            data-require-lower="{{ '1' if config.config_password_lower else '0' }}"
+            data-require-upper="{{ '1' if config.config_password_upper else '0' }}"
+            data-require-letter="{{ '1' if config.config_password_character else '0' }}"
+            data-require-special="{{ '1' if config.config_password_special else '0' }}"
+          >
+          <div id="new-password-error" class="text-danger" style="display:none"></div>
         </div>
         <div class="form-group">
           <label for="confirm-password">{{ _('Confirm new password') }}</label>
           <input id="confirm-password" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
+          <div id="confirm-password-error" class="text-danger" style="display:none"></div>
         </div>
         {% endif %}
 
@@ -92,6 +107,154 @@
           {% endif %}
         </div>
       </form>
+
+      {% if token_context %}
+      <script type="application/json" id="password-validation-i18n">
+        {
+          "policy_failed": "{{ _("Password doesn't comply with password validation rules")|e }}",
+          "must_prefix": "{{ _("Password must:")|e }}",
+          "frag_min_length": "{{ _("be at least {min} characters")|e }}",
+          "frag_require_number": "{{ _("include a number")|e }}",
+          "frag_require_lower": "{{ _("include a lowercase letter")|e }}",
+          "frag_require_upper": "{{ _("include an uppercase letter")|e }}",
+          "frag_require_letter": "{{ _("include a letter")|e }}",
+          "frag_require_special": "{{ _("include a special character")|e }}",
+          "confirm_mismatch": "{{ _("Passwords do not match.")|e }}"
+        }
+      </script>
+      <script>
+        (function () {
+          var passwordInput = document.getElementById('new-password');
+          var confirmInput = document.getElementById('confirm-password');
+          var passwordError = document.getElementById('new-password-error');
+          var confirmError = document.getElementById('confirm-password-error');
+          var i18nTag = document.getElementById('password-validation-i18n');
+
+          if (!passwordInput || !confirmInput || !passwordError || !confirmError || !i18nTag) {
+            return;
+          }
+
+          var messages;
+          try {
+            messages = JSON.parse(i18nTag.textContent || '{}');
+          } catch (e) {
+            messages = {};
+          }
+
+          function _bool(val) {
+            return String(val || '').toLowerCase() === '1' || String(val || '').toLowerCase() === 'true';
+          }
+
+          function _show(target, message) {
+            target.textContent = '';
+            while (target.firstChild) {
+              target.removeChild(target.firstChild);
+            }
+            if (!message) {
+              target.style.display = 'none';
+              return;
+            }
+            if (Array.isArray(message)) {
+              for (var i = 0; i < message.length; i++) {
+                var line = message[i];
+                if (!line) {
+                  continue;
+                }
+                var div = document.createElement('div');
+                div.textContent = String(line);
+                target.appendChild(div);
+              }
+            } else {
+              target.textContent = String(message);
+            }
+            target.style.display = '';
+          }
+
+          function _formatMin(message, min) {
+            return String(message || '').replace(/\{min\}/g, String(min));
+          }
+
+          function _passwordViolationFragments(value) {
+            var enabled = _bool(passwordInput.dataset.policyEnabled);
+            if (!enabled) {
+              return [];
+            }
+
+            var minLen = parseInt(passwordInput.dataset.minLength || '0', 10) || 0;
+            var requireNumber = _bool(passwordInput.dataset.requireNumber);
+            var requireLower = _bool(passwordInput.dataset.requireLower);
+            var requireUpper = _bool(passwordInput.dataset.requireUpper);
+            var requireLetter = _bool(passwordInput.dataset.requireLetter);
+            var requireSpecial = _bool(passwordInput.dataset.requireSpecial);
+
+            var errors = [];
+            if (minLen > 0 && (value || '').length < minLen) {
+              errors.push(_formatMin(messages.frag_min_length, minLen));
+            }
+            if (requireNumber && !/\d/.test(value || '')) {
+              errors.push(messages.frag_require_number);
+            }
+            if (requireLower && !/\p{Ll}/u.test(value || '')) {
+              errors.push(messages.frag_require_lower);
+            }
+            if (requireUpper && !/\p{Lu}/u.test(value || '')) {
+              errors.push(messages.frag_require_upper);
+            }
+            if (requireLetter && !/\p{L}/u.test(value || '')) {
+              errors.push(messages.frag_require_letter);
+            }
+            if (requireSpecial && !/[^\p{L}\s0-9]/u.test(value || '')) {
+              errors.push(messages.frag_require_special);
+            }
+            return errors;
+          }
+
+          function _joinPasswordPolicyMessage(fragments) {
+            if (!fragments || !fragments.length) {
+              return null;
+            }
+            var prefix = String(messages.must_prefix || 'Password must:');
+            return prefix + ' ' + fragments.join(', ');
+          }
+
+          function validatePassword() {
+            var val = passwordInput.value || '';
+            if (!val) {
+              _show(passwordError, null);
+              return;
+            }
+            var fragments = _passwordViolationFragments(val);
+            _show(passwordError, _joinPasswordPolicyMessage(fragments));
+          }
+
+          function validateConfirm() {
+            var pw = passwordInput.value || '';
+            var conf = confirmInput.value || '';
+            if (!conf) {
+              _show(confirmError, null);
+              return;
+            }
+            if (pw && conf !== pw) {
+              _show(confirmError, messages.confirm_mismatch);
+              return;
+            }
+            _show(confirmError, null);
+          }
+
+          passwordInput.addEventListener('blur', function () {
+            validatePassword();
+            validateConfirm();
+          });
+          confirmInput.addEventListener('blur', validateConfirm);
+          passwordInput.addEventListener('input', function () {
+            // keep confirmation error in sync while typing
+            if (confirmInput.value) {
+              validateConfirm();
+            }
+          });
+        })();
+      </script>
+      {% endif %}
     </div>
   </div>
     </div>

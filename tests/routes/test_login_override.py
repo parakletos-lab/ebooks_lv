@@ -243,6 +243,48 @@ def test_password_change_via_token_logs_user_in(monkeypatch, client):
         assert sess["email"] == "reader@example.com"
 
 
+def test_password_change_via_token_shows_password_policy_error(monkeypatch, client):
+    monkeypatch.setattr(
+        login_override.auth_link_service,
+        "decode_payload",
+        lambda token: {"email": "reader@example.com", "temp_password": "Temp", "issued_at": "2024-01-01T00:00:00Z"},
+    )
+    monkeypatch.setattr(login_override, "_fetch_user_by_email", lambda _email: _stub_user(_email))
+
+    pending = PendingReset(
+        email="reader@example.com",
+        token_type="initial",
+        book_ids=[],
+        temp_password="Temp",
+        issued_at="2024-01-01T00:00:00Z",
+    )
+    monkeypatch.setattr(login_override.password_reset_service, "resolve_pending_reset", lambda **_: pending)
+    monkeypatch.setattr(
+        login_override.password_reset_service,
+        "complete_password_change",
+        lambda **_: (_ for _ in ()).throw(
+            login_override.password_reset_service.PasswordPolicyError(
+                "Password doesn't comply with password validation rules"
+            )
+        ),
+    )
+
+    resp = client.post(
+        "/login",
+        data={
+            "email": "reader@example.com",
+            "auth": "token-xyz",
+            "new_password": "GeneratedPassword",
+            "confirm_password": "GeneratedPassword",
+            "action": "complete_reset",
+        },
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 200
+    assert b"Password doesn&#39;t comply with password validation rules" in resp.data
+
+
 def test_token_requires_password_update_before_login(monkeypatch, client):
     monkeypatch.setattr(
         login_override.auth_link_service,

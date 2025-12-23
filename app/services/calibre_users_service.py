@@ -13,11 +13,30 @@ from app.utils.logging import get_logger
 LOG = get_logger("calibre_users_service")
 
 try:  # runtime dependency on embedded Calibre-Web modules
-    from cps import ub, helper, config as cw_config  # type: ignore
+    # NOTE: Import `helper` lazily. Importing `cps.helper` can fail in
+    # non-standard entrypoints (e.g. plain Python scripts) because it pulls
+    # optional integrations that expect CLI parameters to be initialized.
+    from cps import ub, config as cw_config  # type: ignore
 except Exception:  # pragma: no cover - running outside Calibre-Web runtime
     ub = None  # type: ignore
-    helper = None  # type: ignore
     cw_config = None  # type: ignore
+
+# Allow tests (or callers) to inject a helper module without importing
+# `cps.helper` at module import time.
+helper = None  # type: ignore
+
+
+def _get_helper():
+    global helper
+    if helper is not None:
+        return helper
+    try:
+        from cps import helper as cw_helper  # type: ignore
+
+        helper = cw_helper  # cache
+        return cw_helper
+    except Exception:
+        return None
 
 
 class CalibreUnavailableError(RuntimeError):
@@ -38,6 +57,10 @@ class MailConfigMissingError(RuntimeError):
 
 class PasswordResetError(RuntimeError):
     """Raised when password reset workflow fails unexpectedly."""
+
+
+class PasswordValidationError(RuntimeError):
+    """Raised when a password violates Calibre-Web password policy."""
 
 
 class LanguageUpdateError(RuntimeError):
@@ -100,8 +123,17 @@ def lookup_user_by_email(email: str) -> Optional[Dict[str, Optional[str]]]:
 
 
 def _generate_password() -> str:
-    if helper and hasattr(helper, "generate_random_password"):
-        return helper.generate_random_password(getattr(cw_config, "config_password_min_length", 12))  # type: ignore[arg-type]
+    helper_mod = _get_helper()
+    min_length = 12
+    if cw_config is not None:
+        try:
+            candidate = getattr(cw_config, "config_password_min_length", None)
+            if candidate is not None:
+                min_length = int(candidate)
+        except Exception:
+            min_length = 12
+    if helper_mod and hasattr(helper_mod, "generate_random_password"):
+        return helper_mod.generate_random_password(min_length)  # type: ignore[arg-type]
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*?"
     return "".join(secrets.choice(alphabet) for _ in range(16))
 
@@ -179,8 +211,9 @@ def create_user_for_email(
         raise UserAlreadyExistsError("User already exists for provided email")
 
     password_plain = _generate_password()
-    if helper and hasattr(helper, "valid_password"):
-        helper.valid_password(password_plain)
+    helper_mod = _get_helper()
+    if helper_mod and hasattr(helper_mod, "valid_password"):
+        helper_mod.valid_password(password_plain)
     password_hash = generate_password_hash(password_plain)
 
     display_name = (preferred_username or "").strip()
@@ -250,8 +283,13 @@ def update_user_password(user_id: int, plaintext_password: str) -> Dict[str, Opt
     _ensure_runtime()
     if not plaintext_password:
         raise ValueError("password_required")
-    if helper and hasattr(helper, "valid_password"):
-        helper.valid_password(plaintext_password)
+    helper_mod = _get_helper()
+    if helper_mod and hasattr(helper_mod, "valid_password"):
+        try:
+            helper_mod.valid_password(plaintext_password)
+        except Exception as exc:
+            # Calibre-Web raises a generic Exception with a localized message.
+            raise PasswordValidationError(str(exc) or "password_policy_failed") from exc
     sess = _session()
     if not sess:
         raise CalibreUnavailableError("Calibre session unavailable")
@@ -302,10 +340,11 @@ def trigger_password_reset_email(user_id: int) -> str:
     Returns the Calibre user name when reset succeeds.
     """
     _ensure_runtime()
-    if not helper or not hasattr(helper, "reset_password"):
+    helper_mod = _get_helper()
+    if not helper_mod or not hasattr(helper_mod, "reset_password"):
         raise CalibreUnavailableError("password_reset_unavailable")
 
-    reset_callable = getattr(helper, "reset_password", None)
+    reset_callable = getattr(helper_mod, "reset_password", None)
     if not callable(reset_callable):  # pragma: no cover - defensive guard
         raise CalibreUnavailableError("password_reset_unavailable")
 

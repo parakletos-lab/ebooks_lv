@@ -90,7 +90,7 @@ def test_update_user_password_propagates_validation_errors(monkeypatch):
     helper = RecordingHelper(should_raise=True)
     session = _configure_runtime(monkeypatch, user, helper)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(calibre_users_service.PasswordValidationError):
         calibre_users_service.update_user_password(user.id, "short")
 
     assert session.commits == 0

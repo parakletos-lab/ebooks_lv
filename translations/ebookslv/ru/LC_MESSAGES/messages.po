@@ -1,4 +1,3 @@
-
 msgid ""
 msgstr ""
 "Project-Id-Version:  ebooks_lv-app\n"
@@ -8,8 +7,8 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
 "Language-Team: ru <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -219,6 +218,50 @@ msgstr "Синхронизация с Mozello не удалась."
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."
 
+msgid "Password doesn't comply with password validation rules"
+msgstr "Пароль не соответствует правилам проверки"
+
+msgid "Password must:"
+msgstr "Пароль должен:"
+
+#, python-format
+msgid "be at least {min} characters"
+msgstr "быть не короче {min} символов"
+
+msgid "include a number"
+msgstr "содержать цифру"
+
+msgid "include a lowercase letter"
+msgstr "содержать строчную букву"
+
+msgid "include an uppercase letter"
+msgstr "содержать заглавную букву"
+
+msgid "include a letter"
+msgstr "содержать букву"
+
+msgid "include a special character"
+msgstr "содержать специальный символ"
+
+#, python-format
+msgid "Password must be at least {min} characters."
+msgstr "Пароль должен быть не короче {min} символов."
+
+msgid "Password must include a number."
+msgstr "Пароль должен содержать цифру."
+
+msgid "Password must include a lowercase letter."
+msgstr "Пароль должен содержать строчную букву."
+
+msgid "Password must include an uppercase letter."
+msgstr "Пароль должен содержать заглавную букву."
+
+msgid "Password must include a letter."
+msgstr "Пароль должен содержать букву."
+
+msgid "Password must include a special character."
+msgstr "Пароль должен содержать специальный символ."
+
 #: app/routes/login_override.py:345
 msgid "Reset link is no longer valid."
 msgstr "Ссылка для сброса больше не действует."
@@ -274,11 +317,11 @@ msgstr "Mozello"
 
 #: app/routes/overrides/stats_notice.py:75 app/templates/stats.html:27
 msgid ""
-"This application includes Calibre-web as an unmodified submodule, "
-"licensed under GPLv3."
+"This application includes Calibre-web as an unmodified submodule, licensed "
+"under GPLv3."
 msgstr ""
-"Это приложение включает Calibre-web как неизменённый подмодуль под "
-"лицензией GPLv3."
+"Это приложение включает Calibre-web как неизменённый подмодуль под лицензией "
+"GPLv3."
 
 #: app/services/email_delivery.py:207
 #, python-format
@@ -321,8 +364,8 @@ msgstr "Применить настройки по умолчанию"
 #: app/templates/ebookslv_admin.html:20
 msgid "Review Mozello orders, link Calibre books and provision user accounts."
 msgstr ""
-"Просматривайте заказы Mozello, связывайте книги Calibre и создавайте "
-"учётные записи."
+"Просматривайте заказы Mozello, связывайте книги Calibre и создавайте учётные "
+"записи."
 
 #: app/templates/ebookslv_admin.html:21 app/templates/ebookslv_admin.html:26
 #: app/templates/ebookslv_admin.html:31 app/templates/ebookslv_admin.html:36
@@ -338,8 +381,12 @@ msgid "Books"
 msgstr "Книги"
 
 #: app/templates/ebookslv_admin.html:30
-msgid "Sync Calibre books with Mozello store (export products, sync prices, delete products)."
-msgstr "Синхронизируйте книги Calibre с магазином Mozello (экспорт товаров, синхронизация цен, удаление товаров)."
+msgid ""
+"Sync Calibre books with Mozello store (export products, sync prices, delete "
+"products)."
+msgstr ""
+"Синхронизируйте книги Calibre с магазином Mozello (экспорт товаров, "
+"синхронизация цен, удаление товаров)."
 
 #: app/templates/ebookslv_admin.html:34
 #: app/templates/email_templates_admin.html:2
@@ -695,11 +742,10 @@ msgstr "Настройки уведомлений Mozello"
 
 #: app/templates/mozello_admin.html:32
 msgid ""
-"Manage subscribed webhook events. API key and store URL are configured "
-"above."
+"Manage subscribed webhook events. API key and store URL are configured above."
 msgstr ""
-"Управляйте подписанными webhook-событиями. API-ключ и URL магазина "
-"задаются выше."
+"Управляйте подписанными webhook-событиями. API-ключ и URL магазина задаются "
+"выше."
 
 #: app/templates/mozello_admin.html:36
 msgid "Candidate Webhook URL (computed)"
@@ -816,6 +862,7 @@ msgstr ""
 #: app/templates/orders_admin.html:2 app/templates/orders_admin.html:10
 msgid "Mozello Orders"
 msgstr "Заказы Mozello"
+
 msgid "From"
 msgstr "С"
 
@@ -1043,15 +1090,15 @@ msgstr "(Администратор)"
 #: app/templates/users_books_admin.html:21
 msgid ""
 "Create and view allow-list mappings between Calibre users and books. 1) "
-"Select one or more users (left) and books (middle) 2) Click \"Add "
-"Selected Mappings\". The bottom table lists all existing mappings (email "
-"→ book title) with delete actions."
+"Select one or more users (left) and books (middle) 2) Click \"Add Selected "
+"Mappings\". The bottom table lists all existing mappings (email → book "
+"title) with delete actions."
 msgstr ""
 "Создавайте и просматривайте сопоставления списка допусков между "
 "пользователями Calibre и книгами. 1) Выберите одного или несколько "
 "пользователей (слева) и книги (в центре) 2) Нажмите \"Добавить выбранные "
-"сопоставления\". В нижней таблице показаны все существующие пары (e-mail "
-"→ название книги) с возможностью удаления."
+"сопоставления\". В нижней таблице показаны все существующие пары (e-mail → "
+"название книги) с возможностью удаления."
 
 #: app/templates/users_books_admin.html:28
 msgid "Users (Non-Admin)"
@@ -1066,11 +1113,6 @@ msgstr "Фильтр по e-mail или имени"
 msgid "Select All"
 msgstr "Выбрать все"
 
-#: app/templates/users_books_admin.html:56
-#: app/templates/users_books_admin.html:96
-msgid "Clear"
-msgstr "Очистить"
-
 #: app/templates/users_books_admin.html:60
 #, python-format
 msgid "Source: %(endpoint)s (excludes admin accounts)."
@@ -1084,8 +1126,8 @@ msgstr "Фильтр по названию или ID"
 #, python-format
 msgid "Source: %(endpoint)s (full library; consider pagination if large)."
 msgstr ""
-"Источник: %(endpoint)s (вся библиотека; для больших каталогов используйте"
-" разбивку по страницам)."
+"Источник: %(endpoint)s (вся библиотека; для больших каталогов используйте "
+"разбивку по страницам)."
 
 #: app/templates/users_books_admin.html:115
 msgid "Add Selected Mappings"
@@ -1194,4 +1236,3 @@ msgstr "Операции добавления завершены."
 #: app/services/shelves_service.py:57
 msgid "Wishlist"
 msgstr "Список желаний"
-

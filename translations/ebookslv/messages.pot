@@ -221,6 +221,62 @@ msgstr ""
 msgid "Passwords do not match."
 msgstr ""
 
+#: app/templates/login_override.html:102
+msgid "Password must:"
+msgstr ""
+
+#: app/templates/login_override.html:103
+msgid "be at least {min} characters"
+msgstr ""
+
+#: app/templates/login_override.html:104
+msgid "include a number"
+msgstr ""
+
+#: app/templates/login_override.html:105
+msgid "include a lowercase letter"
+msgstr ""
+
+#: app/templates/login_override.html:106
+msgid "include an uppercase letter"
+msgstr ""
+
+#: app/templates/login_override.html:107
+msgid "include a letter"
+msgstr ""
+
+#: app/templates/login_override.html:108
+msgid "include a special character"
+msgstr ""
+
+#: app/routes/login_override.py:351 app/templates/login_override.html:101
+msgid "Password doesn't comply with password validation rules"
+msgstr ""
+
+#: app/templates/login_override.html:102
+msgid "Password must be at least {min} characters."
+msgstr ""
+
+#: app/templates/login_override.html:103
+msgid "Password must include a number."
+msgstr ""
+
+#: app/templates/login_override.html:104
+msgid "Password must include a lowercase letter."
+msgstr ""
+
+#: app/templates/login_override.html:105
+msgid "Password must include an uppercase letter."
+msgstr ""
+
+#: app/templates/login_override.html:106
+msgid "Password must include a letter."
+msgstr ""
+
+#: app/templates/login_override.html:107
+msgid "Password must include a special character."
+msgstr ""
+
 #: app/routes/login_override.py:345
 msgid "Reset link is no longer valid."
 msgstr ""

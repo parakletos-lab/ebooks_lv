@@ -20,6 +20,11 @@ try:  # runtime dependency on Calibre-Web
 except Exception:  # pragma: no cover - allow unit tests without Calibre runtime
     _cw_render_title_template = None  # type: ignore
 
+try:  # runtime dependency on Calibre-Web settings (injected into templates as `config`)
+    from cps import config as cw_config  # type: ignore
+except Exception:  # pragma: no cover - allow unit tests without Calibre runtime
+    cw_config = None  # type: ignore
+
 try:  # pragma: no cover - Flask-Babel optional in unit tests
     from flask_babel import gettext as _  # type: ignore
 except Exception:  # pragma: no cover
@@ -403,6 +408,10 @@ def _handle_password_update(
         password_reset_service.complete_password_change(email=normalized, new_password=new_password)
     except password_reset_service.PendingResetNotFoundError:
         return _("Couldn't update this account. Request a new link.")
+    except getattr(password_reset_service, "PasswordPolicyError", Exception) as exc:
+        # Avoid showing raw exception text (often English); render a translated message.
+        LOG.info("password policy rejected email=%s detail=%s", normalized, str(exc).strip())
+        return _("Password doesn't comply with password validation rules")
     except password_reset_service.PasswordResetError as exc:
         LOG.warning("password change failed email=%s error=%s", normalized, exc)
         return _("Password update failed. Try again.")
@@ -487,6 +496,10 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         "form_errors": form_errors,
         "csrf_token_value": generate_csrf(),
     }
+    # Match upstream Calibre-Web templates: they expect `config` to be the
+    # ConfigSQL instance (not Flask's app.config mapping).
+    if cw_config is not None:
+        context["config"] = cw_config
     # Use Calibre-Web's rendering helper to ensure template variables like
     # `instance` and `sidebar` are present (keeps /login consistent with /).
     if _cw_render_title_template:

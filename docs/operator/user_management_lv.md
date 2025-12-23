@@ -61,6 +61,30 @@ Ja joprojām nevar atiestatīt:
 - Pārbaudiet, vai pasūtījuma ierakstā e-pasts ir pareizs.
 - Ja nepieciešams, nospiediet **Create User** pasūtījuma rindā, lai pārliecinātos, ka konts eksistē.
 
+#### Paroles noteikumi (svarīgi pārlūka ģenerētām parolēm)
+
+Ja klients izmanto pārlūka “ieteikto paroli” un tā tiek noraidīta, noraidījums nāk no Calibre-Web iestatījumiem sadaļā **User Password policy**.
+
+Kur konfigurēt:
+- `/admin/config` → **Edit Basic Configuration** → **User Password policy** sadaļa.
+
+Iestatījumi, kas kontrolē validāciju:
+- **User Password policy** (ieslēgts/izslēgts). Ja IZSLĒGTS, Calibre-Web pieņem jebkuru paroli (bez politikas pārbaudēm).
+- **Minimum password length** (`config_password_min_length`).
+- **Enforce number** (`config_password_number`).
+- **Enforce lowercase characters** (`config_password_lower`).
+- **Enforce uppercase characters** (`config_password_upper`).
+- **Enforce special characters** (`config_password_special`).
+
+Ieteicamie iestatījumi, lai pieņemtu tipiskas pārlūka ģenerētās paroles:
+- **User Password policy = ON**
+- **Minimum password length** = `12` (vai `10`, ja vēlaties)
+- Ieslēgt **Enforce number / lowercase / uppercase**
+- Izslēgt **Enforce special characters** (daudzi pārlūki ne vienmēr iekļauj simbolus ieteiktajās parolēs)
+
+Ja gribat “pieņemt jebko, ko pārlūks iesaka” ar vismazāk pārsteigumiem:
+- **User Password policy = OFF**
+
 ### 2.4 Atņemt piekļuvi (noņemt nopirktu grāmatu lietotājam)
 
 1. Atveriet `/admin/ebookslv/orders/`.

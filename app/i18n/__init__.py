@@ -5,8 +5,10 @@ from pathlib import Path
 from typing import Iterable, List, Sequence
 
 from flask_babel import get_babel
+from flask import session
 
 from app.utils.logging import get_logger
+from app.i18n.preferences import SESSION_LOCALE_KEY, normalize_language_choice
 
 LOG = get_logger("i18n")
 
@@ -68,4 +70,36 @@ def configure_translations(app, extra_roots: Iterable[Path | str] | None = None)
     LOG.info("Registered %s custom translation directories", len(desired))
 
 
-__all__ = ["configure_translations"]
+def patch_locale_selector(app) -> None:
+    """Prefer `ub_preferred_locale` for anonymous users.
+
+    Calibre-Web's upstream locale selector uses the logged-in user's locale or
+    the browser's Accept-Language header. For our login/token flows we want the
+    UI language to follow our session preference (and the token user locale we
+    store in-session).
+    """
+
+    try:  # runtime dependency on Calibre-Web
+        from cps.cw_babel import babel as cw_babel, get_locale as cw_get_locale  # type: ignore
+    except Exception:  # pragma: no cover
+        return
+
+    def _wrapped_get_locale():
+        preferred = normalize_language_choice(session.get(SESSION_LOCALE_KEY))
+        if preferred:
+            return preferred
+        return cw_get_locale()
+
+    try:
+        cw_babel.locale_selector_func = _wrapped_get_locale  # type: ignore[attr-defined]
+    except Exception:  # pragma: no cover
+        return
+
+    try:
+        babel_cfg = get_babel(app)
+        babel_cfg.locale_selector_func = _wrapped_get_locale  # type: ignore[attr-defined]
+    except Exception:  # pragma: no cover
+        pass
+
+
+__all__ = ["configure_translations", "patch_locale_selector"]

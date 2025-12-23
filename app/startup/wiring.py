@@ -18,7 +18,7 @@ from app.config import (
 )
 from app.services import mozello_service
 from app.services import calibre_users_service
-from app.i18n import configure_translations
+from app.i18n import configure_translations, patch_locale_selector
 from app.utils.currency import register_currency_filters
 from app.utils.logging import get_logger
 from flask import Blueprint
@@ -110,6 +110,7 @@ def init_app(app: Any) -> None:
     _prepend_template_path(app)
     register_currency_filters(app)
     configure_translations(app)
+    patch_locale_selector(app)
     LOG.info("App startup wiring complete (legacy plugin still active).")
 
 __all__ = ["init_app"]

@@ -222,6 +222,50 @@ msgstr "Mozello sync failed."
 msgid "Passwords do not match."
 msgstr "Passwords do not match."
 
+msgid "Password doesn't comply with password validation rules"
+msgstr "Password doesn't comply with password validation rules"
+
+msgid "Password must:"
+msgstr "Password must:"
+
+#, python-format
+msgid "be at least {min} characters"
+msgstr "be at least {min} characters"
+
+msgid "include a number"
+msgstr "include a number"
+
+msgid "include a lowercase letter"
+msgstr "include a lowercase letter"
+
+msgid "include an uppercase letter"
+msgstr "include an uppercase letter"
+
+msgid "include a letter"
+msgstr "include a letter"
+
+msgid "include a special character"
+msgstr "include a special character"
+
+#, python-format
+msgid "Password must be at least {min} characters."
+msgstr "Password must be at least {min} characters."
+
+msgid "Password must include a number."
+msgstr "Password must include a number."
+
+msgid "Password must include a lowercase letter."
+msgstr "Password must include a lowercase letter."
+
+msgid "Password must include an uppercase letter."
+msgstr "Password must include an uppercase letter."
+
+msgid "Password must include a letter."
+msgstr "Password must include a letter."
+
+msgid "Password must include a special character."
+msgstr "Password must include a special character."
+
 #: app/routes/login_override.py:345
 msgid "Reset link is no longer valid."
 msgstr "Reset link is no longer valid."
@@ -277,11 +321,11 @@ msgstr "Mozello"
 
 #: app/routes/overrides/stats_notice.py:75 app/templates/stats.html:27
 msgid ""
-"This application includes Calibre-web as an unmodified submodule, "
-"licensed under GPLv3."
+"This application includes Calibre-web as an unmodified submodule, licensed "
+"under GPLv3."
 msgstr ""
-"This application includes Calibre-web as an unmodified submodule, "
-"licensed under GPLv3."
+"This application includes Calibre-web as an unmodified submodule, licensed "
+"under GPLv3."
 
 #: app/services/email_delivery.py:207
 #, python-format
@@ -339,8 +383,12 @@ msgid "Books"
 msgstr "Books"
 
 #: app/templates/ebookslv_admin.html:30
-msgid "Sync Calibre books with Mozello store (export products, sync prices, delete products)."
-msgstr "Sync Calibre books with Mozello store (export products, sync prices, delete products)."
+msgid ""
+"Sync Calibre books with Mozello store (export products, sync prices, delete "
+"products)."
+msgstr ""
+"Sync Calibre books with Mozello store (export products, sync prices, delete "
+"products)."
 
 #: app/templates/ebookslv_admin.html:34
 #: app/templates/email_templates_admin.html:2
@@ -698,11 +746,9 @@ msgstr "Mozello Notification Settings"
 
 #: app/templates/mozello_admin.html:32
 msgid ""
-"Manage subscribed webhook events. API key and store URL are configured "
-"above."
+"Manage subscribed webhook events. API key and store URL are configured above."
 msgstr ""
-"Manage subscribed webhook events. API key and store URL are configured "
-"above."
+"Manage subscribed webhook events. API key and store URL are configured above."
 
 #: app/templates/mozello_admin.html:36
 msgid "Candidate Webhook URL (computed)"
@@ -1046,14 +1092,14 @@ msgstr "(Admin)"
 #: app/templates/users_books_admin.html:21
 msgid ""
 "Create and view allow-list mappings between Calibre users and books. 1) "
-"Select one or more users (left) and books (middle) 2) Click \"Add "
-"Selected Mappings\". The bottom table lists all existing mappings (email "
-"→ book title) with delete actions."
+"Select one or more users (left) and books (middle) 2) Click \"Add Selected "
+"Mappings\". The bottom table lists all existing mappings (email → book "
+"title) with delete actions."
 msgstr ""
 "Create and view allow-list mappings between Calibre users and books. 1) "
-"Select one or more users (left) and books (middle) 2) Click \"Add "
-"Selected Mappings\". The bottom table lists all existing mappings (email "
-"→ book title) with delete actions."
+"Select one or more users (left) and books (middle) 2) Click \"Add Selected "
+"Mappings\". The bottom table lists all existing mappings (email → book "
+"title) with delete actions."
 
 #: app/templates/users_books_admin.html:28
 msgid "Users (Non-Admin)"
@@ -1067,11 +1113,6 @@ msgstr "Filter by email or name"
 #: app/templates/users_books_admin.html:89
 msgid "Select All"
 msgstr "Select All"
-
-#: app/templates/users_books_admin.html:56
-#: app/templates/users_books_admin.html:96
-msgid "Clear"
-msgstr "Clear"
 
 #: app/templates/users_books_admin.html:60
 #, python-format
@@ -1195,4 +1236,3 @@ msgstr "Add operations complete."
 #: app/services/shelves_service.py:57
 msgid "Wishlist"
 msgstr "Wishlist"
-
