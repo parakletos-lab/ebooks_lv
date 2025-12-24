@@ -22,6 +22,10 @@ COMPOSE_FILES="-f compose.yml -f compose.droplet.yml"
 REQUIRED_BIN=(docker git)
 COMPOSE_CMD=""
 
+CALIBRE_HOST_CONFIG="/opt/calibre/config"
+BACKUP_DIR="${CALIBRE_HOST_CONFIG}/backups"
+BACKUP_KEEP=5
+
 log() { echo "[setup] $*"; }
 err() { echo "[setup][error] $*" >&2; }
 
@@ -136,13 +140,78 @@ health_check() {
   fi
 }
 
+ensure_backup_dir() {
+  if [ -e "$BACKUP_DIR" ] && [ ! -d "$BACKUP_DIR" ]; then
+    err "Backup path exists but is not a directory: $BACKUP_DIR"
+    exit 12
+  fi
+  mkdir -p "$BACKUP_DIR"
+}
+
+prune_old_backups() {
+  # Keep the most recent $BACKUP_KEEP backups (by mtime).
+  local backups=()
+  local i
+  while IFS= read -r line; do
+    [ -n "$line" ] && backups+=("$line")
+  done < <(ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null || true)
+
+  if [ "${#backups[@]}" -le "$BACKUP_KEEP" ]; then
+    return 0
+  fi
+
+  for ((i=BACKUP_KEEP; i<${#backups[@]}; i++)); do
+    log "Pruning old backup: ${backups[$i]}"
+    rm -f "${backups[$i]}" || true
+  done
+}
+
+maybe_backup_config_for_version() {
+  local version="$1"
+  if [ -z "$version" ]; then
+    log "No target version resolved; skipping config backup"
+    return 0
+  fi
+  if [ ! -d "$CALIBRE_HOST_CONFIG" ]; then
+    log "Config dir not found ($CALIBRE_HOST_CONFIG); skipping backup"
+    return 0
+  fi
+
+  ensure_backup_dir
+  local dest="$BACKUP_DIR/config_backup_${version}.tar.gz"
+
+  # Idempotency: one backup per target version.
+  if [ -f "$dest" ]; then
+    log "Config backup already exists for version $version (skip): $dest"
+    return 0
+  fi
+
+  log "Creating config backup for version $version -> $dest"
+  # Exclude backups to avoid recursive archives.
+  tar -C "$CALIBRE_HOST_CONFIG" --exclude='./backups' -czf "$dest" .
+  prune_old_backups
+}
+
 
 main() {
   need_bins
   # Optional: update code if this script runs from a cloned repo and user wants to update
   if [[ -d "$REPO_ROOT/.git" ]]; then
     log "Updating code from git (fast-forward if possible)..."
-    if ! git -C "$REPO_ROOT" fetch --all --prune; then log "git fetch failed (continuing)"; fi
+    if git -C "$REPO_ROOT" fetch --all --prune; then
+      # If a fast-forward update is available, take a config backup keyed by the *target* git version.
+      # This is idempotent: a backup is created only once per target version.
+      current_version="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)"
+      target_version="$(git -C "$REPO_ROOT" rev-parse --short '@{u}' 2>/dev/null || true)"
+      if [ -n "$target_version" ] && [ -n "$current_version" ] && [ "$target_version" != "$current_version" ]; then
+        maybe_backup_config_for_version "$target_version"
+      else
+        log "No upstream fast-forward detected; skipping config backup"
+      fi
+    else
+      log "git fetch failed (continuing)"
+    fi
+
     if ! git -C "$REPO_ROOT" pull --ff-only; then log "git pull failed or non-ff (continuing)"; fi
     if [[ -f "$REPO_ROOT/.gitmodules" ]]; then
       log "Syncing submodules..."

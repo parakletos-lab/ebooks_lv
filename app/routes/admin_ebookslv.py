@@ -38,6 +38,7 @@ except Exception:  # pragma: no cover - allow tests without Calibre runtime
 from app.config import app_title
 from app.utils import ensure_admin, PermissionError
 from app.utils.logging import get_logger
+from app.services.calibre_defaults_service import apply_ebookslv_default_settings, CalibreRuntimeUnavailable
 try:  # pragma: no cover - Flask-Babel optional in tests
     from flask_babel import gettext as _  # type: ignore
 except Exception:  # pragma: no cover
@@ -211,43 +212,6 @@ def _require_admin_json():
     return True
 
 
-def _apply_default_user_configuration() -> Dict[str, Any]:
-    """Apply curated Calibre-Web defaults for new user roles and sidebar."""
-    try:
-        from cps import config as cw_config  # type: ignore
-        from cps import constants as cw_constants  # type: ignore
-    except Exception as exc:  # pragma: no cover - runtime dependency guard
-        raise RuntimeError("calibre_runtime_unavailable") from exc
-
-    desired_roles = int(cw_constants.ROLE_VIEWER | cw_constants.ROLE_PASSWD)
-    desired_visibility = int(
-        cw_constants.SIDEBAR_HOT
-        | cw_constants.SIDEBAR_READ_AND_UNREAD
-        | cw_constants.SIDEBAR_CATEGORY
-        | cw_constants.SIDEBAR_SERIES
-        | cw_constants.SIDEBAR_AUTHOR
-        | cw_constants.SIDEBAR_LANGUAGE
-        | cw_constants.SIDEBAR_FORMAT
-        | cw_constants.SIDEBAR_ARCHIVED
-        | cw_constants.SIDEBAR_LIST
-    )
-
-    cw_config.config_default_role = desired_roles
-    cw_config.config_default_show = desired_visibility
-    cw_config.config_uploading = 1
-    configured_title = app_title()
-    if configured_title:
-        cw_config.config_calibre_web_title = configured_title
-    cw_config.save()
-
-    return {
-        "roles_mask": desired_roles,
-        "visibility_mask": desired_visibility,
-        "upload_enabled": bool(cw_config.config_uploading),
-        "title": cw_config.config_calibre_web_title,
-    }
-
-
 @bp.route("/orders/api/list", methods=["GET"])
 def api_orders_list():
     auth = _require_admin_json()
@@ -264,8 +228,8 @@ def api_apply_defaults():
     if auth is not True:
         return auth
     try:
-        result = _apply_default_user_configuration()
-    except RuntimeError as exc:
+        result = apply_ebookslv_default_settings()
+    except CalibreRuntimeUnavailable as exc:
         LOG.warning("Unable to apply default user configuration: %s", exc)
         code = str(exc) or "calibre_runtime_unavailable"
         return _json_error(code, 503)
