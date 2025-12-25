@@ -3500,7 +3500,7 @@ msgstr "Rediģēt saglabāšanas īpašības"
 
 #: cps/templates/shelf.html:17
 msgid "Arrange books manually"
-msgstr "Rokasgrāmatas"
+msgstr "Kārtot grāmatas manuāli"
 
 #: cps/templates/shelf.html:18
 msgid "Disable Change order"
