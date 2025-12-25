@@ -83,6 +83,29 @@ COPY entrypoint ./entrypoint
 COPY app ./app
 COPY translations ./translations
 
+# Provide missing LV locale assets in the exact paths Calibre-Web templates expect.
+# Some Calibre-Web versions don't ship LV locale files for bootstrap-datepicker/bootstrap-select.
+RUN set -eu; \
+        mkdir -p \
+            /app/calibre-web/cps/static/js/libs/bootstrap-datepicker/locales \
+            /app/calibre-web/cps/static/js/libs/bootstrap-select; \
+        if [ ! -f /app/calibre-web/cps/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv.min.js ]; then \
+            cp /app/app/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv.min.js \
+                /app/calibre-web/cps/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv.min.js; \
+        fi; \
+        if [ ! -f /app/calibre-web/cps/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv_LV.min.js ]; then \
+            cp /app/app/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv.min.js \
+                /app/calibre-web/cps/static/js/libs/bootstrap-datepicker/locales/bootstrap-datepicker.lv_LV.min.js; \
+        fi; \
+        if [ ! -f /app/calibre-web/cps/static/js/libs/bootstrap-select/defaults-lv.min.js ]; then \
+            cp /app/app/static/js/libs/bootstrap-select/defaults-lv.min.js \
+                /app/calibre-web/cps/static/js/libs/bootstrap-select/defaults-lv.min.js; \
+        fi; \
+        if [ ! -f /app/calibre-web/cps/static/js/libs/bootstrap-select/defaults-lv_LV.min.js ]; then \
+            cp /app/app/static/js/libs/bootstrap-select/defaults-lv.min.js \
+                /app/calibre-web/cps/static/js/libs/bootstrap-select/defaults-lv_LV.min.js; \
+        fi
+
 # Set PYTHONPATH so entrypoint/start.py can import upstream cps and app layer
 ENV PYTHONPATH=/app/calibre-web:/app
 

@@ -3434,7 +3434,7 @@ msgstr "Rezultāti:"
 
 #: cps/templates/search_form.html:21
 msgid "Published Date From"
-msgstr "Publicēšanas datums No"
+msgstr "Publicēšanas datums no"
 
 #: cps/templates/search_form.html:31
 msgid "Published Date To"
@@ -3474,7 +3474,7 @@ msgstr "Izslēgt paplašinājumus"
 
 #: cps/templates/search_form.html:145
 msgid "Rating Above"
-msgstr "Reitings virs"
+msgstr "Vērtējums virs"
 
 #: cps/templates/search_form.html:149
 msgid "Rating Below"
@@ -3488,7 +3488,7 @@ msgstr "No:"
 #: cps/templates/search_form.html:179 cps/templates/search_form.html:191
 #: cps/templates/search_form.html:211
 msgid "To:"
-msgstr "Pie:"
+msgstr "Līdz:"
 
 #: cps/templates/shelf.html:13
 msgid "Delete this Shelf"

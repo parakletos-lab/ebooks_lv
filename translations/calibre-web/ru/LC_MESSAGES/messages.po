@@ -32,3 +32,102 @@ msgstr "Архивированные книги"
 
 msgid "Books List"
 msgstr "Список книг"
+
+msgid "Sort according to book date, newest first"
+msgstr "Сортировать по дате книги (сначала новые)"
+
+msgid "Sort according to book date, oldest first"
+msgstr "Сортировать по дате книги (сначала старые)"
+
+msgid "Sort according to publishing date, newest first"
+msgstr "Сортировать по дате публикации (сначала новые)"
+
+msgid "Sort according to publishing date, oldest first"
+msgstr "Сортировать по дате публикации (сначала старые)"
+
+msgid "Sort title in alphabetical order"
+msgstr "Сортировать по названию (А→Я)"
+
+msgid "Sort title in reverse alphabetical order"
+msgstr "Сортировать по названию (Я→А)"
+
+msgid "Sort authors in alphabetical order"
+msgstr "Сортировать по автору (А→Я)"
+
+msgid "Sort authors in reverse alphabetical order"
+msgstr "Сортировать по автору (Я→А)"
+
+msgid "Sort ascending according to download count"
+msgstr "Сортировать по количеству скачиваний (по возрастанию)"
+
+msgid "Sort descending according to download count"
+msgstr "Сортировать по количеству скачиваний (по убыванию)"
+
+msgid "Sort ascending according to series index"
+msgstr "Сортировать по номеру в серии (по возрастанию)"
+
+msgid "Sort descending according to series index"
+msgstr "Сортировать по номеру в серии (по убыванию)"
+
+msgid "Sort according to book added to shelf, newest first"
+msgstr "Сортировать по дате добавления на полку (сначала новые)"
+
+msgid "Sort according to book added to shelf, oldest first"
+msgstr "Сортировать по дате добавления на полку (сначала старые)"
+
+msgid "Mark Book as Read or Unread"
+msgstr "Отметить книгу как прочитанную/непрочитанную"
+
+msgid "Mark Book as archived or not, to hide it in Calibre-Web and delete it from Kobo Reader"
+msgstr "Отметить книгу как архивную/неархивную, чтобы скрыть её в Calibre-Web и удалить с Kobo Reader"
+
+msgid "Enter Tag"
+msgstr "Введите тег"
+
+msgid "Enter Title"
+msgstr "Введите название"
+
+msgid "Enter comments"
+msgstr "Введите комментарии"
+
+msgid "Enter domainname"
+msgstr "Введите доменное имя"
+
+msgid "Parent Directory"
+msgstr "Родительский каталог"
+
+msgid "Return to Database config"
+msgstr "Вернуться к настройкам базы данных"
+
+msgid "Logout User"
+msgstr "Выйти из аккаунта"
+
+msgid "Read Status"
+msgstr "Статус прочтения"
+
+msgid "Exclude Shelves"
+msgstr "Исключить полки"
+
+msgid "From:"
+msgstr "От:"
+
+msgid "To:"
+msgstr "До:"
+
+msgid "Edit Shelf Properties"
+msgstr "Редактировать свойства полки"
+
+msgid "Arrange books manually"
+msgstr "Упорядочить книги вручную"
+
+msgid "Disable Change order"
+msgstr "Отключить изменение порядка"
+
+msgid "Enable Change order"
+msgstr "Включить изменение порядка"
+
+msgid "Any"
+msgstr "Любой"
+
+msgid "Empty"
+msgstr "Пусто"
