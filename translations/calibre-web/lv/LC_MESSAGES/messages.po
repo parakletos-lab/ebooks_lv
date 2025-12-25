@@ -3508,7 +3508,7 @@ msgstr "Atspējot secības maiņu"
 
 #: cps/templates/shelf.html:18
 msgid "Enable Change order"
-msgstr "Ieslēgt izmaiņu kārtību"
+msgstr "Ieslēgt secības maiņu"
 
 #: cps/templates/shelf.html:28
 msgid "Sort according to book added to shelf, newest first"
