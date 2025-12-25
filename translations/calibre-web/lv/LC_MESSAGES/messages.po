@@ -3492,11 +3492,11 @@ msgstr "Līdz:"
 
 #: cps/templates/shelf.html:13
 msgid "Delete this Shelf"
-msgstr "Dzēst šo uzglabāšanas vietu"
+msgstr "Dzēst šo plauktu"
 
 #: cps/templates/shelf.html:14
 msgid "Edit Shelf Properties"
-msgstr "Rediģēt saglabāšanas īpašības"
+msgstr "Rediģēt plaukta iestatījumus"
 
 #: cps/templates/shelf.html:17
 msgid "Arrange books manually"
@@ -3504,7 +3504,7 @@ msgstr "Kārtot grāmatas manuāli"
 
 #: cps/templates/shelf.html:18
 msgid "Disable Change order"
-msgstr "Atslēgt izmaiņu kārtību"
+msgstr "Atspējot secības maiņu"
 
 #: cps/templates/shelf.html:18
 msgid "Enable Change order"
