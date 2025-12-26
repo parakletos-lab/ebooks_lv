@@ -38,7 +38,6 @@ def apply_ebookslv_default_settings() -> Dict[str, Any]:
         | cw_constants.SIDEBAR_LANGUAGE
         | cw_constants.SIDEBAR_FORMAT
         | cw_constants.SIDEBAR_ARCHIVED
-        | cw_constants.SIDEBAR_LIST
     )
 
     title_value = app_title() or "e-books.lv"
