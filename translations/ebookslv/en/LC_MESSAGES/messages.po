@@ -230,6 +230,12 @@ msgstr "Synced to Mozello."
 msgid "Mozello sync failed."
 msgstr "Mozello sync failed."
 
+msgid "Operator manual"
+msgstr "Operator manual"
+
+msgid "Non-technical manuals for day-to-day operations."
+msgstr "Non-technical manuals for day-to-day operations."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Passwords do not match."

@@ -60,9 +60,12 @@ from app.services import (
     save_email_template,
     TemplateValidationError,
 )
-from flask import jsonify, request  # type: ignore
+from flask import jsonify, request, session  # type: ignore
 from typing import List, Dict, Any, Optional
 from urllib.parse import urlencode
+
+from app.i18n.preferences import SESSION_LOCALE_KEY, normalize_language_choice
+from app.services import operator_manual_service
 
 bp = Blueprint("ebookslv_admin", __name__, url_prefix="/admin/ebookslv", template_folder="../templates")
 LOG = get_logger("ebookslv.admin")
@@ -161,6 +164,70 @@ def orders_page():  # pragma: no cover - thin render wrapper
     if auth is not True:
         return auth
     return _render_admin_page("orders_admin.html", ub_csrf_token=generate_csrf())
+
+
+def _computed_webhook_url() -> Optional[str]:
+    """Compute candidate Mozello webhook URL using current request host."""
+    try:
+        proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+        host = request.headers.get("X-Forwarded-Host") or request.host
+        if ":" not in host and proto == "http":
+            host = f"{host}:80"
+        return f"{proto}://{host}/mozello/webhook"
+    except Exception:  # pragma: no cover
+        return None
+
+
+@bp.route("/mozello/", methods=["GET"])
+def mozello_page():  # pragma: no cover - thin render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    candidate = _computed_webhook_url()
+    ctx = {
+        "notifications_url": candidate,
+        "remote_notifications_url": None,
+        "notifications_wanted": [],
+        "remote_raw": None,
+    }
+    return _render_admin_page(
+        "mozello_admin.html",
+        mozello=ctx,
+        allowed=mozello_service.allowed_events(),
+    )
+
+
+def _preferred_language_code() -> str:
+    raw: Optional[str] = None
+    try:  # pragma: no cover
+        from flask_babel import get_locale  # type: ignore
+
+        loc = get_locale()
+        if loc:
+            raw = str(loc)
+    except Exception:
+        raw = None
+    if not raw:
+        try:
+            value = session.get(SESSION_LOCALE_KEY)
+            raw = value if isinstance(value, str) else None
+        except Exception:
+            raw = None
+    normalized = normalize_language_choice(raw)
+    return normalized or "en"
+
+
+@bp.route("/operator-manual/", methods=["GET"])
+def operator_manual_page():  # pragma: no cover - thin render wrapper
+    auth = _require_admin()
+    if auth is not True:
+        return auth
+    lang = _preferred_language_code()
+    manual_html = operator_manual_service.render_operator_manual_html(lang)
+    return _render_admin_page(
+        "operator_manual_admin.html",
+        manual_html=manual_html,
+    )
 
 
 @bp.route("/books/", methods=["GET"])

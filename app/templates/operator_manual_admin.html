@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% set title = _('Operator manual') %}
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('_app_templates.static', filename='ebookslv_admin.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ _('Operator manual') }}</h3>
+  </div>
+  <div class="panel-body">
+    <div class="ub-help-margin">
+      {{ manual_html|safe }}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -127,7 +127,7 @@ Related docs:
 
 ### 5.1 “Export failed”
 - Likely Mozello API failure (auth, validation, HTTP error).
-- Confirm API key and Mozello app settings in `/admin/mozello/`.
+- Confirm API key and Mozello app settings in `/admin/ebookslv/mozello/`.
 - Use single export (`export_one`) to isolate a problematic record.
 
 ### 5.2 Redirect `/mozello/books/<handle>` returns 404/503

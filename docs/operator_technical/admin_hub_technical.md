@@ -38,7 +38,7 @@ Related docs (deeper):
 - docs/operator/user_management_technical.md
 
 ### 2.2 Mozello card
-- URL: `/admin/mozello/`
+- URL: `/admin/ebookslv/mozello/` (legacy `/admin/mozello/` redirects here)
 - Route owner: [app/routes/admin_mozello.py](app/routes/admin_mozello.py)
 
 What it does:

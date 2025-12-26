@@ -45,7 +45,7 @@ COPY calibre-web/requirements.txt ./calibre-web/requirements.txt
 
 RUN pip install --upgrade pip setuptools wheel \
     && pip install -r calibre-web/requirements.txt \
-    && pip install gunicorn
+    && pip install gunicorn markdown2
 
 ############################
 # Stage: runtime
@@ -82,6 +82,7 @@ COPY calibre-web ./calibre-web
 COPY entrypoint ./entrypoint
 COPY app ./app
 COPY translations ./translations
+COPY docs ./docs
 
 # Provide missing LV locale assets in the exact paths Calibre-Web templates expect.
 # Some Calibre-Web versions don't ship LV locale files for bootstrap-datepicker/bootstrap-select.

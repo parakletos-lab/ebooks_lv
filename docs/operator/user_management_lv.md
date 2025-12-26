@@ -1,20 +1,20 @@
-# Lietotāju pārvaldība (Operators)
+# Lietotāju pārvaldība (Operatoriem)
 
-Šī ir vienkāršota ikdienas rokasgrāmata lietotāju atbalstam.
+Šī ir vienkāršota ikdienas rokasgrāmata lietotāju atbalstam **ebooks.lv**.
 
-Visbiežāk izmantosiet **Mozello Orders** administrēšanu:
+Visbiežāk izmantosiet **Mozello Pasūtījumu** administrēšanu:
 
-- Orders lapa: `/admin/ebookslv/orders/`
+- **Pasūtījumu lapa**: [/admin/ebookslv/orders/](/admin/ebookslv/orders/)
 
 ---
 
 ## 1) Ko šeit var izdarīt
 
-No Orders lapas var:
+No **Pasūtījumu lapas** iespējams:
 
 - Importēt apmaksātus pasūtījumus no Mozello (lai piešķirtu piekļuvi)
 - Pievienot manuālu pasūtījuma ierakstu (lai piešķirtu piekļuvi)
-- Izveidot (vai piesaistīt) Calibre lietotāju klientam
+- Izveidot vai piesaistīt Calibre lietotāju klientam
 - Atsvaidzināt pasūtījuma ierakstu (pārbaudīt grāmatas/lietotāja sasaisti)
 - Dzēst pasūtījuma ierakstu (atņem piekļuvi ebooks.lv; Mozello netiek mainīts)
 
@@ -24,105 +24,101 @@ No Orders lapas var:
 
 ### 2.1 Klients nopirka grāmatu, bet to neredz
 
-1. Atveriet `/admin/ebookslv/orders/`.
-2. Nospiediet **Import paid Mozello orders**.
+1. Atveriet **Pasūtījumu lapu** [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
+2. Nospiediet **Importēt apmaksātos Mozello pasūtījumus**.
    - Izmantojiet datumu intervālu (pēc noklusējuma ~pēdējās 10 dienas).
-3. Atrodiet klienta rindu pēc **Email**.
-4. Ja **Calibre book** ir sarkans / nav atrasts, nospiediet **Refresh** šai rindai.
-5. Ja **Calibre user** ir “Not linked”, nospiediet **Create User**.
-   - Ja lietotājs jau eksistē, sistēma viņu piesaistīs (nevis izveidos jaunu).
+3. Atrodiet klienta rindu pēc **E-pasts**.
+4. Ja **Calibre grāmata nav atrasta** ir sarkans, nospiediet **Atsvaidzināt**.
+5. Ja **Calibre lietotājs nav piesaistīts**, nospiediet **Izveidot lietotāju**.
+   - Ja lietotājs jau eksistē, sistēma piesaistīs esošo kontu.
 
 Rezultāts:
-- Pasūtījuma rindā jābūt zaļam **Calibre book** un zaļam **Calibre user**.
+- Pasūtījuma rindā jābūt zaļam **Calibre grāmata** un zaļam **Calibre lietotājs**.
 
-### 2.2 Manuāli piešķirt piekļuvi (izveidot manuālu lietotājs ↔ grāmata sasaisti)
+### 2.2 Manuāli piešķirt piekļuvi (izveidot lietotāju ↔ grāmatu sasaisti)
 
-Izmantojiet, ja klients ir samaksājis, bet webhook/imports nav ienācis, vai citos manuāla atbalsta gadījumos.
+Izmantojiet, ja klients ir samaksājis, bet webhook/imports nav ienācis, vai citi manuāla atbalsta gadījumi.
 
-1. Atveriet `/admin/ebookslv/orders/`.
-2. Formā **Add Order**:
-   - Ievadiet klienta **Email**.
-   - Ievadiet nopirktās grāmatas **Mozello handle**.
-     - Parasti handle izskatās kā `book-123`.
-3. Nospiediet **Add Order**.
-4. Ja rindā zem **Calibre user** ir “Not linked”, nospiediet **Create User**.
-5. Ja rindā ir “Calibre book missing”, nospiediet **Refresh**.
+1. Atveriet **Pasūtījumu lapu** [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
+2. Formā **Pievienot pasūtījumu**:
+   - Ievadiet klienta **E-pasts**.
+   - Ievadiet nopirktās grāmatas **Mozello identifikators**, piemēram, `book-123`.
+3. Nospiediet **Pievienot pasūtījumu**.
+4. Ja rindā zem **Calibre lietotājs** ir “Nav piesaistīts”, nospiediet **Izveidot lietotāju**.
+5. Ja rindā ir “Calibre grāmata nav atrasta”, nospiediet **Atsvaidzināt**.
 
-Piezīmes:
-- Ja nezināt handle, atveriet `/admin/ebookslv/books/` un tabulā atrodiet grāmatu un tās Mozello handle.
+Piezīme:
+- Ja nezināt identifikatoru, atveriet [/admin/ebookslv/books/](/admin/ebookslv/books/) un tabulā atrodiet grāmatu un tās Mozello identifikatoru.
 
 ### 2.3 Klients nevar ielogoties / aizmirsis paroli
 
-Palūdziet klientam izmantot pogu **Forgot password?** lapā `/login`.
-
-Ja e-pastu sūtīšana ir konfigurēta, viņš saņems paroles atiestatīšanas e-pastu.
+- Lūdziet klientam izmantot pogu **Aizmirsi paroli?** lapā [/login](/login).
+- Ja e-pastu sūtīšana ir konfigurēta, tiks nosūtīts paroles atiestatīšanas e-pasts.
 
 Ja joprojām nevar atiestatīt:
 - Pārbaudiet, vai pasūtījuma ierakstā e-pasts ir pareizs.
-- Ja nepieciešams, nospiediet **Create User** pasūtījuma rindā, lai pārliecinātos, ka konts eksistē.
+- Ja nepieciešams, nospiediet **Izveidot lietotāju**, lai pārliecinātos, ka konts eksistē.
 
 #### Paroles noteikumi (svarīgi pārlūka ģenerētām parolēm)
 
-Ja klients izmanto pārlūka “ieteikto paroli” un tā tiek noraidīta, noraidījums nāk no Calibre-Web iestatījumiem sadaļā **User Password policy**.
+Ja pārlūka ieteiktā parole tiek noraidīta, tas notiek Calibre-Web iestatījumu dēļ **Lietotāja paroles politika**.
 
 Kur konfigurēt:
-- `/admin/config` → **Edit Basic Configuration** → **User Password policy** sadaļa.
+- [/admin/config](/admin/config) → **Rediģēt pamatkonfigurāciju** → sadaļa **Lietotāja paroles politika**.
 
 Iestatījumi, kas kontrolē validāciju:
-- **User Password policy** (ieslēgts/izslēgts). Ja IZSLĒGTS, Calibre-Web pieņem jebkuru paroli (bez politikas pārbaudēm).
-- **Minimum password length** (`config_password_min_length`).
-- **Enforce number** (`config_password_number`).
-- **Enforce lowercase characters** (`config_password_lower`).
-- **Enforce uppercase characters** (`config_password_upper`).
-- **Enforce special characters** (`config_password_special`).
+- **Lietotāja paroles politika** (ON/OFF)
+- **Minimālais paroles garums** (`config_password_min_length`)
+- **Skaitļu prasība** (`config_password_number`)
+- **Mazajiem burtiem prasība** (`config_password_lower`)
+- **Lielajiem burtiem prasība** (`config_password_upper`)
+- **Speciālo simbolu prasība** (`config_password_special`)
 
-Ieteicamie iestatījumi, lai pieņemtu tipiskas pārlūka ģenerētās paroles:
-- **User Password policy = ON**
-- **Minimum password length** = `12` (vai `10`, ja vēlaties)
-- Ieslēgt **Enforce number / lowercase / uppercase**
-- Izslēgt **Enforce special characters** (daudzi pārlūki ne vienmēr iekļauj simbolus ieteiktajās parolēs)
+Ieteicamie iestatījumi pārlūka ģenerētām parolēm:
+- **Lietotāja paroles politika = ON**
+- **Minimālais paroles garums = 12** (vai `10` pēc vajadzības)
+- Ieslēgt **Skaitļu / mazo / lielo burtu prasību**
+- Izslēgt **Speciālo simbolu prasību** (daudzi pārlūki neiekļauj simbolus ieteiktajās parolēs)
 
-Ja gribat “pieņemt jebko, ko pārlūks iesaka” ar vismazāk pārsteigumiem:
-- **User Password policy = OFF**
+Lai pieņemtu jebkuru pārlūka ieteikto paroli:
+- **Lietotāja paroles politika = OFF**
 
 ### 2.4 Atņemt piekļuvi (noņemt nopirktu grāmatu lietotājam)
 
-1. Atveriet `/admin/ebookslv/orders/`.
+1. Atveriet **Pasūtījumu lapu** [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
 2. Atrodiet pasūtījuma ieraksta rindu.
-3. Nospiediet atkritnes ikonu (**Delete**) un apstipriniet.
+3. Nospiediet atkritnes ikonu (**Dzēst**) un apstipriniet.
 
 Svarīgi:
 - Tiek dzēsts tikai **lokālais piekļuves ieraksts**.
-- Mozello pusē nekas netiek atmaksāts vai mainīts.
+- Mozello pusē nekas netiek mainīts vai atmaksāts.
 
 ### 2.5 Dublikāti / nepareizs e-pasts
 
-- Ja pasūtījuma rinda izveidota ar nepareizu e-pastu vai handle, **Delete** un izveidojiet pareizu no jauna.
-- Ja ir vairāki dublikāti vienam lietotājam un vienam handle, izdzēsiet liekos.
+- Ja pasūtījuma rinda izveidota ar nepareizu e-pastu vai identifikatoru, **Dzēst** un izveidojiet pareizu ierakstu.
+- Ja ir vairāki dublikāti vienam lietotājam un identifikatoram, izdzēsiet liekos.
 
 ---
 
 ## 3) Ātrā problēmu novēršana
 
-### 3.1 “Calibre book missing”
+### 3.1 Calibre grāmata nav atrasta
 
 Biežākie iemesli:
-- Mozello handle neatbilst nevienai eksportētai grāmatai.
-- Grāmata ir Mozello, bet nekad nav eksportēta ar mūsu Books Sync rīku.
+- Mozello identifikators neatbilst nevienai eksportētai grāmatai.
+- Grāmata ir Mozello, bet nekad nav eksportēta ar Books Sync rīku.
 
 Risinājums:
-- Aizejiet uz `/admin/ebookslv/books/` un eksportējiet/sinhronizējiet grāmatu, lai handle eksistē.
-- Atgriezieties Orders lapā un nospiediet **Refresh**.
+- Atveriet [/admin/ebookslv/books/](/admin/ebookslv/books/) un eksportējiet/sinhronizējiet grāmatu.
+- Atgriezieties **Pasūtījumu lapā** un nospiediet **Atsvaidzināt**.
 
-### 3.2 “Create User” neizdodas
+### 3.2 Izveidot lietotāju neizdodas
 
 Biežākais iemesls:
-- Calibre runtime nav pieejams.
+- Calibre izpildlaiks nav pieejams.
 
 Risinājums:
 - Mēģiniet vēlāk.
-- Ja lietotājs jau eksistē, nospiediet **Reload** Orders lapā un tad vēlreiz **Create User** (tas var piesaistīt esošo).
+- Ja lietotājs jau eksistē, nospiediet **Pārlādēt** **Pasūtījumu lapā** un tad vēlreiz **Izveidot lietotāju** — tas piesaistīs esošo kontu.
 
 ---
-
-Padziļinātai tehniskai informācijai (endpointi, token flow, ko tieši dara “Create User”), skatiet: `docs/operator/user_management_technical.md`.

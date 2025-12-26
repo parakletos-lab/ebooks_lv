@@ -226,6 +226,12 @@ msgstr "Синхронизировано с Mozello."
 msgid "Mozello sync failed."
 msgstr "Синхронизация с Mozello не удалась."
 
+msgid "Operator manual"
+msgstr "Инструкция пользователя"
+
+msgid "Non-technical manuals for day-to-day operations."
+msgstr "Нетехнические инструкции для ежедневной работы."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."

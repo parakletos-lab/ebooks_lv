@@ -226,6 +226,12 @@ msgstr "Sinhronizēts ar Mozello."
 msgid "Mozello sync failed."
 msgstr "Mozello sinhronizācija neizdevās."
 
+msgid "Operator manual"
+msgstr "Lietošanas instrukcija"
+
+msgid "Non-technical manuals for day-to-day operations."
+msgstr "Netekniskās instrukcijas ikdienas darbam."
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr "Paroles nesakrīt."

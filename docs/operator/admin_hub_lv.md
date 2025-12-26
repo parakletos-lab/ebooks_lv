@@ -1,37 +1,37 @@
-# ebooks.lv Admin Hub (Operators)
+# ebooks.lv Admin Hub (Operatoriem)
 
-Šī ir galvenā navigācijas lapa ebooks.lv admin rīkiem.
+Šī ir galvenā **ebooks.lv** administrēšanas rīku navigācijas lapa.
 
-- Hub lapa: `/admin/ebookslv/`
+- Hub lapa: [/admin/ebookslv/](/admin/ebookslv/)
 
-Šis dokuments īsi paskaidro, ko nozīmē katra kartīte (card) un uz kuru lapu tā ved.
-
----
-
-## 1) Kartītes uz `/admin/ebookslv/`
-
-### 1.1 Orders
-- Atver: `/admin/ebookslv/orders/`
-- Ko tas dara: pārvalda klientu piekļuvi, importējot apmaksātus Mozello pasūtījumus, veidojot manuālus pasūtījumus un piesaistot tos Calibre-Web lietotājiem.
-
-### 1.2 Mozello
-- Atver: `/admin/mozello/`
-- Ko tas dara: Mozello integrācijas konfigurācija un uzraudzība (API/webhook iestatījumi), lai pasūtījumi un produktu saites strādātu korekti.
-
-### 1.3 Books
-- Atver: `/admin/ebookslv/books/`
-- Ko tas dara: sinhronizē Calibre bibliotēkas grāmatas ar Mozello produktiem (ielādē produktus, eksportē/atjaunina, sinhronizē cenas un veic produktu uzturēšanas darbības).
-
-### 1.4 Email Templates
-- Atver: `/admin/ebookslv/email-templates/`
-- Ko tas dara: rediģē ebooks.lv izejošo e-pastu šablonus (piemēram, pirkuma/ielogošanās e-pastus) un atļautos tokenus.
+Šis dokuments īsi apraksta katras kartītes (card) nozīmi un norāda, uz kuru administrācijas sadaļu tā ved.
 
 ---
 
-## 2) Poga uz hub lapas
+## 1) Kartītes lapā [/admin/ebookslv/](/admin/ebookslv/)
 
-### 2.1 Set default settings
-- Pogas atrašanās vieta: `/admin/ebookslv/`
-- Mērķis: uzstāda ieteiktos noklusējuma Calibre-Web iestatījumus (lomas, sānjosla, virsraksts).
+### 1.1 Pasūtījumi
+- Atver: [/admin/ebookslv/orders/](/admin/ebookslv/orders/)
+- Apraksts: pārvalda klientu piekļuves, importējot apmaksātus Mozello pasūtījumus, veidojot manuālus pasūtījumus un piesaistot tos Calibre-Web lietotājiem.
 
-Ja pēc šīs pogas nospiešanas kaut kas nestrādā, tehniskā informācija ir: `docs/operator/admin_hub_technical.md`.
+### 1.2 Mozello integrācija
+- Atver: [/admin/ebookslv/mozello/](/admin/ebookslv/mozello/)
+- Apraksts: Mozello integrācijas konfigurēšana un uzraudzība (API un webhook iestatījumi), lai nodrošinātu korektu pasūtījumu apstrādi un produktu saišu darbību.
+
+### 1.3 Grāmatas
+- Atver: [/admin/ebookslv/books/](/admin/ebookslv/books/)
+- Apraksts: Calibre bibliotēkas grāmatu sinhronizācija ar Mozello produktiem (produktu ielāde, eksports un atjaunināšana, cenu sinhronizācija un uzturēšanas darbības).
+
+### 1.4 E-pasta šabloni
+- Atver: [/admin/ebookslv/email-templates/](/admin/ebookslv/email-templates/)
+- Apraksts: ebooks.lv izejošo e-pastu šablonu rediģēšana (piemēram, pirkuma un pieteikšanās e-pasti) un pieejamo tokenu pārvaldība.
+
+---
+
+## 2) Poga hub lapā
+
+### 2.1 Iestatīt noklusējuma iestatījumus
+- Atrašanās vieta: [/admin/ebookslv/](/admin/ebookslv/)
+- Mērķis: uzstāda ieteiktos noklusējuma Calibre-Web iestatījumus (lietotāju lomas, sānjosla, lapas virsraksts).
+
+---

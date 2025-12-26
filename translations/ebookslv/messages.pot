@@ -229,6 +229,14 @@ msgstr ""
 msgid "Mozello sync failed."
 msgstr ""
 
+#: app/templates/ebookslv_admin.html:0
+msgid "Operator manual"
+msgstr ""
+
+#: app/templates/ebookslv_admin.html:0
+msgid "Non-technical manuals for day-to-day operations."
+msgstr ""
+
 #: app/routes/login_override.py:340
 msgid "Passwords do not match."
 msgstr ""

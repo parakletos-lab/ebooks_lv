@@ -14,12 +14,15 @@ Purpose: Verify that Mozello admin access is available via the ebooks.lv hub pag
 4. Open `http://localhost:8083/admin/ebookslv/`.
 5. Confirm a card titled "Mozello" is visible.
 6. Click "Open" on that card.
-7. Expect `/admin/mozello/` to load (status 200).
+ 7. Expect `/admin/ebookslv/mozello/` to load (status 200).
+ 8. Open `http://localhost:8083/admin/mozello/`.
+ 9. Expect it to redirect to `/admin/ebookslv/mozello/`.
 
 ## Pass Criteria
 - Mozello is not present as a top-nav injected link.
 - Mozello is present as a card on `/admin/ebookslv/`.
-- The Mozello card opens `/admin/mozello/`.
+ - The Mozello card opens `/admin/ebookslv/mozello/`.
+ - Legacy `/admin/mozello/` redirects to `/admin/ebookslv/mozello/`.
 ````markdown
 # E2E: Admin Mozello Card (ebooks.lv Hub)
 

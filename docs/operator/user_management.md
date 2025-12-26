@@ -4,7 +4,7 @@ This is a simplified runbook for day-to-day user support.
 
 You will mostly use **Mozello Orders** admin:
 
-- Orders page: `/admin/ebookslv/orders/`
+- Orders page: [/admin/ebookslv/orders/](/admin/ebookslv/orders/)
 
 ---
 
@@ -24,7 +24,7 @@ From the Orders page you can:
 
 ### 2.1 Customer bought a book but can’t see it
 
-1. Open `/admin/ebookslv/orders/`.
+1. Open [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
 2. Click **Import paid Mozello orders**.
    - Use the date range (default is last ~10 days).
 3. Find the customer row by **Email**.
@@ -39,7 +39,7 @@ Result:
 
 Use this when a customer paid but the webhook/import is missing, or for manual support cases.
 
-1. Open `/admin/ebookslv/orders/`.
+1. Open [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
 2. In **Add Order** form:
    - Enter the customer **Email**.
    - Enter the **Mozello handle** for the purchased book.
@@ -49,11 +49,11 @@ Use this when a customer paid but the webhook/import is missing, or for manual s
 5. If the row shows “Calibre book missing”, click **Refresh**.
 
 Notes:
-- If you don’t know the handle, open `/admin/ebookslv/books/` and use the table to find the book and its Mozello handle.
+- If you don’t know the handle, open [/admin/ebookslv/books/](/admin/ebookslv/books/) and use the table to find the book and its Mozello handle.
 
 ### 2.3 Customer cannot log in / forgot password
 
-Ask the customer to use the **Forgot password?** button on `/login`.
+Ask the customer to use the **Forgot password?** button on [/login](/login).
 
 If email sending is configured, they will receive a password reset email.
 
@@ -66,7 +66,7 @@ If they still cannot reset:
 If a customer uses a browser “suggested password” and it gets rejected, the rejection comes from Calibre-Web’s **User Password policy** settings.
 
 Where to configure:
-- `/admin/config` → **Edit Basic Configuration** → **User Password policy** section.
+- [/admin/config](/admin/config) → **Edit Basic Configuration** → **User Password policy** section.
 
 Settings that control validation:
 - **User Password policy** (on/off). If OFF, Calibre-Web accepts any password (no policy checks).
@@ -87,7 +87,7 @@ If you want “accept anything the browser suggests” with the least surprises:
 
 ### 2.4 Revoke access (remove a purchased book from a user)
 
-1. Open `/admin/ebookslv/orders/`.
+1. Open [/admin/ebookslv/orders/](/admin/ebookslv/orders/).
 2. Find the order record row.
 3. Click the trash icon (**Delete**) and confirm.
 
@@ -111,7 +111,7 @@ Most common causes:
 - The book exists in Mozello but was never exported from our Books Sync tool.
 
 Fix:
-- Go to `/admin/ebookslv/books/` and export/sync the book so the handle exists.
+- Go to [/admin/ebookslv/books/](/admin/ebookslv/books/) and export/sync the book so the handle exists.
 - Return to Orders and click **Refresh**.
 
 ### 3.2 “Create User” fails
@@ -124,5 +124,3 @@ Fix:
 - If the user already exists, try clicking **Reload** on the Orders page and then **Create User** again (it may link existing).
 
 ---
-
-For deeper technical details (endpoints, token flow, what “Create User” actually does), see `docs/operator/user_management_technical.md`.

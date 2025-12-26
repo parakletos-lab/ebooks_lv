@@ -142,15 +142,7 @@ def mozello_admin_page():  # pragma: no cover (thin render)
     auth = _require_admin()
     if auth is not True:
         return auth
-    # Conservative: do NOT call remote Mozello API here. Only compute candidate.
-    candidate = _computed_webhook_url()
-    ctx = {
-        "notifications_url": candidate,
-        "remote_notifications_url": None,
-        "notifications_wanted": [],
-        "remote_raw": None,
-    }
-    return render_template("mozello_admin.html", mozello=ctx, allowed=mozello_service.allowed_events())
+    return redirect("/admin/ebookslv/mozello/")
 @webhook_bp.route("/mozello/books/<path:mz_handle>", methods=["GET"])
 def mozello_product_redirect(mz_handle: str):
     handle = (mz_handle or "").strip()
