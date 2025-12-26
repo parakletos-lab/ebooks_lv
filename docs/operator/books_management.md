@@ -1,4 +1,4 @@
-# Books Management (Operator)
+# Books Management
 
 This is a simplified runbook for day-to-day book management.
 

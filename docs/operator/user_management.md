@@ -1,4 +1,4 @@
-# User Management (Operator)
+# User Management
 
 This is a simplified runbook for day-to-day user support.
 

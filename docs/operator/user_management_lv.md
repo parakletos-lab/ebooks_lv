@@ -1,4 +1,4 @@
-# Lietotāju pārvaldība (Operatoriem)
+# Lietotāju pārvaldība
 
 Šī ir vienkāršota ikdienas rokasgrāmata lietotāju atbalstam **ebooks.lv**.
 

@@ -1,4 +1,4 @@
-# ebooks.lv Admin Hub (Operatoriem)
+# ebooks.lv Admin Hub
 
 Šī ir galvenā **ebooks.lv** administrēšanas rīku navigācijas lapa.
 

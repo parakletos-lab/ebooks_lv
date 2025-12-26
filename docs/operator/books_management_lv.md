@@ -1,4 +1,4 @@
-# Grāmatu pārvaldība (Operatoriem)
+# Grāmatu pārvaldība
 
 Šī ir vienkāršota ikdienas rokasgrāmata grāmatu pārvaldībai **ebooks.lv**.
 

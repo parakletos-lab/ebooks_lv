@@ -1,4 +1,4 @@
-# ebooks.lv Admin Hub (Operator)
+# ebooks.lv Admin Hub
 
 This page is the central navigation hub for ebooks.lv admin tools.
 
