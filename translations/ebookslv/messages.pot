@@ -120,6 +120,18 @@ msgstr ""
 msgid "Export failed (status %(status)s)."
 msgstr ""
 
+#: app/templates/login_override.html:1
+msgid "Shop"
+msgstr ""
+
+#: app/templates/login_override.html:1
+msgid "Help"
+msgstr ""
+
+#: app/templates/login_override.html:1
+msgid "To create your reader profile, you first need to purchase a book from the e-books.lv store. Free books can be read without registration."
+msgstr ""
+
 #: app/routes/admin_mozello.py:58
 msgid "Administrator access required."
 msgstr ""

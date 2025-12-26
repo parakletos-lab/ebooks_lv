@@ -78,6 +78,18 @@ msgstr "Export failed."
 msgid "Mozello import failed."
 msgstr "Mozello import failed."
 
+#: app/templates/login_override.html:1
+msgid "Shop"
+msgstr "Shop"
+
+#: app/templates/login_override.html:1
+msgid "Help"
+msgstr "Help"
+
+#: app/templates/login_override.html:1
+msgid "To create your reader profile, you first need to purchase a book from the e-books.lv store. Free books can be read without registration."
+msgstr "To create your reader profile, you first need to purchase a book from the e-books.lv store. Free books can be read without registration."
+
 #: app/routes/admin_ebookslv.py:80
 msgid "Mozello API key is missing."
 msgstr "Mozello API key is missing."

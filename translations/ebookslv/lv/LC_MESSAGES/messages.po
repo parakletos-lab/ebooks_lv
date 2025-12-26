@@ -74,6 +74,18 @@ msgstr "Eksports neizdevās."
 msgid "Mozello import failed."
 msgstr "Mozello imports neizdevās."
 
+#: app/templates/login_override.html:1
+msgid "Shop"
+msgstr "Veikals"
+
+#: app/templates/login_override.html:1
+msgid "Help"
+msgstr "Palīdzība"
+
+#: app/templates/login_override.html:1
+msgid "To create your reader profile, you first need to purchase a book from the e-books.lv store. Free books can be read without registration."
+msgstr "Lai izveidotu savu lasītavas profilu, vispirms ir jāiegādājas grāmata e-books.lv veikalā. Bezmaksas grāmatas var lasīt bez reģistrēšanās."
+
 #: app/routes/admin_ebookslv.py:80
 msgid "Mozello API key is missing."
 msgstr "Trūkst Mozello API atslēgas."

@@ -71,13 +71,24 @@ from sqlalchemy import func
 from werkzeug.security import check_password_hash
 from urllib.parse import urlencode, urlparse
 
-from app.services import auth_link_service, password_reset_service, email_delivery, calibre_users_service
+from app.services import auth_link_service, password_reset_service, email_delivery, calibre_users_service, mozello_service
 from app.services.password_reset_service import PendingReset
 from app.utils.identity import clear_identity_session, get_current_user_email, get_session_email_key, normalize_email
 from app.utils.logging import get_logger
 from app.i18n.preferences import SESSION_LOCALE_KEY, normalize_language_choice
 
 LOG = get_logger("login_override")
+
+
+def _current_language_code() -> str:
+    try:
+        from flask_babel import get_locale  # type: ignore
+    except Exception:  # pragma: no cover
+        return ""
+    try:
+        return str(get_locale() or "")
+    except Exception:  # pragma: no cover
+        return ""
 bp = Blueprint("login_override", __name__)
 
 
@@ -506,6 +517,7 @@ def login_page():  # pragma: no cover - integration tested via Flask client
         "token_error": token_error,
         "form_errors": form_errors,
         "csrf_token_value": generate_csrf(),
+        "shop_url": mozello_service.get_store_url(_current_language_code()),
     }
     # Match upstream Calibre-Web templates: they expect `config` to be the
     # ConfigSQL instance (not Flask's app.config mapping).

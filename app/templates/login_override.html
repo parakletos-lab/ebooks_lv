@@ -6,7 +6,19 @@
     <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
       <div class="panel panel-default">
     <div class="panel-heading">
-      <h3 class="panel-title">{{ _('Sign in') }}</h3>
+      <div class="login-titlebar">
+        <h3 class="panel-title">{{ _('Sign in') }}</h3>
+        <button
+          type="button"
+          class="btn btn-primary login-help-btn"
+          data-toggle="modal"
+          data-target="#login-help-modal"
+          aria-label="{{ _('Help') }}"
+          title="{{ _('Help') }}"
+        >
+          <span class="login-help-icon" aria-hidden="true">?</span>
+        </button>
+      </div>
     </div>
     <div class="panel-body">
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -98,15 +110,38 @@
         </div>
 
         <div class="login-actions">
-          {% if token_context %}
-            <button type="submit" name="action" value="complete_reset" class="btn btn-success">{{ _('Save password') }}</button>
-            <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn ub-btn-outline">{{ _('Cancel') }}</a>
-          {% else %}
-            <button type="submit" name="action" value="login" class="btn btn-primary">{{ _('Sign in') }}</button>
-            <button type="submit" name="action" value="forgot" class="btn ub-btn-outline" formnovalidate>{{ _('Forgot password?') }}</button>
+          <div class="login-actions-left">
+            {% if token_context %}
+              <button type="submit" name="action" value="complete_reset" class="btn btn-success">{{ _('Save password') }}</button>
+              <a href="{{ url_for('login_override.login_page', next=next_url) }}" class="btn ub-btn-outline">{{ _('Cancel') }}</a>
+            {% else %}
+              <button type="submit" name="action" value="login" class="btn btn-primary">{{ _('Sign in') }}</button>
+              <button type="submit" name="action" value="forgot" class="btn ub-btn-outline" formnovalidate>{{ _('Forgot password?') }}</button>
+            {% endif %}
+          </div>
+
+          {% if shop_url %}
+            <a href="{{ shop_url }}" class="btn btn-primary login-shop-btn" target="_blank" rel="noopener noreferrer">{{ _('Shop') }}</a>
           {% endif %}
         </div>
       </form>
+
+      <div class="modal fade" id="login-help-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">{{ _('Help') }}</h4>
+            </div>
+            <div class="modal-body">
+              <p>{{ _('To create your reader profile, you first need to purchase a book from the e-books.lv store. Free books can be read without registration.') }}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn ub-btn-outline" data-dismiss="modal">{{ _('Close') }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {% if token_context %}
       <script type="application/json" id="password-validation-i18n">
