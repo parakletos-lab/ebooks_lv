@@ -19,6 +19,7 @@ from flask import (
     Response,
     current_app,
     g,
+    render_template,
     redirect,
     request,
     url_for,
@@ -50,6 +51,7 @@ def _(message, **kwargs):  # type: ignore
 from urllib.parse import urlencode
 
 from app.services.catalog_access import UserCatalogState, build_catalog_state
+from app.services import archived_books_service
 from app.utils.identity import (
     get_current_user_email,
     get_current_user_id,
@@ -142,6 +144,85 @@ _REWRITE_TOP_LEVEL_PAGES = {
 }
 
 _ATTR_REWRITE_RE = re.compile(r"(?P<attr>href|data-back)=(?P<q>['\"])(?P<url>/[^'\"]*)(?P=q)")
+
+
+def _find_matching_div_end(html: str, start_index: int) -> Optional[int]:
+    """Return index (exclusive) after the matching closing </div>.
+
+    Used to inject secondary sections into Calibre-Web pages without full
+    template overrides.
+    """
+
+    if start_index < 0 or start_index >= len(html):
+        return None
+    token_re = re.compile(r"<div\b|</div>", re.IGNORECASE)
+    depth = 0
+    started = False
+    for match in token_re.finditer(html, start_index):
+        token = match.group(0).lower()
+        if token.startswith("<div") and not token.startswith("</"):
+            depth += 1
+            started = True
+        else:
+            if started:
+                depth -= 1
+                if depth == 0:
+                    return match.end()
+    return None
+
+
+def _inject_archived_purchased_section(response: Response) -> None:
+    """Append an Archived Books section on scoped My Books pages.
+
+    The main My Books listing intentionally excludes archived books (default
+    Calibre-Web behavior). This secondary section ensures users can still find
+    archived purchased books.
+    """
+
+    try:
+        scope = getattr(g, "catalog_scope", CatalogScope.ALL)
+        state = getattr(g, "catalog_state", None)
+    except Exception:
+        return
+    if scope != CatalogScope.PURCHASED:
+        return
+    if not isinstance(state, UserCatalogState) or not state.is_authenticated:
+        return
+
+    matched = _match_scoped_prefix(request.path or "")
+    if matched != "/catalog/my-books":
+        return
+
+    body_text = response.get_data(as_text=True)
+    if not body_text or "data-eblv-archived-section" in body_text:
+        return
+
+    entries = archived_books_service.list_archived_purchased_entries(
+        calibre_user_id=get_current_user_id(),
+        purchased_book_ids=state.purchased_book_ids,
+    )
+    if not entries:
+        return
+
+    try:
+        fragment = render_template("catalog/archived_books_section.html", entries=entries)
+    except Exception:
+        LOG.debug("Failed to render archived section template", exc_info=True)
+        return
+    if not fragment:
+        return
+
+    # Insert right after the main discover load-more container from index.html.
+    marker = '<div class="discover load-more">'
+    start = body_text.find(marker)
+    if start == -1:
+        return
+    end = _find_matching_div_end(body_text, start)
+    if end is None:
+        return
+
+    body_text = body_text[:end] + fragment + body_text[end:]
+    response.set_data(body_text)
 
 
 def _inject_scope_header(response: Response, payload: dict[str, Any], scope: CatalogScope) -> None:
@@ -671,6 +752,12 @@ def register_catalog_access(app: Any) -> None:
             LOG.debug("Scoped link rewrite failed", exc_info=True)
 
         _insert_assets(response, payload)
+
+        # Add "Archived Books" section to My Books scope.
+        try:
+            _inject_archived_purchased_section(response)
+        except Exception:
+            LOG.debug("Archived section injection failed", exc_info=True)
         return response
 
     if not getattr(app, "_catalog_scope_bp", False):  # type: ignore[attr-defined]
