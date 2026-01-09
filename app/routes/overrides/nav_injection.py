@@ -145,6 +145,21 @@ class _NavPatchedLoader(BaseLoader):
         try:
             new_source = source
 
+            # Reader anti-copy injection for anonymous + non-admin users.
+            # We patch upstream reader templates in-memory to avoid copying the full templates.
+            if template in {"read.html", "readpdf.html", "readtxt.html", "readcbr.html", "readdjvu.html"}:
+                marker = "ebookslv_disable_copy"
+                if marker not in new_source and "</head>" in new_source:
+                    injection = (
+                        "\n{% if not (current_user and current_user.role_admin()) %}"
+                        f"<!-- {marker} -->\n"
+                        '<link rel="stylesheet" href="/app_static/reader/disable_copy.css">\n'
+                        '<script src="/app_static/reader/disable_copy.js" defer></script>\n'
+                        "{% endif %}\n"
+                    )
+                    new_source = new_source.replace("</head>", injection + "</head>", 1)
+                    LOG.debug("reader anti-copy injected (loader) template=%s", template)
+
             # 1) Admin nav links injection
             if PLUGIN_NAV_ID not in new_source and SEARCH_ANCHOR in new_source:
                 anchor_pos = new_source.find(SEARCH_ANCHOR)

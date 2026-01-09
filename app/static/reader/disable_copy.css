@@ -1,0 +1,35 @@
+/* Best-effort no-copy deterrents for reader pages (non-admin + anonymous). */
+
+/* Disable selection broadly on reader pages, but keep inputs usable. */
+.ebookslv-no-copy,
+.ebookslv-no-copy * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+.ebookslv-no-copy input,
+.ebookslv-no-copy textarea,
+.ebookslv-no-copy select,
+.ebookslv-no-copy button {
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+}
+
+/* PDF.js text layer is what enables text selection; disable pointer events. */
+.ebookslv-no-copy-textlayer {
+  pointer-events: none !important;
+}
+
+/* Defensive: even if class isn't applied, target common PDF.js nodes. */
+#viewerContainer .textLayer,
+#viewerContainer .textLayer * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  pointer-events: none !important;
+}
