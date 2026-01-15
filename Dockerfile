@@ -84,6 +84,19 @@ COPY app ./app
 COPY translations ./translations
 COPY docs ./docs
 
+# Overlay Calibre-Web gettext catalogs from our translations bundle.
+# This keeps the git submodule untouched while ensuring the running app sees overrides.
+RUN set -eu; \
+        if [ -d /app/translations/calibre-web ]; then \
+            for mo in /app/translations/calibre-web/*/LC_MESSAGES/messages.mo; do \
+                [ -f "$mo" ] || continue; \
+                lang="$(basename "$(dirname "$(dirname "$mo")")")"; \
+                dst_dir="/app/calibre-web/cps/translations/$lang/LC_MESSAGES"; \
+                mkdir -p "$dst_dir"; \
+                cp "$mo" "$dst_dir/messages.mo"; \
+            done; \
+        fi
+
 # Provide missing LV locale assets in the exact paths Calibre-Web templates expect.
 # Some Calibre-Web versions don't ship LV locale files for bootstrap-datepicker/bootstrap-select.
 RUN set -eu; \

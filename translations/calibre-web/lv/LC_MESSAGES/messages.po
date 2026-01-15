@@ -1990,7 +1990,7 @@ msgstr "Mājas"
 
 #: cps/templates/basic_layout.html:21 cps/templates/layout.html:48
 msgid "Search Library"
-msgstr "Meklēt bibliotēku"
+msgstr "Meklēt bibliotēkā"
 
 #: cps/templates/basic_layout.html:29 cps/templates/layout.html:73
 #: cps/templates/layout.html:99
