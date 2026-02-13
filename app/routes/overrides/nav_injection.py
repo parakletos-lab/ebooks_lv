@@ -200,7 +200,7 @@ class _NavPatchedLoader(BaseLoader):
 
             # 4) Hide Discover (Random Books) for anonymous users.
             # Upstream sidebar item has id="rand" and may be publicly visible.
-            if template == "layout.html":
+            if template in {"layout.html", "calibre-web/cps/templates/layout.html"}:
                 # 4a) Inject "Free" and "My Books" into the sidebar for non-admin users and
                 # rewrite the "Books" link to point at /catalog/all-books.
                 # This avoids client-side nav rebuilding (layout shift/jump on navigation).
@@ -232,6 +232,24 @@ class _NavPatchedLoader(BaseLoader):
                     replacement = injected_prefix + sidebar_item + '{% endif %}'
                     new_source = new_source.replace(sidebar_item, replacement, 1)
                     LOG.debug("layout.html patched to inject scope nav items")
+
+                # 4b) Keep About visible for anonymous users while Create Shelf remains
+                # authenticated-only.
+                about_block_target = (
+                    '{% if not current_user.is_anonymous %}\n'
+                    '                <li id="nav_createshelf" class="create-shelf"><a href="{{url_for(\'shelf.create_shelf\')}}">{{_(\'Create a Shelf\')}}</a></li>\n'
+                    '                <li id="nav_about" {% if page == \'stat\' %}class="active"{% endif %}><a href="{{url_for(\'about.stats\')}}"><span class="glyphicon glyphicon-info-sign"></span> {{_(\'About\')}}</a></li>\n'
+                    '              {% endif %}'
+                )
+                if about_block_target in new_source:
+                    about_block_replacement = (
+                        '{% if not current_user.is_anonymous %}\n'
+                        '                <li id="nav_createshelf" class="create-shelf"><a href="{{url_for(\'shelf.create_shelf\')}}">{{_(\'Create a Shelf\')}}</a></li>\n'
+                        '              {% endif %}\n'
+                        '              <li id="nav_about" {% if page == \'stat\' %}class="active"{% endif %}><a href="{{url_for(\'about.stats\')}}"><span class="glyphicon glyphicon-info-sign"></span> {{_(\'About\')}}</a></li>'
+                    )
+                    new_source = new_source.replace(about_block_target, about_block_replacement, 1)
+                    LOG.debug("layout.html patched to keep About visible for anonymous users")
 
                 target = "{% if current_user.check_visibility(element['visibility']) and element['public'] %}"
                 if target in new_source:

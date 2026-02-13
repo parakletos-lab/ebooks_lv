@@ -1,5 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
+  <section class="ub-eu-notice" role="region" aria-label="{{ _('LIAA project notice') }}">
+    <div class="ub-eu-notice__inner">
+      <div class="ub-eu-notice__image-wrap">
+        <img class="ub-eu-notice__image" src="/app_static/icons/about-image.png" alt="{{ _('LIAA and EU support logos') }}">
+      </div>
+      <div class="ub-eu-notice__text">
+        <p>{{ _('SIA Parakletos is implementing project LIAA contract No. 9.2-17-L-2025/871, aimed at introducing digital solutions for business development.') }}</p>
+        <p>{{ _('The project is funded with support from the European Union in cooperation with the Investment and Development Agency of Latvia.') }}</p>
+      </div>
+    </div>
+  </section>
+
   <h3>{{_('About')}} {{instance}}</h3>
 <p>{{instance}} powered by
 <a href="https://github.com/janeczku/calibre-web" title="Calibre-Web">Calibre-Web</a>.

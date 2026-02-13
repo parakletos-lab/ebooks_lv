@@ -47,3 +47,66 @@
 .ub-cursor-default {
   cursor: default;
 }
+
+/* LIAA / EU support notice under top header */
+.ub-eu-notice {
+  width: 100%;
+  background: #fefefe;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.ub-eu-notice__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ub-eu-notice__image-wrap {
+  flex: 0 1 auto;
+}
+
+.ub-eu-notice__image {
+  width: auto;
+  max-width: 100%;
+  max-height: 200px !important;
+  height: auto;
+  display: block;
+}
+
+.ub-eu-notice__text {
+  flex: 1 1 520px;
+  max-width: 72ch;
+  color: #1f2a44;
+}
+
+.ub-eu-notice__text p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 16px;
+}
+
+.ub-eu-notice__text p + p {
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .ub-eu-notice__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ub-eu-notice__image-wrap,
+  .ub-eu-notice__text {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+
+  .ub-eu-notice__image {
+    width: 100%;
+    max-height: none !important;
+  }
+}

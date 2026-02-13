@@ -214,6 +214,36 @@ def _patch_default_cover_fallback() -> None:
 	LOG.debug("Patched Calibre-Web default cover fallback to logo.svg")
 
 
+def _patch_stats_public_access(app: Any) -> None:
+	"""Keep `/stats` available for all users (anonymous/auth/admin)."""
+	view_functions = getattr(app, "view_functions", None)
+	if not isinstance(view_functions, dict):  # pragma: no cover
+		return
+	if getattr(app, "_ebookslv_stats_public_patched", False):  # type: ignore[attr-defined]
+		return
+
+	original = view_functions.get("about.stats")
+	if not callable(original):
+		LOG.warning("about.stats endpoint not found; public stats patch skipped")
+		return
+
+	raw = original
+	seen = set()
+	while hasattr(raw, "__wrapped__") and callable(getattr(raw, "__wrapped__", None)):
+		if id(raw) in seen:
+			break
+		seen.add(id(raw))
+		raw = getattr(raw, "__wrapped__")
+
+	if raw is original:
+		LOG.debug("about.stats appears undecorated; keeping existing view function")
+	else:
+		view_functions["about.stats"] = raw
+		LOG.debug("Patched about.stats to be publicly accessible")
+
+	setattr(app, "_ebookslv_stats_public_patched", True)
+
+
 def register_calibre_overrides(app: Any) -> None:  # pragma: no cover - glue code
 	if getattr(app, "_users_books_calibre_overrides", False):  # type: ignore[attr-defined]
 		return
@@ -221,6 +251,7 @@ def register_calibre_overrides(app: Any) -> None:  # pragma: no cover - glue cod
 	_patch_read_book_access(app)
 	_patch_serve_book_access(app)
 	_patch_default_cover_fallback()
+	_patch_stats_public_access(app)
 	setattr(app, "_users_books_calibre_overrides", True)
 
 

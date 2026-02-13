@@ -1254,3 +1254,19 @@ msgstr "Add operations complete."
 #: app/services/shelves_service.py:57
 msgid "Wishlist"
 msgstr "Wishlist"
+
+#: app/routes/overrides/nav_injection.py:277
+msgid "LIAA project notice"
+msgstr "LIAA project notice"
+
+#: app/routes/overrides/nav_injection.py:280
+msgid "LIAA and EU support logos"
+msgstr "LIAA and EU support logos"
+
+#: app/routes/overrides/nav_injection.py:283
+msgid "Uzņēmums SIA Parakletos īsteno projektu LIAA līguma Nr. 9.2-17-L-2025/871, kura mērķis ir digitālo risinājumu ieviešana uzņēmējdarbības attīstībai."
+msgstr "SIA Parakletos is implementing project LIAA contract No. 9.2-17-L-2025/871, aimed at introducing digital solutions for business development."
+
+#: app/routes/overrides/nav_injection.py:284
+msgid "Projekts tiek finansēts ar Eiropas Savienības atbalstu sadarbībā ar Latvijas Investīciju un attīstības aģentūru."
+msgstr "The project is funded with support from the European Union in cooperation with the Investment and Development Agency of Latvia."
