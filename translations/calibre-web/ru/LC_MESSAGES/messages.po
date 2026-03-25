@@ -141,5 +141,5 @@ msgstr "Логотипы поддержки LIAA и ЕС"
 msgid "SIA Parakletos is implementing project LIAA contract No. 9.2-17-L-2025/871, aimed at introducing digital solutions for business development."
 msgstr "Компания SIA Parakletos реализует проект по договору LIAA № 9.2-17-L-2025/871, цель которого — внедрение цифровых решений для развития предпринимательской деятельности."
 
-msgid "The project is funded with support from the European Union in cooperation with the Investment and Development Agency of Latvia."
-msgstr "Проект финансируется при поддержке Европейского Союза в сотрудничестве с Латвийским агентством инвестиций и развития."
+msgid "The project is funded within the framework of the Atveseļošanās Fund with support from the European Union in cooperation with the Investment and Development Agency of Latvia."
+msgstr "Проект финансируется в рамках фонда Atveseļošanās при поддержке Европейского Союза в сотрудничестве с Латвийским агентством инвестиций и развития."

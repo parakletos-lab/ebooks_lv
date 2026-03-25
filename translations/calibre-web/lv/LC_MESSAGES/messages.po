@@ -2207,8 +2207,8 @@ msgstr "LIAA un ES atbalsta logo"
 msgid "SIA Parakletos is implementing project LIAA contract No. 9.2-17-L-2025/871, aimed at introducing digital solutions for business development."
 msgstr "Uzņēmums SIA Parakletos īsteno projektu LIAA līguma Nr. 9.2-17-L-2025/871, kura mērķis ir digitālo risinājumu ieviešana uzņēmējdarbības attīstībai."
 
-msgid "The project is funded with support from the European Union in cooperation with the Investment and Development Agency of Latvia."
-msgstr "Projekts tiek finansēts ar Eiropas Savienības atbalstu sadarbībā ar Latvijas Investīciju un attīstības aģentūru."
+msgid "The project is funded within the framework of the Atveseļošanās Fund with support from the European Union in cooperation with the Investment and Development Agency of Latvia."
+msgstr "Projekts tiek finansēts Atveseļošanās fonda ietvaros ar Eiropas Savienības atbalstu sadarbībā ar Latvijas Investīciju un attīstības aģentūru."
 
 #: cps/templates/book_table.html:63 cps/templates/config_view_edit.html:24
 #: cps/templates/shelf_edit.html:8

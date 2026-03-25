@@ -1268,5 +1268,5 @@ msgid "Uzņēmums SIA Parakletos īsteno projektu LIAA līguma Nr. 9.2-17-L-2025
 msgstr "Компания SIA Parakletos реализует проект по договору LIAA № 9.2-17-L-2025/871, цель которого — внедрение цифровых решений для развития предпринимательской деятельности."
 
 #: app/routes/overrides/nav_injection.py:284
-msgid "Projekts tiek finansēts ar Eiropas Savienības atbalstu sadarbībā ar Latvijas Investīciju un attīstības aģentūru."
-msgstr "Проект финансируется при поддержке Европейского Союза в сотрудничестве с Латвийским агентством инвестиций и развития."
+msgid "Projekts tiek finansēts Atveseļošanās fonda ietvaros ar Eiropas Savienības atbalstu sadarbībā ar Latvijas Investīciju un attīstības aģentūru."
+msgstr "Проект финансируется в рамках фонда Atveseļošanās при поддержке Европейского Союза в сотрудничестве с Латвийским агентством инвестиций и развития."

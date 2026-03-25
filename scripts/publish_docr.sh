@@ -25,6 +25,7 @@ set -euo pipefail
 # Environment overrides:
 #   IMAGE_NAME       (default: calibre-web-server)
 #   REGISTRY         (default: registry.digitalocean.com/ebookslv-registry)
+#   DOCTL_ACCESS_TOKEN (optional) use this token for all doctl commands instead of a saved context
 #   PUSH_LATEST      (default: 1) set 0 to skip pushing :latest (rare)
 #   BACKUP_TAG       (default: backup) previous latest is tagged to this before update
 #   SKIP_BACKUP      (default: 0) set 1 to skip backup tagging
@@ -40,6 +41,7 @@ VERSION_FILE="${VERSION_FILE:-${REPO_ROOT}/.version}"
 
 IMAGE_NAME=${IMAGE_NAME:-calibre-web-server}
 REGISTRY=${REGISTRY:-registry.digitalocean.com/ebookslv-registry}
+DOCTL_ACCESS_TOKEN=${DOCTL_ACCESS_TOKEN:-${DIGITALOCEAN_ACCESS_TOKEN:-}}
 PUSH_LATEST=${PUSH_LATEST:-1}
 BACKUP_TAG=${BACKUP_TAG:-backup}
 SKIP_BACKUP=${SKIP_BACKUP:-0}
@@ -49,6 +51,49 @@ DRY_RUN=${DRY_RUN:-0}
 RUN_REGISTRY_GC=${RUN_REGISTRY_GC:-1}
 GC_INCLUDE_UNTAGGED=${GC_INCLUDE_UNTAGGED:-1}
 REGISTRY_NAME_ONLY=${REGISTRY_NAME_ONLY:-${REGISTRY##*/}}
+
+doctl_cmd(){
+  if [[ -n "${DOCTL_ACCESS_TOKEN}" ]]; then
+    doctl -t "${DOCTL_ACCESS_TOKEN}" "$@"
+  else
+    doctl "$@"
+  fi
+}
+
+require_doctl_registry_auth(){
+  local registry_name="$1"
+  local context_hint="${DOCTL_CONTEXT_HINT:-ebookslv}"
+
+  if ! command -v doctl >/dev/null 2>&1; then
+    echo "doctl not found; cannot verify DigitalOcean registry authentication." >&2
+    exit 8
+  fi
+
+  if ! doctl_cmd account get >/dev/null 2>&1; then
+    cat >&2 <<EOF
+DigitalOcean authentication check failed.
+Run these commands before publishing:
+  doctl auth init --context ${context_hint}
+  doctl account get
+  doctl registry get ${registry_name}
+  doctl registry login
+If 'doctl account get' or 'doctl registry login' returns '401 Unable to authenticate you',
+renew the token for the active context and retry.
+You can also set DOCTL_ACCESS_TOKEN for this script run to bypass saved contexts.
+EOF
+    exit 8
+  fi
+
+  if ! doctl_cmd registry get "${registry_name}" >/dev/null 2>&1; then
+    cat >&2 <<EOF
+DigitalOcean registry access check failed for '${registry_name}'.
+Verify the active doctl context can access this registry:
+  doctl registry get ${registry_name}
+  doctl registry login
+EOF
+    exit 8
+  fi
+}
 
 start_registry_gc(){
   local registry_name="$1"
@@ -68,9 +113,9 @@ start_registry_gc(){
     return 0
   fi
   echo "Starting registry garbage collection for ${registry_name} (include_untagged=${include_untagged})"
-  if ! doctl registry garbage-collection start "${args[@]}" "${include_flag}"; then
+  if ! doctl_cmd registry garbage-collection start "${args[@]}" "${include_flag}"; then
     echo "Primary GC invocation failed; retrying with legacy --disable-confirmation flag" >&2
-    if ! doctl registry garbage-collection start "${args[@]}" "--disable-confirmation"; then
+    if ! doctl_cmd registry garbage-collection start "${args[@]}" "--disable-confirmation"; then
       echo "Warning: failed to start registry garbage collection" >&2
       return 1
     fi
@@ -184,6 +229,10 @@ if [[ "${VERSION}" == "latest" || "${VERSION}" == "${BACKUP_TAG}" ]]; then
   exit 2
 fi
 
+if [[ "${DRY_RUN}" != "1" && "${REGISTRY}" == registry.digitalocean.com/* ]]; then
+  require_doctl_registry_auth "${REGISTRY_NAME_ONLY}"
+fi
+
 if [[ "${SKIP_BACKUP}" == "0" && "${PUSH_LATEST}" == "1" ]]; then
   echo "Attempting to pull existing latest for backup..."
   if docker pull "${LATEST_TAG}" >/dev/null 2>&1; then
@@ -233,11 +282,11 @@ if [[ "${PRUNE_OTHERS}" == "1" ]]; then
     TAGS=""
     if command -v jq >/dev/null 2>&1; then
       # Prefer JSON for reliable parsing
-      TAGS=$(doctl registry repository list-tags "${IMAGE_NAME}" --output json 2>/dev/null | jq -r '.[].tag' || true)
+      TAGS=$(doctl_cmd registry repository list-tags "${IMAGE_NAME}" --output json 2>/dev/null | jq -r '.[].tag' || true)
     fi
     if [[ -z "${TAGS}" ]]; then
       # Fallback: plain table parse (take first column, skip header)
-      TAGS=$(doctl registry repository list-tags "${IMAGE_NAME}" 2>/dev/null | awk 'NR>1 {print $1}' || true)
+      TAGS=$(doctl_cmd registry repository list-tags "${IMAGE_NAME}" 2>/dev/null | awk 'NR>1 {print $1}' || true)
     fi
     # De-duplicate
     UNIQUE_TAGS=$(echo "${TAGS}" | awk 'NF {print}' | sort -u)
@@ -248,7 +297,7 @@ if [[ "${PRUNE_OTHERS}" == "1" ]]; then
         echo "[DRY_RUN] Would delete remote tag: ${tag}"
       else
         echo "Deleting remote tag: ${tag}"
-        doctl registry repository delete-tag -f "${IMAGE_NAME}" "${tag}" || echo "Warning: failed to delete ${tag}" >&2
+        doctl_cmd registry repository delete-tag -f "${IMAGE_NAME}" "${tag}" || echo "Warning: failed to delete ${tag}" >&2
       fi
     done <<< "${UNIQUE_TAGS}"
   else
@@ -262,7 +311,7 @@ fi
 if [[ "${DRY_RUN}" == "0" && "${VERSION}" != "latest" && "${VERSION}" != "${BACKUP_TAG}" && "${PRUNE_OTHERS}" == "1" ]]; then
   if command -v doctl >/dev/null 2>&1; then
     echo "Removing intermediate version tag ${VERSION} (keeping only latest & backup)"
-    doctl registry repository delete-tag -f "${IMAGE_NAME}" "${VERSION}" || echo "Warning: failed to delete version tag ${VERSION}" >&2
+    doctl_cmd registry repository delete-tag -f "${IMAGE_NAME}" "${VERSION}" || echo "Warning: failed to delete version tag ${VERSION}" >&2
   fi
 fi
 

@@ -1,4 +1,3 @@
-
 ## Agent Quick Rules
 
 0. Go straight to implementation and do not ask questions unless instructed. I want all changes to be tested (in browser by using Playwright MCP in case of UI changes) and working.
@@ -17,17 +16,17 @@
 12. Logging must go through `app.utils.logging.get_logger`.
 13. Repositories/services must not import from any retired namespace.
 14. If adding a new env var, document it here and implement accessor in `app.config`.
-	- `APP_TITLE` sets the Calibre-Web UI title applied via the ebooks.lv admin "Set default settings" action.
-	- `EBOOKSLV_DOMAIN` is required only when using the HTTPS Caddy overlay (compose.droplet.caddy.yml) so Caddy can request and renew HTTPS certificates for the public hostname.
-	- `EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD` when set enables dev-only startup bootstrap to force-set the Calibre admin password.
-	- `EBOOKSLV_ADMIN_EMAIL` email of the admin account to target for password bootstrap (default: admin@example.org).
-	- `EBOOKSLV_ADMIN_PASSWORD` password to set during bootstrap (default: AdminTest123!).
+    - `APP_TITLE` sets the Calibre-Web UI title applied via the ebooks.lv admin "Set default settings" action.
+    - `EBOOKSLV_DOMAIN` is required only when using the HTTPS Caddy overlay (compose.droplet.caddy.yml) so Caddy can request and renew HTTPS certificates for the public hostname.
+    - `EBOOKSLV_BOOTSTRAP_ADMIN_PASSWORD` when set enables dev-only startup bootstrap to force-set the Calibre admin password.
+    - `EBOOKSLV_ADMIN_EMAIL` email of the admin account to target for password bootstrap (default: admin@example.org).
+    - `EBOOKSLV_ADMIN_PASSWORD` password to set during bootstrap (default: AdminTest123!).
 
 15. After adding or editing any admin UI page (templates/routes): rebuild container (`docker compose up -d --build calibre-web-server`) and verify page source has its hidden CSRF `<input>` before testing API actions (prevents stale template/CSRF misses).
 
 16. Field design additions:
-	- `mz_price` custom float column is auto-created at startup if missing by `entrypoint/seed_library.py` (idempotent).
-	- `mz_handle` stored as Calibre identifier `type='mz'` (no schema env var required).
+    - `mz_price` custom float column is auto-created at startup if missing by `entrypoint/seed_library.py` (idempotent).
+    - `mz_handle` stored as Calibre identifier `type='mz'` (no schema env var required).
 
 17. For Mozello Store API (products/orders/webhooks) implementation details, consult `.github/instructions/mozello_store_api.md` (single source; do not duplicate large doc excerpts in code or comments).
 
@@ -35,13 +34,17 @@
 
 19. "/mozello/books/<book_id>" route will navigate to Mozello Web Shop product page to purchase or view.
 20. For non admin users we have injected overrides: Book card in all catalogs; Book details page; Book reader;
-21. For "/calibre-web" pages overrides refer to "app/routes/overrides/*"
+21. For "/calibre-web" pages overrides refer to "app/routes/overrides/\*"
 22. Email template content lives in the `email_templates` table (users_books DB) managed only via `app.services.email_templates_service` and the `/admin/ebookslv/email-templates` UI; do not bypass the service or write raw SQL. Token lists per template and persistence details live in `.github/instructions/email_templates.md`.
 23. When adding UI strings, update `translations/ebookslv/messages.pot` and all locale PO files.
-	- For Calibre-Web UI translation overrides (under `translations/calibre-web/...`), compile `.po → .mo` (into `translations/`) before rebuild: `bash scripts/compile_calibreweb_translations.sh`.
+    - For Calibre-Web UI translation overrides (under `translations/calibre-web/...`), compile `.po → .mo` (into `translations/`) before rebuild: `bash scripts/compile_calibreweb_translations.sh`.
 24. For local UI checks use Playwright MCP against http://localhost:8083 (admin@example.org / AdminTest123!).
 25. After adding/modifying UI add e2e test to ".github/qa" folder; quick-run local QA via `bash .github/qa/scripts/run_all.sh`. All UI e2e tests should be done in browser. Use Playwright MCP for in browser e2e testing.
-26. Use "os._exit(0)" at the end of testing python scripts to exit after or they will hang indefinitely.
-27. When changing non-tech docs in "docs/operator" update "..._lv.md" files as well.
+26. Use "os.\_exit(0)" at the end of testing python scripts to exit after or they will hang indefinitely.
+27. When changing non-tech docs in "docs/operator" update "...\_lv.md" files as well.
+28. If `doctl account get` or `doctl registry login` returns `401 Unable to authenticate you`, treat the saved DigitalOcean token as invalid or expired even if `doctl auth list` still shows a context. Renew with `doctl auth init --context ebookslv`, verify with `doctl account get` and `doctl registry get ebookslv-registry`, then retry publish/login.
+29. For `scripts/publish_docr.sh`, you can bypass broken saved `doctl` contexts by exporting `DOCTL_ACCESS_TOKEN` (or `DIGITALOCEAN_ACCESS_TOKEN`) for that shell session; the script will pass it directly to `doctl` for auth, registry tag listing, prune, and GC commands.
+
 ---
+
 Add more rules if needed
